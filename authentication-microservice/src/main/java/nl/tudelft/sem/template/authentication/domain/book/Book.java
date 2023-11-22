@@ -1,12 +1,11 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * A DDD entity representing a book in our domain.
