@@ -101,7 +101,7 @@ public class AppUser extends HasEvents {
         this.password = password;
         this.favouriteGenres = new ArrayList<>();
         this.follows = new ArrayList<>();
-        this.followedBy= new ArrayList<>();
+        this.followedBy = new ArrayList<>();
         this.recordThat(new UserWasCreatedEvent(netId));
     }
 
