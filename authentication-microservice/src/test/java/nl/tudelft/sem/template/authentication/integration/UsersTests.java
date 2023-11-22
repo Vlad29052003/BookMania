@@ -62,12 +62,14 @@ public class UsersTests {
     public void register_withValidData_worksCorrectly() throws Exception {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
+        final String email = "test@email.com";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
         model.setNetId(testUser.toString());
+        model.setEmail(email);
         model.setPassword(testPassword.toString());
 
         // Act
@@ -81,6 +83,7 @@ public class UsersTests {
         AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
 
         assertThat(savedUser.getNetId()).isEqualTo(testUser);
+        assertThat(savedUser.getEmail()).isEqualTo(email);
         assertThat(savedUser.getPassword()).isEqualTo(testHashedPassword);
     }
 
