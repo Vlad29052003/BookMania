@@ -1,0 +1,728 @@
+openapi: 3.0.0
+info:
+  title: AppUser and Book API
+  version: 1.0.0
+  description: API for managing AppUsers and Books
+
+paths:
+  /reported-users:
+    get:
+      summary: Get reported users (only by admin)
+      description: Retrieve a list of reported AppUsers.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                - $ref: '#/components/schemas/AppUser'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /activate-authors:
+    get:
+      summary: Get authors for account activation (only by admin)
+      description: Retrieve a list of authors for account activation.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                - $ref: '#/components/schemas/AppUser'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /activate-admins:
+    get:
+      summary: Get admins for account activation (only by admin)
+      description: Retrieve a list of admins for account activation.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                - $ref: '#/components/schemas/AppUser'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /stats/{username}:
+    get:
+      summary: Get login statistics for a user
+      description: Retrieve login statistics for a user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username of an AppUser
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                numberOfLogins: 5
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /popular-genres:
+    get:
+      summary: Get popular genres (for statistics)
+      description: Retrieve popular genres and statistics.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                - genre: Romance
+                  number: 10
+                - genre: Mystery
+                  number: 8
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /popular-books:
+    get:
+      summary: Get popular books (based on favorite book)
+      description: Retrieve popular books based on favorite book selections.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                - $ref: '#/components/schemas/Book'
+                - $ref: '#/components/schemas/Book'
+        '500':
+          description: Internal Server Error
+
+  /validate-token:
+    get:
+      summary: Validate JWT token and return authorities
+      description: Validate a JWT token and return the corresponding authorities.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                authority: regular
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /search:
+    get:
+      summary: Search for a user based on username, favorite book, or favorite genres
+      description: |
+        Search for a user based on different criteria. Provide one of the following query parameters:
+        - `user` for searching by username
+        - `favBook` for searching by favorite book
+        - `favGenres` for searching by favorite genres
+      parameters:
+        - name: user
+          in: query
+          description: The username of an AppUser
+          schema:
+            type: string
+        - name: favBook
+          in: query
+          description: The ID of a book
+          schema:
+            type: integer
+        - name: favGenres
+          in: query
+          description: Comma-separated list of genres
+          schema:
+            type: array
+            items:
+              type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              examples:
+                usernameResponse:
+                  value:
+                    - $ref: '#/components/schemas/AppUser'
+                favBookResponse:
+                  value:
+                    - $ref: '#/components/schemas/AppUser'
+                favGenresResponse:
+                  value:
+                    - $ref: '#/components/schemas/AppUser'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /register:
+    post:
+      summary: Register a new user
+      description: Register a new user with email, username, and password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              example: Username already in use! or Email already in use!
+        '500':
+          description: Internal Server Error
+
+  /authenticate:
+    post:
+      summary: Authenticate a user
+      description: Authenticate a user with netId and password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              examples:
+                USER_DISABLED: User disabled!
+                INVALID_CREDENTIALS: Invalid credentials
+        '500':
+          description: Internal Server Error
+
+  /report/{userID}:
+    post:
+      summary: Report an AppUser
+      description: Report an AppUser with the specified userID.
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: The ID of an AppUser
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /notify:
+    post:
+      summary: Notify users of new books matching their preferred genres
+      description: Notify users of new books based on their preferred genres.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /follow:
+    post:
+      summary: Follow a user
+      description: Follow a user with the specified userID.
+      parameters:
+        - name: userID
+          in: query
+          required: true
+          description: The ID of the user to follow
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /unfollow:
+    post:
+      summary: Unfollow a user
+      description: Unfollow a user with the specified userID.
+      parameters:
+        - name: userID
+          in: query
+          required: true
+          description: The ID of the user to unfollow
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /2fa/activate:
+    post:
+      summary: Activate 2-factor authentication
+      description: Activate 2-factor authentication for the user.
+      parameters:
+        - name: jwtToken
+          in: header
+          required: true
+          description: JWT Token for authentication
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /newBook:
+    post:
+      summary: Create a new book
+      description: Create a new book with title, author, and genre.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jwtToken
+          in: header
+          required: true
+          description: JWT Token for authentication
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookRequest'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              example: Book is already in the DB
+        '500':
+          description: Internal Server Error
+
+  /deleteUser/{username}:
+    delete:
+      summary: Delete a user
+      description: Delete a user by username. Requires admin role or the username corresponds to the authenticated user.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username of the user to be deleted
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /deleteBook/{bookId}:
+    delete:
+      summary: Delete a book
+      description: Delete a book by bookId. Requires admin role or the authenticated user is the author of the book.
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          description: The ID of the book to be deleted
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /activate/{userId}:
+    post:
+      summary: Activate account
+      description: Activates the account of an admin or author. Requires admin role.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to activate
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /updateBook:
+    put:
+      summary: Update Book
+      description: Update book details. Requires author or admin role.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /updateAppUser:
+    put:
+      summary: Update AppUser
+      description: Update user details. Requires admin or authorized user role.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppUserDetails'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /ban-user:
+    put:
+      summary: Ban user (deactivate account)
+      description: Deactivate the account of a reported user. Requires admin role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: The ID of the user to ban
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BanUserRequest'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /updateProfilePicture:
+    put:
+      summary: Update profile picture
+      description: Update the profile picture of a user. Requires admin or authorized user role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to update profile picture
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfilePictureRequest'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /updatePrivacyInfo/{userId}:
+    put:
+      summary: Update privacy info
+      description: Update privacy information of a user. Requires authorized user role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to update privacy info
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePrivacyInfoRequest'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /removeReport/{username}:
+    delete:
+      summary: Remove report
+      description: Remove the report for a user. Requires admin role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username of the user to remove report
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+components:
+  schemas:
+    BanUserRequest:
+      type: object
+      properties:
+        reported:
+          type: boolean
+
+    AppUserDetails:
+      type: object
+      properties:
+        newName:
+          type: string
+        newPassword:
+          type: string
+        newBio:
+          type: string
+        newLocation:
+          type: string
+        newFavouriteGenres:
+          type: array
+          items:
+            type: string
+        newFavouriteBooks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+
+    UpdateProfilePictureRequest:
+      type: object
+      properties:
+        newPicture:
+          type: string
+          format: byte
+
+    UpdatePrivacyInfoRequest:
+      type: object
+      properties:
+        privacyInfo:
+          type: boolean
+
+    RegisterUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        authority:
+          type: string
+          enum:
+            - REGULAR_USER
+            - AUTHOR
+            - ADMIN
+
+    AuthenticationRequest:
+      type: object
+      properties:
+        email/username:
+          type: string
+        password:
+          type: string
+
+    CreateBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        genre:
+          type: array
+          items:
+            type: string
+            enum:
+              - BIOGRAPHY
+              - HISTORY
+              - SCIENCE
+              - CRIME
+              - POETRY
+              - MYSTERY
+              - SCIENCE_FICTION
+              - FANTASY
+              - ROMANCE
+              - HORROR
+              - DRAMA
+
+    AppUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        username:
+          type: string
+        authority:
+          type: string
+          enum:
+            - REGULAR_USER
+            - AUTHOR
+            - ADMIN
+
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        author:
+          type: string
+        genre:
+          type: array
+          items:
+            type: string
+            enum:
+              - BIOGRAPHY
+              - HISTORY
+              - SCIENCE
+              - CRIME
+              - POETRY
+              - MYSTERY
+              - SCIENCE_FICTION
+              - FANTASY
+              - ROMANCE
+              - HORROR
+              - DRAMA
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
