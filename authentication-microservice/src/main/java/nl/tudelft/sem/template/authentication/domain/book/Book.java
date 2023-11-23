@@ -46,6 +46,10 @@ public class Book {
     @Column(name = "genre", nullable = false)
     private List<Genre> genres;
 
+    @Getter
+    @Column(name = "description")
+    private String description;
+
     /**
      * Create new book.
      *
