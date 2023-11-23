@@ -3,7 +3,20 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -88,6 +101,17 @@ public class AppUser extends HasEvents {
     @ManyToMany(mappedBy = "follows")
     private List<AppUser> followedBy;
 
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Role role;
+
+    @Getter
+    @Setter
+    @Column(name = "deactivated")
+    private boolean isDeactivated;
+
     /**
      * Create new application user.
      *
@@ -101,6 +125,7 @@ public class AppUser extends HasEvents {
         this.favouriteGenres = new ArrayList<>();
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
+        this.role = Role.REGULAR_USER;
         this.recordThat(new UserWasCreatedEvent(netId));
     }
 
