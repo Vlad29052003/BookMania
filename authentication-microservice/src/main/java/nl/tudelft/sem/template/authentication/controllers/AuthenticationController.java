@@ -100,8 +100,11 @@ public class AuthenticationController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/test")
-    public ResponseEntity test(@RequestBody RegistrationRequestModel request) throws Exception {
-        return ResponseEntity.ok().build();
+    @GetMapping("/validate-token")
+    public ResponseEntity<String> verifyJWT() {
+        return ResponseEntity.ok("Authorized");
     }
 }
+
+
+
