@@ -28,14 +28,14 @@ public class RegistrationService {
      * @param password The password of the user
      * @throws Exception if the user already exists
      */
-    public AppUser registerUser(NetId netId, Password password) throws Exception {
+    public AppUser registerUser(NetId netId, String email, Password password) throws Exception {
 
         if (checkNetIdIsUnique(netId)) {
             // Hash password
             HashedPassword hashedPassword = passwordHashingService.hash(password);
 
             // Create new account
-            AppUser user = new AppUser(netId, hashedPassword);
+            AppUser user = new AppUser(netId, email, hashedPassword);
             userRepository.save(user);
 
             return user;
