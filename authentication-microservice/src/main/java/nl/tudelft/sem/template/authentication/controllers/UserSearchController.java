@@ -22,6 +22,7 @@ public class UserSearchController {
     /**
      * Instantiates a new UsersController.
      * //@param jwtUserDetailsService the user service
+     *
      * @param lookupService         the user lookup service
      */
     @Autowired
@@ -48,6 +49,12 @@ public class UserSearchController {
         }
     }
 
+    /**
+     * Endpoint for user searching.
+     *
+     * @return all users
+     * @throws ResponseStatusException if an error occurs
+     */
     @GetMapping("/getAllUsers")
     public ResponseEntity<Iterable<AppUser>> getAllUsers() {
         try {

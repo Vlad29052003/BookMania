@@ -1,9 +1,9 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+
 
 /**
  * A DDD service for looking up users.
@@ -24,6 +24,7 @@ public class UserLookupService {
 
     /**
      * Get user by netId.
+     *
      * @param id id of user
      * @return user
      */
@@ -34,6 +35,7 @@ public class UserLookupService {
 
     /**
      * Get users by name.
+     *
      * @param name name of user
      * @return users matching name
      */
@@ -45,6 +47,7 @@ public class UserLookupService {
 
     /**
      * Get all users.
+     *
      * @return all users
      */
     public List<AppUser> getAllUsers() {
