@@ -16,7 +16,7 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient BookRepository bookRepository;
 
-    private static final String NO_SUCH_USER = "User does not exist!";
+    public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
      * Instantiates a new UserService.
