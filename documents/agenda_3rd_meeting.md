@@ -1,4 +1,4 @@
-# Agenda SEM Group 18c Meeting 21/11/2023
+# Agenda SEM Group 18c Meeting 28/11/2023
 
 * Location: Flux Hall A
 * Date: Tu 28st Nov 2023
