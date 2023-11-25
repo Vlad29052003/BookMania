@@ -89,6 +89,10 @@ public class AppUser extends HasEvents {
 
     @Getter
     @Setter
+    private int favouriteBookId;
+
+    @Getter
+    @Setter
     @ManyToMany
     @JoinTable(
         name = "user_connections",
