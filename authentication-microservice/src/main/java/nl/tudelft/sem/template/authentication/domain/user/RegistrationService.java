@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import org.springframework.stereotype.Service;
 
+
 /**
  * A DDD service for registering a new user.
  */
@@ -37,10 +38,8 @@ public class RegistrationService {
             // Create new account
             AppUser user = new AppUser(netId, email, hashedPassword);
             userRepository.save(user);
-
             return user;
         }
-
         throw new NetIdAlreadyInUseException(netId);
     }
 

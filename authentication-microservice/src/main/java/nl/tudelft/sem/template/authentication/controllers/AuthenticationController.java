@@ -78,6 +78,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(new AuthenticationResponseModel(jwtToken));
     }
 
+
     /**
      * Endpoint for registration.
      *
