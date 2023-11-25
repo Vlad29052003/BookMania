@@ -62,12 +62,14 @@ public class UsersTests {
     public void register_withValidData_worksCorrectly() throws Exception {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
+        final String email = "test@email.com";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
         model.setNetId(testUser.toString());
+        model.setEmail(email);
         model.setPassword(testPassword.toString());
 
         // Act
@@ -81,6 +83,7 @@ public class UsersTests {
         AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
 
         assertThat(savedUser.getNetId()).isEqualTo(testUser);
+        assertThat(savedUser.getEmail()).isEqualTo(email);
         assertThat(savedUser.getPassword()).isEqualTo(testHashedPassword);
     }
 
@@ -88,10 +91,11 @@ public class UsersTests {
     public void register_withExistingUser_throwsException() throws Exception {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
+        final String email = "testEmail";
         final Password newTestPassword = new Password("password456");
         final HashedPassword existingTestPassword = new HashedPassword("password123");
 
-        AppUser existingAppUser = new AppUser(testUser, existingTestPassword);
+        AppUser existingAppUser = new AppUser(testUser, email, existingTestPassword);
         userRepository.save(existingAppUser);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
@@ -116,6 +120,7 @@ public class UsersTests {
     public void login_withValidUser_returnsToken() throws Exception {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
+        final String email = "testEmail";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
@@ -130,7 +135,7 @@ public class UsersTests {
             argThat(userDetails -> userDetails.getUsername().equals(testUser.toString())))
         ).thenReturn(testToken);
 
-        AppUser appUser = new AppUser(testUser, testHashedPassword);
+        AppUser appUser = new AppUser(testUser, email, testHashedPassword);
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
@@ -192,6 +197,7 @@ public class UsersTests {
     public void login_withInvalidPassword_returns403() throws Exception {
         // Arrange
         final String testUser = "SomeUser";
+        final String email = "testEmail";
         final String wrongPassword = "password1234";
         final String testPassword = "password123";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
@@ -202,7 +208,7 @@ public class UsersTests {
                     && wrongPassword.equals(authentication.getCredentials())
         ))).thenThrow(new BadCredentialsException("Invalid password"));
 
-        AppUser appUser = new AppUser(new NetId(testUser), testHashedPassword);
+        AppUser appUser = new AppUser(new NetId(testUser), email, testHashedPassword);
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();

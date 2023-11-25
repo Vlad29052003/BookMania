@@ -57,11 +57,11 @@ public class AuthenticationController {
      *
      * @param request The login model
      * @return JWT token if the login is successful
-     * @throws Exception if the user does not exist or the password is incorrect
+     * @throws ResponseStatusException if the user does not exist or the password is incorrect
      */
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponseModel> authenticate(@RequestBody AuthenticationRequestModel request)
-            throws Exception {
+            throws ResponseStatusException {
 
         try {
             authenticationManager.authenticate(
@@ -84,15 +84,16 @@ public class AuthenticationController {
      *
      * @param request The registration model
      * @return 200 OK if the registration is successful
-     * @throws Exception if a user with this netid already exists
+     * @throws ResponseStatusException if a user with this netId already exists
      */
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody RegistrationRequestModel request) throws Exception {
+    public ResponseEntity<Void> register(@RequestBody RegistrationRequestModel request) throws ResponseStatusException {
 
         try {
             NetId netId = new NetId(request.getNetId());
+            String email = request.getEmail();
             Password password = new Password(request.getPassword());
-            registrationService.registerUser(netId, password);
+            registrationService.registerUser(netId, email, password);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

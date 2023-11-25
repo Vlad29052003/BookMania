@@ -33,12 +33,13 @@ public class RegistrationServiceTests {
     public void createUser_withValidData_worksCorrectly() throws Exception {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
+        final String email = "testEmail";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         // Act
-        registrationService.registerUser(testUser, testPassword);
+        registrationService.registerUser(testUser, email, testPassword);
 
         // Assert
         AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
@@ -51,14 +52,15 @@ public class RegistrationServiceTests {
     public void createUser_withExistingUser_throwsException() {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
+        final String email = "testEmail";
         final HashedPassword existingTestPassword = new HashedPassword("password123");
         final Password newTestPassword = new Password("password456");
 
-        AppUser existingAppUser = new AppUser(testUser, existingTestPassword);
+        AppUser existingAppUser = new AppUser(testUser, email, existingTestPassword);
         userRepository.save(existingAppUser);
 
         // Act
-        ThrowingCallable action = () -> registrationService.registerUser(testUser, newTestPassword);
+        ThrowingCallable action = () -> registrationService.registerUser(testUser, email, newTestPassword);
 
         // Assert
         assertThatExceptionOfType(Exception.class)
