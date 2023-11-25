@@ -107,8 +107,8 @@ public class AppUser extends HasEvents {
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private Role role;
+    @Column(name = "authority")
+    private Authority authority;
 
     @Getter
     @Setter
@@ -128,8 +128,15 @@ public class AppUser extends HasEvents {
         this.favouriteGenres = new ArrayList<>();
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
-        this.role = Role.REGULAR_USER;
+        this.authority = Authority.REGULAR_USER;
         this.recordThat(new UserWasCreatedEvent(netId));
+    }
+
+    public AppUser(NetId netId, String email, HashedPassword hashedPassword, Authority authority) {
+        this.netId = netId;
+        this.email = email;
+        this.password = hashedPassword;
+        this.authority = authority;
     }
 
     public void changePassword(HashedPassword password) {

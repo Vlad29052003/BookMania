@@ -10,4 +10,5 @@ public class RegistrationRequestModel {
     private String netId;
     private String email;
     private String password;
+    private String authority;
 }

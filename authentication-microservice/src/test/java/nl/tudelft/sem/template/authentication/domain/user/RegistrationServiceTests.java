@@ -36,10 +36,11 @@ public class RegistrationServiceTests {
         final String email = "testEmail";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final Authority authority = Authority.REGULAR_USER;
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         // Act
-        registrationService.registerUser(testUser, email, testPassword);
+        registrationService.registerUser(testUser, email, testPassword, authority);
 
         // Assert
         AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
@@ -55,12 +56,13 @@ public class RegistrationServiceTests {
         final String email = "testEmail";
         final HashedPassword existingTestPassword = new HashedPassword("password123");
         final Password newTestPassword = new Password("password456");
+        final Authority authority = Authority.AUTHOR;
 
         AppUser existingAppUser = new AppUser(testUser, email, existingTestPassword);
         userRepository.save(existingAppUser);
 
         // Act
-        ThrowingCallable action = () -> registrationService.registerUser(testUser, email, newTestPassword);
+        ThrowingCallable action = () -> registrationService.registerUser(testUser, email, newTestPassword,authority);
 
         // Assert
         assertThatExceptionOfType(Exception.class)

@@ -136,7 +136,7 @@ paths:
           content:
             application/json:
               example:
-                authority: regular
+                authority: REGULAR_USER
         '401':
           description: Unauthorized
         '500':
@@ -232,7 +232,7 @@ paths:
             text/plain:
               examples:
                 USER_DISABLED: User disabled!
-                INVALID_CREDENTIALS: Invalid credentials
+                INVALID_CREDENTIALS: Bad credentials
         '500':
           description: Internal Server Error
 
@@ -634,9 +634,9 @@ components:
     RegisterUserRequest:
       type: object
       properties:
-        email:
+        netId:
           type: string
-        username:
+        email:
           type: string
         password:
           type: string
@@ -650,7 +650,7 @@ components:
     AuthenticationRequest:
       type: object
       properties:
-        email/username:
+        identifier:
           type: string
         password:
           type: string

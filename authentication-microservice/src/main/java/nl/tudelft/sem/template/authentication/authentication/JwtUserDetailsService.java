@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
-import java.util.ArrayList;
+import java.util.List;
+import nl.tudelft.sem.template.authentication.domain.user.EmailNotFoundException;
 import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,17 @@ public class JwtUserDetailsService implements UserDetailsService {
         var user = optionalUser.get();
 
         return new User(user.getNetId().toString(), user.getPassword().toString(),
-                new ArrayList<>()); // no authorities/roles
+                List.of(user.getAuthority()));
+    }
+
+    public UserDetails loadUserByEmail(String email) throws EmailNotFoundException {
+        var optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isEmpty()) {
+            throw new EmailNotFoundException("User does not exist");
+        }
+        var user = optionalUser.get();
+
+        return new User(user.getNetId().toString(), user.getPassword().toString(),
+                List.of(user.getAuthority()));
     }
 }

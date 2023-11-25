@@ -18,4 +18,9 @@ public interface UserRepository extends JpaRepository<AppUser, String> {
      * Check if an existing user already uses a NetID.
      */
     boolean existsByNetId(NetId netId);
+
+    /**
+     * Find user by email.
+     */
+    Optional<AppUser> findByEmail(String email);
 }
