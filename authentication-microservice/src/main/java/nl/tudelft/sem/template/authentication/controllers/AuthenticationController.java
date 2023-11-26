@@ -65,17 +65,22 @@ public class AuthenticationController {
      */
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody AuthenticationRequestModel request) throws ResponseStatusException {
-        AuthenticationResponseModel authenticationResponseModel;
         try {
-            authenticationResponseModel = authenticationService.authenticateUser(request);
+            AuthenticationResponseModel authenticationResponseModel = authenticationService.authenticateUser(request);
+            return ResponseEntity.ok(authenticationResponseModel);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
-        return ResponseEntity.ok(authenticationResponseModel);
     }
 
+    /**
+     * Endpoint for validating the jwt bearer token.
+     *
+     * @param token The bearer jwt token
+     * @return Authority if verification is successful
+     */
     @GetMapping("/validate-token")
-    public ResponseEntity<?> verifyJWT(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> verifyJwt(@RequestHeader("Authorization") String token) {
         try {
             return ResponseEntity.ok(authenticationService.getAuthority(token));
         } catch (Exception e) {

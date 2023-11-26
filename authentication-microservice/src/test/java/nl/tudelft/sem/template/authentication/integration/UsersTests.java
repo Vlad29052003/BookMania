@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
@@ -20,6 +21,7 @@ import nl.tudelft.sem.template.authentication.framework.integration.utils.JsonUt
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import nl.tudelft.sem.template.authentication.services.AuthenticationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +46,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @AutoConfigureMockMvc
 public class UsersTests {
     @Autowired
-    private MockMvc mockMvc;
+    private transient MockMvc mockMvc;
 
     @Autowired
     private transient PasswordHashingService mockPasswordEncoder;
@@ -58,6 +60,9 @@ public class UsersTests {
     @Autowired
     private transient UserRepository userRepository;
 
+    @Autowired
+    private transient AuthenticationService authenticationService;
+
     @Test
     public void register_withValidData_worksCorrectly() throws Exception {
         // Arrange
@@ -65,12 +70,14 @@ public class UsersTests {
         final String email = "test@email.com";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final Authority testAuthority = Authority.REGULAR_USER;
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
         model.setNetId(testUser.toString());
         model.setEmail(email);
         model.setPassword(testPassword.toString());
+        model.setAuthority(testAuthority.toString());
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/register")
@@ -90,10 +97,10 @@ public class UsersTests {
     @Test
     public void register_withExistingUser_throwsException() throws Exception {
         // Arrange
-        final NetId testUser = new NetId("SomeUser");
+        final NetId testUser = new NetId("SomeUser1");
         final String email = "testEmail";
         final Password newTestPassword = new Password("password456");
-        final HashedPassword existingTestPassword = new HashedPassword("password123");
+        final HashedPassword existingTestPassword = new HashedPassword("password23");
 
         AppUser existingAppUser = new AppUser(testUser, email, existingTestPassword);
         userRepository.save(existingAppUser);
@@ -119,9 +126,9 @@ public class UsersTests {
     @Test
     public void login_withValidUser_returnsToken() throws Exception {
         // Arrange
-        final NetId testUser = new NetId("SomeUser");
+        final NetId testUser = new NetId("SomeUser2");
         final String email = "testEmail";
-        final Password testPassword = new Password("password123");
+        final Password testPassword = new Password("password13");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
@@ -139,7 +146,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setNetId(testUser.toString());
+        model.setIdentifier(testUser.toString());
         model.setPassword(testPassword.toString());
 
         // Act
@@ -164,10 +171,10 @@ public class UsersTests {
     }
 
     @Test
-    public void login_withNonexistentUsername_returns403() throws Exception {
+    public void login_withNonexistentUsername_returns401() throws Exception {
         // Arrange
-        final String testUser = "SomeUser";
-        final String testPassword = "password123";
+        final String testUser = "SomeUser3";
+        final String testPassword = "password1235";
 
         when(mockAuthenticationManager.authenticate(argThat(authentication ->
                 testUser.equals(authentication.getPrincipal())
@@ -175,7 +182,7 @@ public class UsersTests {
         ))).thenThrow(new UsernameNotFoundException("User not found"));
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setNetId(testUser);
+        model.setIdentifier(testUser);
         model.setPassword(testPassword);
 
         // Act
@@ -184,11 +191,7 @@ public class UsersTests {
                 .content(JsonUtil.serialize(model)));
 
         // Assert
-        resultActions.andExpect(status().isForbidden());
-
-        verify(mockAuthenticationManager).authenticate(argThat(authentication ->
-                testUser.equals(authentication.getPrincipal())
-                    && testPassword.equals(authentication.getCredentials())));
+        resultActions.andExpect(status().isUnauthorized());
 
         verify(mockJwtTokenGenerator, times(0)).generateToken(any());
     }
@@ -196,10 +199,10 @@ public class UsersTests {
     @Test
     public void login_withInvalidPassword_returns403() throws Exception {
         // Arrange
-        final String testUser = "SomeUser";
+        final String testUser = "SomeUser4";
         final String email = "testEmail";
         final String wrongPassword = "password1234";
-        final String testPassword = "password123";
+        final String testPassword = "password12";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(new Password(testPassword))).thenReturn(testHashedPassword);
 
@@ -212,7 +215,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setNetId(testUser);
+        model.setIdentifier(testUser);
         model.setPassword(wrongPassword);
 
         // Act

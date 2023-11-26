@@ -8,10 +8,10 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -94,9 +94,9 @@ public class AppUser extends HasEvents {
     @Setter
     @ManyToMany
     @JoinTable(
-        name = "user_connections",
-        joinColumns = @JoinColumn(name = "follower_id"),
-        inverseJoinColumns = @JoinColumn(name = "followed_id"))
+            name = "user_connections",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "followed_id"))
     private List<AppUser> follows;
 
     @Getter
@@ -118,7 +118,7 @@ public class AppUser extends HasEvents {
     /**
      * Create new application user.
      *
-     * @param netId The NetId for the new user
+     * @param netId    The NetId for the new user
      * @param password The password for the new user
      */
     public AppUser(NetId netId, String email, HashedPassword password) {
@@ -132,10 +132,18 @@ public class AppUser extends HasEvents {
         this.recordThat(new UserWasCreatedEvent(netId));
     }
 
-    public AppUser(NetId netId, String email, HashedPassword hashedPassword, Authority authority) {
+    /**
+     * Create a new application user.
+     *
+     * @param netId     The NetId for the new user
+     * @param email     The email for the new user
+     * @param password  The password for the new user
+     * @param authority The authority for the new user
+     */
+    public AppUser(NetId netId, String email, HashedPassword password, Authority authority) {
         this.netId = netId;
         this.email = email;
-        this.password = hashedPassword;
+        this.password = password;
         this.authority = authority;
     }
 

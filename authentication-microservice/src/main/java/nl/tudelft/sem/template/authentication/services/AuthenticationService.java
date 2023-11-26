@@ -11,6 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +33,15 @@ public class AuthenticationService {
     private final transient RegistrationService registrationService;
     private final transient JwtService jwtService;
 
+    /**
+     * Creates an AuthenticationService service.
+     *
+     * @param authenticationManager manages the authentication
+     * @param jwtTokenGenerator     manages the jwt generation
+     * @param jwtUserDetailsService manages the user details
+     * @param registrationService   manages the registration
+     * @param jwtService            extract the claims from the jwt
+     */
     @Autowired
     public AuthenticationService(AuthenticationManager authenticationManager,
                                  JwtTokenGenerator jwtTokenGenerator,
@@ -45,17 +55,27 @@ public class AuthenticationService {
         this.jwtService = jwtService;
     }
 
-    public AuthenticationResponseModel authenticateUser(AuthenticationRequestModel authenticationRequest) throws ResponseStatusException{
+    /**
+     * Authenticates a user.
+     *
+     * @param authenticationRequest a data object containing the authentication data
+     * @return a jwt token
+     * @throws ResponseStatusException if the authentication fails
+     */
+    public AuthenticationResponseModel authenticateUser(
+            AuthenticationRequestModel authenticationRequest) throws ResponseStatusException {
+
         UserDetails userDetails;
         try {
             if (authenticationRequest.getIdentifier().contains("@")) {
                 userDetails = jwtUserDetailsService.loadUserByEmail(authenticationRequest.getIdentifier());
+            } else {
+                userDetails = jwtUserDetailsService.loadUserByUsername(authenticationRequest.getIdentifier());
             }
-            else userDetails = jwtUserDetailsService.loadUserByUsername(authenticationRequest.getIdentifier());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                        userDetails.getUsername(),
-                        authenticationRequest.getPassword()));
+                            userDetails.getUsername(),
+                            authenticationRequest.getPassword()));
         } catch (DisabledException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "USER_DISABLED", e);
         } catch (BadCredentialsException | EmailNotFoundException e) {
@@ -66,7 +86,12 @@ public class AuthenticationService {
         return new AuthenticationResponseModel(jwtToken);
     }
 
-    public void registerUser (RegistrationRequestModel registrationRequest) {
+    /**
+     * Registers a new user.
+     *
+     * @param registrationRequest contains the registration data
+     */
+    public void registerUser(RegistrationRequestModel registrationRequest) {
         try {
             NetId netId = new NetId(registrationRequest.getNetId());
             String email = registrationRequest.getEmail();
@@ -78,10 +103,20 @@ public class AuthenticationService {
         }
     }
 
-    public String getAuthority(String token) throws Exception{
+    /**
+     * Gets the authority the user has.
+     *
+     * @param token is the jwt bearer token.
+     * @return a data object containing the authority
+     * @throws Exception if the validation of the token fails
+     */
+    public TokenValidationResponse getAuthority(String token) throws Exception {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new IllegalArgumentException();
         }
-        return jwtUserDetailsService.loadUserByUsername(jwtService.extractUsername(token.substring(7))).getAuthorities().iterator().next().toString();
+        return new TokenValidationResponse(
+                Authority.valueOf(jwtUserDetailsService
+                        .loadUserByUsername(jwtService.extractUsername(token.substring(7)))
+                        .getAuthorities().iterator().next().toString()));
     }
 }

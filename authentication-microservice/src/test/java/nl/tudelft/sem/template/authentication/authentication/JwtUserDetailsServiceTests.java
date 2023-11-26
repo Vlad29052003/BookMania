@@ -52,8 +52,6 @@ public class JwtUserDetailsServiceTests {
     @Test
     public void loadUserByUsername_withNonexistentUser_throwsException() {
         // Arrange
-        final String testNonexistentUser = "SomeUser";
-
         final NetId testUser = new NetId("AnotherUser");
         final String email = "testEmail";
         final String testPasswordHash = "password123Hash";
@@ -62,7 +60,7 @@ public class JwtUserDetailsServiceTests {
         userRepository.save(appUser);
 
         // Act
-        ThrowableAssert.ThrowingCallable action = () -> jwtUserDetailsService.loadUserByUsername(testNonexistentUser);
+        ThrowableAssert.ThrowingCallable action = () -> jwtUserDetailsService.loadUserByUsername("SomeUser");
 
         // Assert
         assertThatExceptionOfType(UsernameNotFoundException.class)

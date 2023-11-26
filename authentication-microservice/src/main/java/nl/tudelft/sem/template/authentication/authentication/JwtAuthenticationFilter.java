@@ -16,8 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtService jwtService;
-    private final JwtUserDetailsService jwtUserDetailsService;
+    private final transient JwtService jwtService;
+    private final transient JwtUserDetailsService jwtUserDetailsService;
 
     @Autowired
     public JwtAuthenticationFilter(JwtService jwtService, JwtUserDetailsService jwtUserDetailsService) {

@@ -53,16 +53,14 @@ public class RegistrationServiceTests {
     public void createUser_withExistingUser_throwsException() {
         // Arrange
         final NetId testUser = new NetId("SomeUser");
-        final String email = "testEmail";
         final HashedPassword existingTestPassword = new HashedPassword("password123");
-        final Password newTestPassword = new Password("password456");
-        final Authority authority = Authority.AUTHOR;
 
-        AppUser existingAppUser = new AppUser(testUser, email, existingTestPassword);
+        AppUser existingAppUser = new AppUser(testUser, "testEmail", existingTestPassword);
         userRepository.save(existingAppUser);
 
         // Act
-        ThrowingCallable action = () -> registrationService.registerUser(testUser, email, newTestPassword,authority);
+        ThrowingCallable action = () -> registrationService
+                .registerUser(new NetId("SomeUser"), "testEmail", new Password("password456"), Authority.AUTHOR);
 
         // Assert
         assertThatExceptionOfType(Exception.class)

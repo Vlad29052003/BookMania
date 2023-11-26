@@ -21,10 +21,10 @@ public class JwtTokenGeneratorTests {
     private transient TimeProvider timeProvider;
     private transient Instant mockedTime = Instant.parse("2021-12-31T13:25:34.00Z");
 
-    private final String secret = "testSecret123";
+    private final transient String secret = "testSecret123";
 
-    private String netId = "andy";
-    private UserDetails user;
+    private transient String netId = "andy";
+    private transient UserDetails user;
 
     /**
      * Set up mocks.

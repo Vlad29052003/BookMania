@@ -45,6 +45,13 @@ public class JwtUserDetailsService implements UserDetailsService {
                 List.of(user.getAuthority()));
     }
 
+    /**
+     * Loads user information required for authentication from the DB.
+     *
+     * @param email The email of the user we want to authenticate
+     * @return The authentication user information of that user
+     * @throws UsernameNotFoundException Username was not found
+     */
     public UserDetails loadUserByEmail(String email) throws EmailNotFoundException {
         var optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
