@@ -70,7 +70,7 @@ public class RegistrationServiceTests {
         AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
 
         assertThat(savedUser.getNetId()).isEqualTo(testUser);
-        assertThat(savedUser.getEmail()).isEqualTo(email);
+        assertThat(savedUser.getEmail()).isEqualTo("testEmail");
         assertThat(savedUser.getPassword()).isEqualTo(existingTestPassword);
     }
 }
