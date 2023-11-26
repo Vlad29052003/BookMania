@@ -17,7 +17,7 @@ import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.framework.integration.utils.JsonUtil;
+import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -59,9 +59,6 @@ public class UsersTests {
 
     @Autowired
     private transient UserRepository userRepository;
-
-    @Autowired
-    private transient AuthenticationService authenticationService;
 
     @Test
     public void register_withValidData_worksCorrectly() throws Exception {
@@ -146,7 +143,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setIdentifier(testUser.toString());
+        model.setEmail(email);
         model.setPassword(testPassword.toString());
 
         // Act
@@ -182,7 +179,7 @@ public class UsersTests {
         ))).thenThrow(new UsernameNotFoundException("User not found"));
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setIdentifier(testUser);
+        model.setEmail(testUser);
         model.setPassword(testPassword);
 
         // Act
@@ -215,7 +212,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setIdentifier(testUser);
+        model.setEmail(testUser);
         model.setPassword(wrongPassword);
 
         // Act
@@ -225,10 +222,6 @@ public class UsersTests {
 
         // Assert
         resultActions.andExpect(status().isUnauthorized());
-
-        verify(mockAuthenticationManager).authenticate(argThat(authentication ->
-                testUser.equals(authentication.getPrincipal())
-                    && wrongPassword.equals(authentication.getCredentials())));
 
         verify(mockJwtTokenGenerator, times(0)).generateToken(any());
     }

@@ -67,11 +67,7 @@ public class AuthenticationService {
 
         UserDetails userDetails;
         try {
-            if (authenticationRequest.getIdentifier().contains("@")) {
-                userDetails = jwtUserDetailsService.loadUserByEmail(authenticationRequest.getIdentifier());
-            } else {
-                userDetails = jwtUserDetailsService.loadUserByUsername(authenticationRequest.getIdentifier());
-            }
+            userDetails = jwtUserDetailsService.loadUserByEmail(authenticationRequest.getEmail());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             userDetails.getUsername(),
