@@ -29,6 +29,8 @@ public class JwtTokenGenerator {
      */
     private final transient TimeProvider timeProvider;
 
+    private static final String ROLE = "role";
+
     @Autowired
     public JwtTokenGenerator(TimeProvider timeProvider) {
         this.timeProvider = timeProvider;
@@ -42,9 +44,24 @@ public class JwtTokenGenerator {
      */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put(ROLE, userDetails.getAuthorities().toArray()[0]);
         return Jwts.builder().setClaims(claims).setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(timeProvider.getCurrentTime().toEpochMilli()))
                 .setExpiration(new Date(timeProvider.getCurrentTime().toEpochMilli() + JWT_TOKEN_VALIDITY))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+    }
+
+    /**
+     * Deserialize a Jwt token.
+     *
+     * @param token The serialized token.
+     * @return the user netId which was used to create the token
+     */
+    public String getNetId(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 }
