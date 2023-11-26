@@ -1,8 +1,5 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
-import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.EmailNotFoundException;
 import nl.tudelft.sem.template.authentication.domain.user.NetId;
