@@ -11,7 +11,6 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
-import nl.tudelft.sem.template.authentication.services.AuthenticationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

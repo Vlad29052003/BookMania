@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.services;
+package nl.tudelft.sem.template.authentication.authentication;
 
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
@@ -56,6 +56,23 @@ public class AuthenticationService {
     }
 
     /**
+     * Registers a new user.
+     *
+     * @param registrationRequest contains the registration data
+     */
+    public void registerUser(RegistrationRequestModel registrationRequest) {
+        try {
+            NetId netId = new NetId(registrationRequest.getNetId());
+            String email = registrationRequest.getEmail();
+            Password password = new Password(registrationRequest.getPassword());
+            Authority authority = Authority.valueOf(registrationRequest.getAuthority());
+            registrationService.registerUser(netId, email, password, authority);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    /**
      * Authenticates a user.
      *
      * @param authenticationRequest a data object containing the authentication data
@@ -80,23 +97,6 @@ public class AuthenticationService {
 
         final String jwtToken = jwtTokenGenerator.generateToken(userDetails);
         return new AuthenticationResponseModel(jwtToken);
-    }
-
-    /**
-     * Registers a new user.
-     *
-     * @param registrationRequest contains the registration data
-     */
-    public void registerUser(RegistrationRequestModel registrationRequest) {
-        try {
-            NetId netId = new NetId(registrationRequest.getNetId());
-            String email = registrationRequest.getEmail();
-            Password password = new Password(registrationRequest.getPassword());
-            Authority authority = Authority.valueOf(registrationRequest.getAuthority());
-            registrationService.registerUser(netId, email, password, authority);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
     }
 
     /**
