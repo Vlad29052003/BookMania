@@ -9,8 +9,16 @@ import lombok.EqualsAndHashCode;
 public class NetId {
     private final transient String netIdValue;
 
+    /**
+     * NetId constructor.
+     *
+     * @param netId the username
+     */
     public NetId(String netId) {
-        // validate NetID
+        if (netId == null || !netId.matches("^[a-zA-z][a-zA-Z0-9]*$")) {
+            throw new IllegalArgumentException("Illegal username:"
+                    + " the username should start with a letter and not contain any special characters!");
+        }
         this.netIdValue = netId;
     }
 

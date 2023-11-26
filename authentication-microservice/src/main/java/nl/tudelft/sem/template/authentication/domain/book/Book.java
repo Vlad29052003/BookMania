@@ -9,6 +9,8 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
@@ -26,6 +28,7 @@ public class Book {
      * Identifier for the book.
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private int id;
 
@@ -57,10 +60,11 @@ public class Book {
      * @param authors The list of authors of the new book.
      * @param genres The list of genres of the new book.
      */
-    public Book(String title, List<String> authors, List<Genre> genres) {
+    public Book(String title, List<String> authors, List<Genre> genres, String description) {
         this.title = title;
         this.authors = authors == null ? new ArrayList<>() : authors;
         this.genres = genres == null ? new ArrayList<>() : genres;
+        this.description = description;
     }
 
     /**
