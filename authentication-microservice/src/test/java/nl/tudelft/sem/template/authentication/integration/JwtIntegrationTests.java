@@ -67,7 +67,7 @@ public class JwtIntegrationTests {
         user = new User("username", "someHash", List.of(Authority.REGULAR_USER));
         NetId netId = new NetId("username");
         HashedPassword hashedPassword = new HashedPassword("someHash");
-        appUser = new AppUser(netId, "email@email.com", hashedPassword, Authority.REGULAR_USER);
+        appUser = new AppUser(netId, "email@email.com", hashedPassword);
 
         jwtToken = jwtTokenGenerator.generateToken(user);
     }

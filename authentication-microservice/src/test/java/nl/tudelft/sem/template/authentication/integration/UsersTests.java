@@ -66,14 +66,12 @@ public class UsersTests {
         final String email = "test@email.com";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
-        final Authority testAuthority = Authority.REGULAR_USER;
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
         model.setNetId(testUser.toString());
         model.setEmail(email);
         model.setPassword(testPassword.toString());
-        model.setAuthority(testAuthority.toString());
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/register")
@@ -142,7 +140,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setEmail(email);
+        model.setNetId(testUser.toString());
         model.setPassword(testPassword.toString());
 
         // Act
@@ -178,7 +176,7 @@ public class UsersTests {
         ))).thenThrow(new UsernameNotFoundException("User not found"));
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setEmail(testUser);
+        model.setNetId(testUser);
         model.setPassword(testPassword);
 
         // Act
@@ -211,7 +209,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setEmail(testUser);
+        model.setNetId(testUser);
         model.setPassword(wrongPassword);
 
         // Act

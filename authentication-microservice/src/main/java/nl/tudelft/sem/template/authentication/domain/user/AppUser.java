@@ -133,26 +133,6 @@ public class AppUser extends HasEvents {
     }
 
     /**
-     * Create a new application user.
-     *
-     * @param netId     The NetId for the new user
-     * @param email     The email for the new user
-     * @param password  The password for the new user
-     * @param authority The authority for the new user
-     */
-    public AppUser(NetId netId, String email, HashedPassword password, Authority authority) {
-        this.netId = netId;
-        this.email = email;
-        this.password = password;
-        this.authority = authority;
-    }
-
-    public void changePassword(HashedPassword password) {
-        this.password = password;
-        this.recordThat(new PasswordWasChangedEvent(this));
-    }
-
-    /**
      * Equality is only based on the identifier.
      */
     @Override

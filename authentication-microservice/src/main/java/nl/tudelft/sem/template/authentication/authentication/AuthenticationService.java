@@ -1,7 +1,6 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
-import nl.tudelft.sem.template.authentication.domain.user.EmailNotFoundException;
 import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
@@ -16,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -62,8 +62,7 @@ public class AuthenticationService {
             NetId netId = new NetId(registrationRequest.getNetId());
             String email = registrationRequest.getEmail();
             Password password = new Password(registrationRequest.getPassword());
-            Authority authority = Authority.valueOf(registrationRequest.getAuthority());
-            registrationService.registerUser(netId, email, password, authority);
+            registrationService.registerUser(netId, email, password);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -81,14 +80,14 @@ public class AuthenticationService {
 
         UserDetails userDetails;
         try {
-            userDetails = jwtUserDetailsService.loadUserByEmail(authenticationRequest.getEmail());
+            userDetails = jwtUserDetailsService.loadUserByUsername(authenticationRequest.getNetId());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             userDetails.getUsername(),
                             authenticationRequest.getPassword()));
         } catch (DisabledException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "USER_DISABLED", e);
-        } catch (BadCredentialsException | EmailNotFoundException e) {
+        } catch (BadCredentialsException | UsernameNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", e);
         }
 

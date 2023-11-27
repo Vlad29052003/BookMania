@@ -27,7 +27,6 @@ public class AuthenticationControllerTests {
         request.setNetId("user");
         request.setEmail("email");
         request.setPassword("password");
-        request.setAuthority("REGULAR_USER");
 
         assertEquals(authenticationController.register(request), ResponseEntity.ok().build());
     }
@@ -38,7 +37,6 @@ public class AuthenticationControllerTests {
         request.setNetId("user");
         request.setEmail("email");
         request.setPassword("password");
-        request.setAuthority("REGULAR_USER");
 
         doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, ""))
                 .when(authenticationService).registerUser(request);
@@ -51,7 +49,7 @@ public class AuthenticationControllerTests {
     @Test
     public void authenticationRequestValid() {
         AuthenticationRequestModel request = new AuthenticationRequestModel();
-        request.setEmail("email");
+        request.setNetId("username");
         request.setPassword("pass");
         AuthenticationResponseModel response = new AuthenticationResponseModel();
         response.setToken("token");
@@ -64,7 +62,7 @@ public class AuthenticationControllerTests {
     @Test
     public void authenticationRequestThrowsError() {
         AuthenticationRequestModel request = new AuthenticationRequestModel();
-        request.setEmail("email");
+        request.setNetId("usernameS");
         request.setPassword("pass");
 
         when(authenticationService.authenticateUser(request))
