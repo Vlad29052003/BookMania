@@ -338,10 +338,10 @@ paths:
         '500':
           description: Internal Server Error
 
-  /newBook:
+  /books:
     post:
       summary: Create a new book
-      description: Create a new book with title, author, and genre.
+      description: Create a new book with title, author, genre and description.
       security:
         - bearerAuth: []
       parameters:
@@ -355,7 +355,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateBookRequest'
+              $ref: '#/components/schemas/AddBookRequestModel'
       responses:
         '200':
           description: OK
