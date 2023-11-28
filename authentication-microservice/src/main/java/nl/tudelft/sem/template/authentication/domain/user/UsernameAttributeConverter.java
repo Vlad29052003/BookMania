@@ -7,16 +7,16 @@ import javax.persistence.Converter;
  * JPA Converter for the NetID value object.
  */
 @Converter
-public class NetIdAttributeConverter implements AttributeConverter<NetId, String> {
+public class UsernameAttributeConverter implements AttributeConverter<Username, String> {
 
     @Override
-    public String convertToDatabaseColumn(NetId attribute) {
+    public String convertToDatabaseColumn(Username attribute) {
         return attribute.toString();
     }
 
     @Override
-    public NetId convertToEntityAttribute(String dbData) {
-        return new NetId(dbData);
+    public Username convertToEntityAttribute(String dbData) {
+        return new Username(dbData);
     }
 
 }

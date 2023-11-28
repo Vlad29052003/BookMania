@@ -32,7 +32,7 @@ public class RegistrationServiceTests {
     @Test
     public void createUser_withValidData_worksCorrectly() throws Exception {
         // Arrange
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "testEmail";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
@@ -42,9 +42,9 @@ public class RegistrationServiceTests {
         registrationService.registerUser(testUser, email, testPassword);
 
         // Assert
-        AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
+        AppUser savedUser = userRepository.findByUsername(testUser).orElseThrow();
 
-        assertThat(savedUser.getNetId()).isEqualTo(testUser);
+        assertThat(savedUser.getUsername()).isEqualTo(testUser);
         assertThat(savedUser.getEmail()).isEqualTo(email);
         assertThat(savedUser.getPassword()).isEqualTo(testHashedPassword);
     }
@@ -52,7 +52,7 @@ public class RegistrationServiceTests {
     @Test
     public void createUser_withExistingUser_throwsException() {
         // Arrange
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final HashedPassword existingTestPassword = new HashedPassword("password123");
 
         AppUser existingAppUser = new AppUser(testUser, "testEmail", existingTestPassword);
@@ -60,15 +60,15 @@ public class RegistrationServiceTests {
 
         // Act
         ThrowingCallable action = () -> registrationService
-                .registerUser(new NetId("SomeUser"), "testEmail", new Password("password456"));
+                .registerUser(new Username("SomeUser"), "testEmail", new Password("password456"));
 
         // Assert
         assertThatExceptionOfType(Exception.class)
                 .isThrownBy(action);
 
-        AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
+        AppUser savedUser = userRepository.findByUsername(testUser).orElseThrow();
 
-        assertThat(savedUser.getNetId()).isEqualTo(testUser);
+        assertThat(savedUser.getUsername()).isEqualTo(testUser);
         assertThat(savedUser.getEmail()).isEqualTo("testEmail");
         assertThat(savedUser.getPassword()).isEqualTo(existingTestPassword);
     }

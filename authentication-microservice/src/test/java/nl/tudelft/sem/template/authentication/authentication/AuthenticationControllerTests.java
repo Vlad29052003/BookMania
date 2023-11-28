@@ -24,7 +24,7 @@ public class AuthenticationControllerTests {
     @Test
     public void registrationValid() {
         RegistrationRequestModel request = new RegistrationRequestModel();
-        request.setNetId("user");
+        request.setUsername("user");
         request.setEmail("email");
         request.setPassword("password");
 
@@ -34,7 +34,7 @@ public class AuthenticationControllerTests {
     @Test
     public void registrationRequestThrowsError() {
         RegistrationRequestModel request = new RegistrationRequestModel();
-        request.setNetId("user");
+        request.setUsername("user");
         request.setEmail("email");
         request.setPassword("password");
 
@@ -49,7 +49,7 @@ public class AuthenticationControllerTests {
     @Test
     public void authenticationRequestValid() {
         AuthenticationRequestModel request = new AuthenticationRequestModel();
-        request.setNetId("username");
+        request.setUsername("username");
         request.setPassword("pass");
         AuthenticationResponseModel response = new AuthenticationResponseModel();
         response.setToken("token");
@@ -62,7 +62,7 @@ public class AuthenticationControllerTests {
     @Test
     public void authenticationRequestThrowsError() {
         AuthenticationRequestModel request = new AuthenticationRequestModel();
-        request.setNetId("usernameS");
+        request.setUsername("usernameS");
         request.setPassword("pass");
 
         when(authenticationService.authenticateUser(request))

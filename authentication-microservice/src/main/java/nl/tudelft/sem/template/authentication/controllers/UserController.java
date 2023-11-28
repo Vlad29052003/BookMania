@@ -5,8 +5,8 @@ import java.util.Map;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -47,9 +47,9 @@ public class UserController {
      * @param bearerToken the serialized token
      * @return the netId of the user
      */
-    private NetId getNetId(String bearerToken) {
+    private Username getNetId(String bearerToken) {
         String token = bearerToken.split(" ")[1];
-        return new NetId(jwtTokenGenerator.getNetId(token));
+        return new Username(jwtTokenGenerator.getUsername(token));
     }
 
     /**
@@ -62,7 +62,7 @@ public class UserController {
     public ResponseEntity<UserModel> getUserByNetId(@RequestHeader(name = AUTHORIZATION) String bearerToken) {
         AppUser user = userService.getUserByNetId(getNetId(bearerToken));
 
-        UserModel userModel = new UserModel(user.getNetId().toString(), user.getEmail(), user.getName(), user.getBio(),
+        UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
                                 user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
 
         return ResponseEntity.ok(userModel);

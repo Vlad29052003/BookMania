@@ -13,8 +13,8 @@ import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,9 +65,9 @@ public class JwtIntegrationTests {
         this.injectSecret(secret);
 
         user = new User("username", "someHash", List.of(Authority.REGULAR_USER));
-        NetId netId = new NetId("username");
+        Username username = new Username("username");
         HashedPassword hashedPassword = new HashedPassword("someHash");
-        appUser = new AppUser(netId, "email@email.com", hashedPassword);
+        appUser = new AppUser(username, "email@email.com", hashedPassword);
 
         jwtToken = jwtTokenGenerator.generateToken(user);
     }

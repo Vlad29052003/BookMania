@@ -11,12 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
@@ -62,14 +61,14 @@ public class UsersTests {
     @Test
     public void register_withValidData_worksCorrectly() throws Exception {
         // Arrange
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final Password testPassword = new Password("password123");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
-        model.setNetId(testUser.toString());
+        model.setUsername(testUser.toString());
         model.setEmail(email);
         model.setPassword(testPassword.toString());
 
@@ -81,9 +80,9 @@ public class UsersTests {
         // Assert
         resultActions.andExpect(status().isOk());
 
-        AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
+        AppUser savedUser = userRepository.findByUsername(testUser).orElseThrow();
 
-        assertThat(savedUser.getNetId()).isEqualTo(testUser);
+        assertThat(savedUser.getUsername()).isEqualTo(testUser);
         assertThat(savedUser.getEmail()).isEqualTo(email);
         assertThat(savedUser.getPassword()).isEqualTo(testHashedPassword);
     }
@@ -91,7 +90,7 @@ public class UsersTests {
     @Test
     public void register_withExistingUser_throwsException() throws Exception {
         // Arrange
-        final NetId testUser = new NetId("SomeUser1");
+        final Username testUser = new Username("SomeUser1");
         final String email = "testEmail";
         final Password newTestPassword = new Password("password456");
         final HashedPassword existingTestPassword = new HashedPassword("password23");
@@ -100,7 +99,7 @@ public class UsersTests {
         userRepository.save(existingAppUser);
 
         RegistrationRequestModel model = new RegistrationRequestModel();
-        model.setNetId(testUser.toString());
+        model.setUsername(testUser.toString());
         model.setPassword(newTestPassword.toString());
 
         // Act
@@ -111,16 +110,16 @@ public class UsersTests {
         // Assert
         resultActions.andExpect(status().isBadRequest());
 
-        AppUser savedUser = userRepository.findByNetId(testUser).orElseThrow();
+        AppUser savedUser = userRepository.findByUsername(testUser).orElseThrow();
 
-        assertThat(savedUser.getNetId()).isEqualTo(testUser);
+        assertThat(savedUser.getUsername()).isEqualTo(testUser);
         assertThat(savedUser.getPassword()).isEqualTo(existingTestPassword);
     }
 
     @Test
     public void login_withValidUser_returnsToken() throws Exception {
         // Arrange
-        final NetId testUser = new NetId("SomeUser2");
+        final Username testUser = new Username("SomeUser2");
         final String email = "testEmail";
         final Password testPassword = new Password("password13");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
@@ -140,7 +139,7 @@ public class UsersTests {
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setNetId(testUser.toString());
+        model.setUsername(testUser.toString());
         model.setPassword(testPassword.toString());
 
         // Act
@@ -176,7 +175,7 @@ public class UsersTests {
         ))).thenThrow(new UsernameNotFoundException("User not found"));
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setNetId(testUser);
+        model.setUsername(testUser);
         model.setPassword(testPassword);
 
         // Act
@@ -205,11 +204,11 @@ public class UsersTests {
                     && wrongPassword.equals(authentication.getCredentials())
         ))).thenThrow(new BadCredentialsException("Invalid password"));
 
-        AppUser appUser = new AppUser(new NetId(testUser), email, testHashedPassword);
+        AppUser appUser = new AppUser(new Username(testUser), email, testHashedPassword);
         userRepository.save(appUser);
 
         AuthenticationRequestModel model = new AuthenticationRequestModel();
-        model.setNetId(testUser);
+        model.setUsername(testUser);
         model.setPassword(wrongPassword);
 
         // Act

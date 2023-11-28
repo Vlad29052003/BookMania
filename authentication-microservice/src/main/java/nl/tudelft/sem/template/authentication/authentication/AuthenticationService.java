@@ -1,9 +1,9 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -59,10 +59,10 @@ public class AuthenticationService {
      */
     public void registerUser(RegistrationRequestModel registrationRequest) {
         try {
-            NetId netId = new NetId(registrationRequest.getNetId());
+            Username username = new Username(registrationRequest.getUsername());
             String email = registrationRequest.getEmail();
             Password password = new Password(registrationRequest.getPassword());
-            registrationService.registerUser(netId, email, password);
+            registrationService.registerUser(username, email, password);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -80,7 +80,7 @@ public class AuthenticationService {
 
         UserDetails userDetails;
         try {
-            userDetails = jwtUserDetailsService.loadUserByUsername(authenticationRequest.getNetId());
+            userDetails = jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             userDetails.getUsername(),

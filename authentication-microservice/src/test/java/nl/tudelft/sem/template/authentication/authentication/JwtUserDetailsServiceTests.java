@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ public class JwtUserDetailsServiceTests {
     @Test
     public void loadUserByUsername_withValidUser_returnsCorrectUser() {
         // Arrange
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "testEmail";
         final HashedPassword testHashedPassword = new HashedPassword("password123Hash");
 
@@ -52,7 +52,7 @@ public class JwtUserDetailsServiceTests {
     @Test
     public void loadUserByUsername_withNonexistentUser_throwsException() {
         // Arrange
-        final NetId testUser = new NetId("AnotherUser");
+        final Username testUser = new Username("AnotherUser");
         final String email = "testEmail";
         final String testPasswordHash = "password123Hash";
 

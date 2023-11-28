@@ -12,9 +12,9 @@ import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -64,16 +64,16 @@ public class AuthenticationServiceTests {
         Authority authority = Authority.REGULAR_USER;
 
         userDetails = new User(netId, password, List.of(authority));
-        appUser = new AppUser(new NetId(netId), email, new HashedPassword(password));
+        appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
 
         registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setNetId(netId);
+        registrationRequest.setUsername(netId);
         registrationRequest.setEmail(email);
         registrationRequest.setPassword(password);
 
         authenticationRequest = new AuthenticationRequestModel();
         authenticationRequest.setPassword(password);
-        authenticationRequest.setNetId(email);
+        authenticationRequest.setUsername(email);
 
         authenticationResponse = new AuthenticationResponseModel();
         authenticationResponse.setToken(token);
@@ -85,22 +85,22 @@ public class AuthenticationServiceTests {
     @Test
     public void registerUser() throws Exception {
         authenticationService.registerUser(registrationRequest);
-        NetId netId = new NetId(registrationRequest.getNetId());
+        Username username = new Username(registrationRequest.getUsername());
         String email = registrationRequest.getEmail();
         Password password = new Password(registrationRequest.getPassword());
 
-        verify(registrationService, times(1)).registerUser(netId, email, password);
+        verify(registrationService, times(1)).registerUser(username, email, password);
     }
 
     @Test
     public void registerUserException() throws Exception {
         authenticationService.registerUser(registrationRequest);
-        NetId netId = new NetId(registrationRequest.getNetId());
+        Username username = new Username(registrationRequest.getUsername());
         String email = registrationRequest.getEmail();
         Password password = new Password(registrationRequest.getPassword());
         Authority authority = Authority.REGULAR_USER;
 
-        when(registrationService.registerUser(netId, email, password))
+        when(registrationService.registerUser(username, email, password))
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, ""));
 
         assertThrows(ResponseStatusException.class, () -> {
@@ -110,7 +110,7 @@ public class AuthenticationServiceTests {
 
     @Test
     public void authenticateUser() {
-        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getNetId())).thenReturn(userDetails);
+        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
         when(jwtTokenGenerator.generateToken(userDetails)).thenReturn(token);
 
         assertEquals(authenticationService.authenticateUser(authenticationRequest), authenticationResponse);
@@ -118,7 +118,7 @@ public class AuthenticationServiceTests {
 
     @Test
     public void authenticateUserDeactivated() {
-        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getNetId())).thenReturn(userDetails);
+        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
         when(authenticationManager.authenticate(any())).thenThrow(new DisabledException(""));
 
         assertThrows(ResponseStatusException.class, () -> {
@@ -128,7 +128,7 @@ public class AuthenticationServiceTests {
 
     @Test
     public void authenticateUserBadCredentials() {
-        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getNetId())).thenReturn(userDetails);
+        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException(""));
 
         assertThrows(ResponseStatusException.class, () -> {

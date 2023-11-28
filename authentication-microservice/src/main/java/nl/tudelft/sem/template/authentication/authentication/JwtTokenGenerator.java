@@ -51,9 +51,9 @@ public class JwtTokenGenerator {
      * Deserialize a Jwt token.
      *
      * @param token The serialized token.
-     * @return the user netId which was used to create the token
+     * @return the username which was used to create the token
      */
-    public String getNetId(String token) {
+    public String getUsername(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
