@@ -49,21 +49,22 @@ public class UserSearchController {
         }
     }
 
-    /**
-     * Endpoint for user searching.
-     *
-     * @return all users
-     * @throws ResponseStatusException if an error occurs
-     */
-    @GetMapping("/getAllUsers")
-    public ResponseEntity<Iterable<AppUser>> getAllUsers() {
-        try {
-            var temp = userLookupService.getAllUsers();
-            //.stream().map(AppUser::getName)
-            //.collect(Collectors.toUnmodifiableList());
-            return ResponseEntity.ok(temp);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
+
 }
+
+//    /**
+//     * Endpoint for user searching.
+//     *
+//     * @return all users
+//     * @throws ResponseStatusException if an error occurs
+//     */
+//    @GetMapping("/getAllUsers")
+//    public ResponseEntity<Iterable<AppUser>> getAllUsers() {
+//        try {
+//            var temp = userLookupService.getAllUsers();
+//            //.stream().map(AppUser::getName)
+//            //.collect(Collectors.toUnmodifiableList());
+//            return ResponseEntity.ok(temp);
+//        } catch (Exception e) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+//        }}

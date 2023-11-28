@@ -22,16 +22,6 @@ public class UserLookupService {
     }
 
 
-    /**
-     * Get user by netId.
-     *
-     * @param id id of user
-     * @return user
-     */
-    public AppUser getUserById(NetId id) {
-
-        return userRepository.findByNetId(id).orElse(null);
-    }
 
     /**
      * Get users by name.
@@ -39,19 +29,30 @@ public class UserLookupService {
      * @param name name of user
      * @return users matching name
      */
-    public Iterable<AppUser> getUsersByName(String name) {
+    public List<AppUser> getUsersByName(String name) {
         return userRepository.findAll()
                 .stream().filter(user -> user.getName().contains(name))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get all users.
-     *
-     * @return all users
-     */
-    public List<AppUser> getAllUsers() {
-        return userRepository.findAll();
-    }
-
 }
+
+
+//    /**
+//     * Get user by netId.
+//     *
+//     * @param id id of user
+//     * @return user
+//     */
+//    public AppUser getUserById(NetId id) {
+//
+//  return userRepository.findByNetId(id).orElse(null);}
+
+
+//    /**
+//     * Get all users.
+//     *
+//     * @return all users
+//     */
+//    public List<AppUser> getAllUsers() {
+//        return userRepository.findAll();}
