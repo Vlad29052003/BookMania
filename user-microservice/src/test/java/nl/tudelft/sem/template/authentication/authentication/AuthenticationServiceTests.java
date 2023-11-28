@@ -9,11 +9,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
+import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
@@ -42,6 +45,7 @@ public class AuthenticationServiceTests {
     private transient AuthenticationRequestModel authenticationRequest;
     private transient AuthenticationResponseModel authenticationResponse;
     private transient TokenValidationResponse tokenValidationResponse;
+    private transient UserRepository userRepository;
     private final transient String token = "Bearer token";
 
     /**
@@ -54,17 +58,21 @@ public class AuthenticationServiceTests {
         jwtUserDetailsService = mock(JwtUserDetailsService.class);
         registrationService = mock(RegistrationService.class);
         jwtService = mock(JwtService.class);
+        userRepository = mock(UserRepository.class);
         System.out.println(registrationService);
-        authenticationService = new AuthenticationService(
-                authenticationManager, jwtTokenGenerator, jwtUserDetailsService, registrationService, jwtService);
+        authenticationService = new AuthenticationService(authenticationManager,
+                jwtTokenGenerator, jwtUserDetailsService,
+                registrationService, jwtService, userRepository);
 
         String email = "email";
         String netId = "user";
         String password = "someHash";
         Authority authority = Authority.REGULAR_USER;
+        UUID id = UUID.randomUUID();
 
         userDetails = new User(netId, password, List.of(authority));
         appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
+        appUser.setId(id);
 
         registrationRequest = new RegistrationRequestModel();
         registrationRequest.setUsername(netId);
@@ -79,7 +87,7 @@ public class AuthenticationServiceTests {
         authenticationResponse.setToken(token);
 
         tokenValidationResponse = new TokenValidationResponse();
-        tokenValidationResponse.setAuthority(authority);
+        tokenValidationResponse.setId(id);
     }
 
     @Test
@@ -140,17 +148,18 @@ public class AuthenticationServiceTests {
     public void validateToken() throws Exception {
         when(jwtUserDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
         when(jwtService.extractUsername("token")).thenReturn(userDetails.getUsername());
+        when(userRepository.findByUsername(appUser.getUsername())).thenReturn(Optional.of(appUser));
 
-        assertEquals(authenticationService.getAuthority(token), tokenValidationResponse);
+        assertEquals(authenticationService.getId(token), tokenValidationResponse);
     }
 
     @Test
     public void validateTokenFails() {
         assertThrows(IllegalArgumentException.class, () -> {
-            authenticationService.getAuthority(null);
+            authenticationService.getId(null);
         });
         assertThrows(IllegalArgumentException.class, () -> {
-            authenticationService.getAuthority("token");
+            authenticationService.getId("token");
         });
     }
 

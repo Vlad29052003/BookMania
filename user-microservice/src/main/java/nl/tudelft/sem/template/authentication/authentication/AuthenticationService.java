@@ -1,8 +1,10 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import java.util.Optional;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
+import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
@@ -29,6 +31,7 @@ public class AuthenticationService {
 
     private final transient RegistrationService registrationService;
     private final transient JwtService jwtService;
+    private final transient UserRepository userRepository;
 
     /**
      * Creates an AuthenticationService service.
@@ -44,12 +47,14 @@ public class AuthenticationService {
                                  JwtTokenGenerator jwtTokenGenerator,
                                  JwtUserDetailsService jwtUserDetailsService,
                                  RegistrationService registrationService,
-                                 JwtService jwtService) {
+                                 JwtService jwtService,
+                                 UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenGenerator = jwtTokenGenerator;
         this.jwtUserDetailsService = jwtUserDetailsService;
         this.registrationService = registrationService;
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -102,13 +107,15 @@ public class AuthenticationService {
      * @return a data object containing the authority
      * @throws Exception if the validation of the token fails
      */
-    public TokenValidationResponse getAuthority(String token) throws Exception {
+    public TokenValidationResponse getId(String token) throws Exception {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new IllegalArgumentException();
         }
-        return new TokenValidationResponse(
-                Authority.valueOf(jwtUserDetailsService
-                        .loadUserByUsername(jwtService.extractUsername(token.substring(7)))
-                        .getAuthorities().iterator().next().toString()));
+        Optional<AppUser> appUserOptional = userRepository
+                .findByUsername(new Username(jwtService.extractUsername(token.substring(7))));
+        if (appUserOptional.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        return new TokenValidationResponse(appUserOptional.get().getId());
     }
 }

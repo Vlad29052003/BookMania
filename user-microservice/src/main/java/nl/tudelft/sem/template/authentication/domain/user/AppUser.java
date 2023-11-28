@@ -38,6 +38,8 @@ public class AppUser extends HasEvents {
     /**
      * Identifier for the application user.
      */
+    @Getter
+    @Setter
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "uuid2")

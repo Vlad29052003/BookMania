@@ -5,8 +5,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.AuthenticationController;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -74,14 +74,14 @@ public class AuthenticationControllerTests {
     @Test
     public void validateToken() throws Exception {
         TokenValidationResponse response = new TokenValidationResponse();
-        response.setAuthority(Authority.REGULAR_USER);
-        when(authenticationService.getAuthority("token")).thenReturn(response);
+        response.setId(UUID.randomUUID());
+        when(authenticationService.getId("token")).thenReturn(response);
         assertEquals(authenticationController.verifyJwt("token"), ResponseEntity.ok(response));
     }
 
     @Test
     public void validateTokenThrowsError() throws Exception {
-        when(authenticationService.getAuthority("token")).thenThrow(new Exception());
+        when(authenticationService.getId("token")).thenThrow(new Exception());
 
         assertEquals(authenticationController.verifyJwt("token"),
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!"));
