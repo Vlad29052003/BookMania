@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.integration;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.lang.reflect.Field;
@@ -75,7 +76,8 @@ public class JwtIntegrationTests {
     @Test
     public void missingJwtToken() throws Exception {
         ResultActions resultActions = mockMvc.perform(get("/validate-token"));
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(header().string("WWW-Authenticate", "Bearer"));
     }
 
     @Test
