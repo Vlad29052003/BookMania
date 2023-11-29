@@ -1,11 +1,9 @@
-package nl.tudelft.sem.template.authentication.authentication;
+package nl.tudelft.sem.template.authentication.domain.user;
 
 import java.util.Optional;
-import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import nl.tudelft.sem.template.authentication.domain.user.Password;
-import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
-import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.authentication.JwtService;
+import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
+import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;

@@ -31,7 +31,7 @@ public class RegistrationService {
      */
     public AppUser registerUser(Username username, String email, Password password) throws Exception {
 
-        if (checkNetIdIsUnique(username)) {
+        if (checkUsernameIsUnique(username)) {
             // Hash password
             HashedPassword hashedPassword = passwordHashingService.hash(password);
 
@@ -45,7 +45,7 @@ public class RegistrationService {
         throw new UsernameAlreadyInUseException(username);
     }
 
-    public boolean checkNetIdIsUnique(Username username) {
+    public boolean checkUsernameIsUnique(Username username) {
         return !userRepository.existsByUsername(username);
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.Password;

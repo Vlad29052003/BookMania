@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
-import nl.tudelft.sem.template.authentication.authentication.AuthenticationService;
+import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
