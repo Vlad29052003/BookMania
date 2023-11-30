@@ -86,9 +86,9 @@ public class AuthenticationService {
                             userDetails.getUsername(),
                             authenticationRequest.getPassword()));
         } catch (DisabledException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "USER_DISABLED", e);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "USER_DISABLED");
         } catch (BadCredentialsException | UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", e);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
         }
 
         final String jwtToken = jwtTokenGenerator.generateToken(userDetails);
