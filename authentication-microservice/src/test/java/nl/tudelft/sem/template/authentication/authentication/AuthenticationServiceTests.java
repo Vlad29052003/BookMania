@@ -102,11 +102,19 @@ public class AuthenticationServiceTests {
         Username username = new Username(registrationRequest.getUsername());
         String email = registrationRequest.getEmail();
         Password password = new Password(registrationRequest.getPassword());
-        Authority authority = Authority.REGULAR_USER;
 
         when(authenticationService.registrationHelper(username, email, password))
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, ""));
 
+        assertThrows(ResponseStatusException.class, () -> {
+            authenticationService.registerUser(registrationRequest);
+        });
+    }
+
+    @Test
+    public void registerUserInvalidUsername() {
+        authenticationService.registerUser(registrationRequest);
+        registrationRequest.setUsername("@#asfa");
         assertThrows(ResponseStatusException.class, () -> {
             authenticationService.registerUser(registrationRequest);
         });
@@ -157,6 +165,14 @@ public class AuthenticationServiceTests {
         assertThrows(IllegalArgumentException.class, () -> {
             authenticationService.getId("token");
         });
+    }
+
+    @Test
+    public void validateTokenFailsEmptyOptional() {
+        when(userRepository.findByUsername(any())).thenReturn(Optional.empty());
+        when(jwtService.extractUsername("token")).thenReturn("user1");
+
+        assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("Bearer token"));
     }
 
 }

@@ -47,6 +47,7 @@ public class JwtIntegrationTests {
     private TimeProvider timeProvider;
     private transient JwtTokenGenerator jwtTokenGenerator;
     private transient Instant mockedTime = Instant.parse("2050-12-31T13:25:34.00Z");
+    private transient Instant expiredTime = Instant.parse("1999-12-31T13:25:34.00Z");
     private transient UserDetails user;
     private transient AppUser appUser;
     private transient String jwtToken;
@@ -101,6 +102,17 @@ public class JwtIntegrationTests {
     public void userNotInDatabase_ValidJwtToken() throws Exception {
         ResultActions resultActions = mockMvc.perform(get("/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
+
+        resultActions.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void expiredToken() throws Exception {
+        when(timeProvider.getCurrentTime()).thenReturn(expiredTime);
+
+        String jwtExpiredToken = jwtTokenGenerator.generateToken(user);
+        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+                .header("Authorization", "Bearer " + jwtExpiredToken));
 
         resultActions.andExpect(status().isUnauthorized());
     }

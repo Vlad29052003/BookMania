@@ -100,9 +100,8 @@ public class AuthenticationService {
      *
      * @param token is the jwt bearer token.
      * @return a data object containing the authority
-     * @throws Exception if the validation of the token fails
      */
-    public TokenValidationResponse getId(String token) throws Exception {
+    public TokenValidationResponse getId(String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new IllegalArgumentException();
         }

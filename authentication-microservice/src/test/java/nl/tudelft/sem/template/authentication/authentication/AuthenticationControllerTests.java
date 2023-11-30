@@ -73,7 +73,7 @@ public class AuthenticationControllerTests {
     }
 
     @Test
-    public void validateToken() throws Exception {
+    public void validateToken() {
         TokenValidationResponse response = new TokenValidationResponse();
         response.setId(UUID.randomUUID());
         when(authenticationService.getId("token")).thenReturn(response);
@@ -81,8 +81,8 @@ public class AuthenticationControllerTests {
     }
 
     @Test
-    public void validateTokenThrowsError() throws Exception {
-        when(authenticationService.getId("token")).thenThrow(new Exception());
+    public void validateTokenThrowsError() {
+        when(authenticationService.getId("token")).thenThrow(new IllegalArgumentException());
 
         assertEquals(authenticationController.verifyJwt("token"),
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!"));
