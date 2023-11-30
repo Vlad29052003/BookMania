@@ -43,7 +43,7 @@ public class AuthenticationControllerTests {
                 .when(authenticationService).registerUser(request);
 
         assertEquals(authenticationController.register(request),
-                new ResponseEntity<>("Username already in use! or Email already in use!",
+                new ResponseEntity<>("Username or email already in use!",
                         HttpStatus.BAD_REQUEST));
     }
 
