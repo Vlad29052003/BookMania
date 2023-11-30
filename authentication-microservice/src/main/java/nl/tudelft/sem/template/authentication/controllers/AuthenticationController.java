@@ -41,7 +41,7 @@ public class AuthenticationController {
         try {
             authenticationService.registerUser(request);
         } catch (ResponseStatusException e) {
-            return new ResponseEntity<>("Username already in use! or Email already in use!", e.getStatus());
+            return new ResponseEntity<>("Username or email already in use!", e.getStatus());
         }
         return ResponseEntity.ok().build();
     }
