@@ -16,7 +16,7 @@ import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
-import nl.tudelft.sem.template.authentication.domain.user.RegistrationService;
+import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
@@ -37,8 +37,8 @@ public class AuthenticationServiceTests {
     private transient AuthenticationManager authenticationManager;
     private transient JwtTokenGenerator jwtTokenGenerator;
     private transient JwtUserDetailsService jwtUserDetailsService;
-    private transient RegistrationService registrationService;
     private transient JwtService jwtService;
+    private transient PasswordHashingService passwordHashingService;
     private transient AuthenticationService authenticationService;
     private transient UserDetails userDetails;
     private transient AppUser appUser;
@@ -57,13 +57,12 @@ public class AuthenticationServiceTests {
         authenticationManager = mock(AuthenticationManager.class);
         jwtTokenGenerator = mock(JwtTokenGenerator.class);
         jwtUserDetailsService = mock(JwtUserDetailsService.class);
-        registrationService = mock(RegistrationService.class);
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
-        System.out.println(registrationService);
+        passwordHashingService = mock(PasswordHashingService.class);
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
-                registrationService, jwtService, userRepository);
+                jwtService, userRepository, passwordHashingService);
 
         String email = "email";
         String netId = "user";
@@ -92,13 +91,9 @@ public class AuthenticationServiceTests {
     }
 
     @Test
-    public void registerUser() throws Exception {
+    public void registerUser() {
         authenticationService.registerUser(registrationRequest);
-        Username username = new Username(registrationRequest.getUsername());
-        String email = registrationRequest.getEmail();
-        Password password = new Password(registrationRequest.getPassword());
-
-        verify(registrationService, times(1)).registerUser(username, email, password);
+        verify(userRepository, times(1)).save(any());
     }
 
     @Test
@@ -109,7 +104,7 @@ public class AuthenticationServiceTests {
         Password password = new Password(registrationRequest.getPassword());
         Authority authority = Authority.REGULAR_USER;
 
-        when(registrationService.registerUser(username, email, password))
+        when(authenticationService.registrationHelper(username, email, password))
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, ""));
 
         assertThrows(ResponseStatusException.class, () -> {

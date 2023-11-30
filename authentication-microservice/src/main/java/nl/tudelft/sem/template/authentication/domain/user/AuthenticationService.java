@@ -22,37 +22,34 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class AuthenticationService {
     private final transient AuthenticationManager authenticationManager;
-
     private final transient JwtTokenGenerator jwtTokenGenerator;
-
     private final transient JwtUserDetailsService jwtUserDetailsService;
-
-    private final transient RegistrationService registrationService;
     private final transient JwtService jwtService;
     private final transient UserRepository userRepository;
+    private final transient PasswordHashingService passwordHashingService;
 
     /**
      * Creates an AuthenticationService service.
      *
-     * @param authenticationManager manages the authentication
-     * @param jwtTokenGenerator     manages the jwt generation
-     * @param jwtUserDetailsService manages the user details
-     * @param registrationService   manages the registration
-     * @param jwtService            extract the claims from the jwt
+     * @param authenticationManager  manages the authentication
+     * @param jwtTokenGenerator      manages the jwt generation
+     * @param jwtUserDetailsService  manages the user details
+     * @param jwtService             extract the claims from the jwt
+     * @param passwordHashingService the password encoder
      */
     @Autowired
     public AuthenticationService(AuthenticationManager authenticationManager,
                                  JwtTokenGenerator jwtTokenGenerator,
                                  JwtUserDetailsService jwtUserDetailsService,
-                                 RegistrationService registrationService,
                                  JwtService jwtService,
-                                 UserRepository userRepository) {
+                                 UserRepository userRepository,
+                                 PasswordHashingService passwordHashingService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenGenerator = jwtTokenGenerator;
         this.jwtUserDetailsService = jwtUserDetailsService;
-        this.registrationService = registrationService;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.passwordHashingService = passwordHashingService;
     }
 
     /**
@@ -65,7 +62,7 @@ public class AuthenticationService {
             Username username = new Username(registrationRequest.getUsername());
             String email = registrationRequest.getEmail();
             Password password = new Password(registrationRequest.getPassword());
-            registrationService.registerUser(username, email, password);
+            registrationHelper(username, email, password);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -115,5 +112,33 @@ public class AuthenticationService {
             throw new IllegalArgumentException();
         }
         return new TokenValidationResponse(appUserOptional.get().getId());
+    }
+
+    /**
+     * Register a new user.
+     *
+     * @param username The NetID of the user
+     * @param email The email of the user
+     * @param password The password of the user
+     * @throws Exception if the user already exists
+     */
+    public AppUser registrationHelper(Username username, String email, Password password) throws Exception {
+
+        if (checkUsernameIsUnique(username)) {
+            // Hash password
+            HashedPassword hashedPassword = passwordHashingService.hash(password);
+
+            // Create new account
+            AppUser user = new AppUser(username, email, hashedPassword);
+            userRepository.save(user);
+
+            return user;
+        }
+
+        throw new UsernameAlreadyInUseException(username);
+    }
+
+    private boolean checkUsernameIsUnique(Username username) {
+        return !userRepository.existsByUsername(username);
     }
 }
