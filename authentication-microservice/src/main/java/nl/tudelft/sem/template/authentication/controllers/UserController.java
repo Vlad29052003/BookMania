@@ -2,7 +2,6 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -20,10 +19,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import static org.h2.value.Value.UUID;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
     private final transient UserService userService;
 
@@ -34,7 +32,7 @@ public class UserController {
     /**
      * Instantiates a new UserController.
      *
-     * @param userService the registration service
+     * @param userService       the registration service
      * @param jwtTokenGenerator the token service
      */
     @Autowired
@@ -65,7 +63,7 @@ public class UserController {
         AppUser user = userService.getUserByNetId(getNetId(bearerToken));
 
         UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
-                                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
+                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
 
         return ResponseEntity.ok(userModel);
     }
@@ -86,7 +84,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's name.
      *
-     * @param name the new name of the user
+     * @param name        the new name of the user
      * @param bearerToken The token associated with this user
      * @return a ResponseEntity containing the OK response
      */
@@ -101,7 +99,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's bio.
      *
-     * @param bio the new bio of the user
+     * @param bio         the new bio of the user
      * @param bearerToken The token associated with this user
      * @return a ResponseEntity containing the OK response
      */
@@ -116,7 +114,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's profile picture.
      *
-     * @param picture the new profile photo of the user
+     * @param picture     the new profile photo of the user
      * @param bearerToken The token associated with this user
      * @return a ResponseEntity containing the OK response
      */
@@ -131,7 +129,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's location.
      *
-     * @param location the new location of the user
+     * @param location    the new location of the user
      * @param bearerToken The token associated with this user
      * @return a ResponseEntity containing the OK response
      */
@@ -147,7 +145,7 @@ public class UserController {
      * Endpoint for updating the list of favourite genres of a user.
      *
      * @param favouriteGenres the new list of favourite genres of the user
-     * @param bearerToken The token associated with this user
+     * @param bearerToken     The token associated with this user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/favouriteGenres")
@@ -162,13 +160,14 @@ public class UserController {
      * Endpoint for updating a user's favourite book.
      *
      * @param favouriteBookId the new favourite book of the user
-     * @param bearerToken The token associated with this user
+     * @param bearerToken     The token associated with this user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/favouriteBook")
     public ResponseEntity<Void> updateFavouriteBook(@RequestBody String favouriteBookId,
                                                     @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
+            System.out.println(favouriteBookId);
             userService.updateFavouriteBook(getNetId(bearerToken), favouriteBookId);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

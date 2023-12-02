@@ -93,7 +93,7 @@ public class AppUser extends HasEvents {
     @Getter
     @Setter
     @ManyToOne
-    @JoinColumn(name = "favourite_book")
+    @JoinColumn(name = "book_id")
     private Book favouriteBook;
 
     @Getter

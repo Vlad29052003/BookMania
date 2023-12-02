@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.authentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -43,7 +44,7 @@ public class JwtService {
     }
 
     public Authority extractAuthorization(String jwtToken) {
-        return extractClaim(jwtToken, claims -> claims.get("authorization", Authority.class));
+        return Authority.valueOf((String) extractClaim(jwtToken, claims -> claims.get("authorities", List.class)).get(0));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

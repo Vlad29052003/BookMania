@@ -60,7 +60,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         user.setName(name);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     /**
@@ -79,7 +79,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         user.setBio(bio);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     /**
@@ -98,7 +98,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         user.setPicture(picture);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     /**
@@ -117,7 +117,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         user.setLocation(location);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     /**
@@ -136,7 +136,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         user.setFavouriteGenres(favouriteGenres);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     /**
@@ -158,8 +158,9 @@ public class UserService {
         }
 
         AppUser user = optionalAppUser.get();
-        user.setFavouriteBook(optionalBook.get());
+        Book book = optionalBook.get();
 
-        userRepository.save(user);
+        user.setFavouriteBook(book);
+        userRepository.saveAndFlush(user);
     }
 }

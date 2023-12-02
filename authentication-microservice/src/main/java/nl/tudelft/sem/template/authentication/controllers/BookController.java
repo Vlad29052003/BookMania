@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequestMapping("/books")
@@ -25,12 +26,19 @@ public class BookController {
         this.bookService = bookService;
     }
 
+    /**
+     * Adds a book to the overall collection.
+     *
+     * @param createBookRequestModel the request information about the book
+     * @param bearerToken            the jwt token
+     * @return the status of the operation
+     */
     @PutMapping("")
     public ResponseEntity<?> addBook(@RequestBody CreateBookRequestModel createBookRequestModel,
                                      @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
             bookService.addBook(createBookRequestModel, bearerToken);
-        }  catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (IllegalCallerException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
@@ -41,6 +49,13 @@ public class BookController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Deletes a book from the overall collection.
+     *
+     * @param bookId      the id of the book to be deleted
+     * @param bearerToken the jwt token
+     * @return the status of the operation
+     */
     @DeleteMapping("/{bookId}")
     public ResponseEntity<?> deleteBook(@PathVariable String bookId,
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {

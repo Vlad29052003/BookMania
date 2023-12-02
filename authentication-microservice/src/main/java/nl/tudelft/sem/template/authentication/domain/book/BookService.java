@@ -1,5 +1,8 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -8,9 +11,6 @@ import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class BookService {
@@ -18,6 +18,13 @@ public class BookService {
     private final transient UserRepository userRepository;
     private final transient JwtService jwtService;
 
+    /**
+     * Creates a BookService service.
+     *
+     * @param bookRepository is the book repository
+     * @param userRepository is the user repository
+     * @param jwtService     is the jwt service
+     */
     @Autowired
     public BookService(BookRepository bookRepository, UserRepository userRepository, JwtService jwtService) {
         this.bookRepository = bookRepository;
@@ -25,9 +32,42 @@ public class BookService {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Adds a book to the database.
+     *
+     * @param createBookRequestModel contains the book information
+     * @param bearerToken            is the jwt token of the user who made the request
+     */
+    public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
+        Authority authority = jwtService.extractAuthorization(bearerToken.substring(7));
+
+        if (!authority.equals(Authority.ADMIN)) {
+            throw new IllegalCallerException("Only admins may delete books from the system!");
+        }
+        List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
+        boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
+                .containsAll(createBookRequestModel.getAuthors()));
+        if (invalid) {
+            throw new IllegalArgumentException("The book is already in the system!");
+        }
+
+        Book newBook = new Book(createBookRequestModel.getTitle(),
+                createBookRequestModel.getAuthors(),
+                createBookRequestModel.getGenres(),
+                createBookRequestModel.getDescription(),
+                createBookRequestModel.getNumPages());
+        bookRepository.saveAndFlush(newBook);
+    }
+
+    /**
+     * Deletes a book from the overall collection.
+     *
+     * @param bookId      is the id of the book to be deleted.
+     * @param bearerToken is the jwt token of the user that made the request
+     */
     @Transactional
     public void deleteBook(String bookId, String bearerToken) {
-        Authority authority = jwtService.extractAuthorization(bearerToken);
+        Authority authority = jwtService.extractAuthorization(bearerToken.substring(7));
         if (!authority.equals(Authority.ADMIN)) {
             throw new IllegalCallerException("Only admins may delete books from the system!");
         }
@@ -40,28 +80,9 @@ public class BookService {
             userRepository.save(user);
         }
 
+        optBook.get().getUsersWithBookAsFavorite().clear();
+        bookRepository.saveAndFlush(optBook.get());
+
         bookRepository.deleteById(UUID.fromString(bookId));
-    }
-
-    public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
-        Authority authority = jwtService.extractAuthorization(bearerToken);
-
-        if (!authority.equals(Authority.ADMIN)) {
-            throw new IllegalCallerException("Only admins may delete books from the system!");
-        }
-
-        List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
-        boolean invalid = books.stream().anyMatch(x -> Set.of(createBookRequestModel.getAuthors()).equals(Set.of(x.getAuthors())));
-
-        if (invalid) {
-            throw new IllegalArgumentException("The book is already in the system!");
-        }
-
-        Book newBook = new Book(createBookRequestModel.getTitle(),
-                createBookRequestModel.getAuthors(),
-                createBookRequestModel.getGenre(),
-                createBookRequestModel.getDescription(),
-                createBookRequestModel.getNumPages());
-        bookRepository.saveAndFlush(newBook);
     }
 }

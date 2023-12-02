@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,15 +12,15 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -30,12 +31,14 @@ import org.hibernate.annotations.Type;
 @Entity
 @Table(name = "books")
 @NoArgsConstructor
+@ToString
 public class Book {
     /**
      * Identifier for the book.
      */
     @Id
     @Getter
+    @Column(name = "book_id", nullable = false)
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Type(type = "uuid-char")
@@ -46,7 +49,7 @@ public class Book {
     private String title;
 
     @Getter
-    @ElementCollection
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "authors", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "name", nullable = false)
     private List<String> authors;
@@ -68,15 +71,15 @@ public class Book {
 
     @Getter
     @JsonIgnore
-    @OneToMany(mappedBy = "favoriteBook", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "favouriteBook", cascade = CascadeType.ALL)
     private List<AppUser> usersWithBookAsFavorite;
 
     /**
      * Create new book.
      *
-     * @param title The title of the new book.
+     * @param title   The title of the new book.
      * @param authors The list of authors of the new book.
-     * @param genres The list of genres of the new book.
+     * @param genres  The list of genres of the new book.
      */
     public Book(String title, List<String> authors, List<Genre> genres, String description, int numPages) {
         this.title = title;
@@ -84,6 +87,7 @@ public class Book {
         this.genres = genres == null ? new ArrayList<>() : genres;
         this.description = description;
         this.numPages = numPages;
+        usersWithBookAsFavorite = new ArrayList<>();
     }
 
     /**
