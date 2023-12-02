@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import static org.h2.value.Value.UUID;
 
 @RestController
 @RequestMapping("/user")
@@ -164,10 +166,10 @@ public class UserController {
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/favouriteBook")
-    public ResponseEntity<Void> updateFavouriteBook(@RequestBody Map.Entry<String, Integer> favouriteBookId,
+    public ResponseEntity<Void> updateFavouriteBook(@RequestBody String favouriteBookId,
                                                     @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            userService.updateFavouriteBook(getNetId(bearerToken), favouriteBookId.getValue());
+            userService.updateFavouriteBook(getNetId(bearerToken), favouriteBookId);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }

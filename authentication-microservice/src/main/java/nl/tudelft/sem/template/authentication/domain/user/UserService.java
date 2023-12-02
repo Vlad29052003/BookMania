@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -145,13 +146,13 @@ public class UserService {
      * @param favouriteBookId the id of the favourite book
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updateFavouriteBook(Username username, Integer favouriteBookId) throws UsernameNotFoundException {
+    public void updateFavouriteBook(Username username, String favouriteBookId) throws UsernameNotFoundException {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
 
-        Optional<Book> optionalBook = bookRepository.findById(favouriteBookId);
+        Optional<Book> optionalBook = bookRepository.findById(UUID.fromString(favouriteBookId));
         if (optionalBook.isEmpty()) {
             throw new IllegalArgumentException("The book with the given ID does not exist!");
         }

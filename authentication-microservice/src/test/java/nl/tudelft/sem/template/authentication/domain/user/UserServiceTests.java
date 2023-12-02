@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
@@ -159,7 +160,7 @@ public class UserServiceTests {
         Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
-        assertThatThrownBy(() -> userService.updateFavouriteBook(username, 1))
+        assertThatThrownBy(() -> userService.updateFavouriteBook(username, UUID.randomUUID().toString()))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(UserService.NO_SUCH_USER);
 
@@ -167,7 +168,7 @@ public class UserServiceTests {
         userRepository.save(user);
         AppUser retrievedUser = userService.getUserByNetId(username);
         assertThat(retrievedUser.getFavouriteBook()).isNull();
-        assertThatThrownBy(() -> userService.updateFavouriteBook(username, 1))
+        assertThatThrownBy(() -> userService.updateFavouriteBook(username, UUID.randomUUID().toString()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("The book with the given ID does not exist!");
 
@@ -175,7 +176,8 @@ public class UserServiceTests {
                 List.of("First Author", "Second Author"),
                 List.of(Genre.CRIME, Genre.SCIENCE), "Short description.");
         bookRepository.save(newBook);
-        userService.updateFavouriteBook(username, 1);
+        UUID bookId = bookRepository.findAll().get(0).getId();
+        userService.updateFavouriteBook(username, bookId.toString());
         retrievedUser = userService.getUserByNetId(username);
         assertThat(retrievedUser.getFavouriteBook().getTitle()).isEqualTo(newBook.getTitle());
         assertThat(retrievedUser.getFavouriteBook().getAuthors().toArray()).isEqualTo(newBook.getAuthors().toArray());

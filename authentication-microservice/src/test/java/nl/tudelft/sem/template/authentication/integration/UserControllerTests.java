@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -270,10 +271,12 @@ public class UserControllerTests {
         resultActions.andExpect(status().isNotFound());
 
         bookRepository.save(newFavouriteBook);
+        UUID bookId = bookRepository.findAll().get(0).getId();
+
         resultActions = mockMvc.perform(
                 patch("/user/favouriteBook")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(Map.entry("name", 1)))
+                        .content(bookId.toString())
                         .header("Authorization", "Bearer " + token));
 
         Optional<AppUser> userModel = userRepository.findByUsername(testUser);
