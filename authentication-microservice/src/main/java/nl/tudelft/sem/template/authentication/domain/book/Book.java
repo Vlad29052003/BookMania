@@ -102,7 +102,7 @@ public class Book {
             return false;
         }
         Book book = (Book) o;
-        return id == (book.id);
+        return id.equals(book.id);
     }
 
     @Override
