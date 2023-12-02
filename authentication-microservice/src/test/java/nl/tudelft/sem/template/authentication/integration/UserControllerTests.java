@@ -254,7 +254,7 @@ public class UserControllerTests {
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final Book newFavouriteBook = new Book("Title",
                 List.of("First Author", "Second Author"),
-                List.of(Genre.SCIENCE, Genre.CRIME), "Short description.");
+                List.of(Genre.SCIENCE, Genre.CRIME), "Short description.", 150);
         user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
         roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));

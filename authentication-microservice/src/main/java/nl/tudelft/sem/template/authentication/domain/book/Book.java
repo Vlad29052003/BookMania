@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -14,9 +15,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
@@ -58,6 +62,15 @@ public class Book {
     @Column(name = "description")
     private String description;
 
+    @Getter
+    @Column(name = "number_of_pages")
+    private int numPages;
+
+    @Getter
+    @JsonIgnore
+    @OneToMany(mappedBy = "favoriteBook", cascade = CascadeType.ALL)
+    private List<AppUser> usersWithBookAsFavorite;
+
     /**
      * Create new book.
      *
@@ -65,11 +78,12 @@ public class Book {
      * @param authors The list of authors of the new book.
      * @param genres The list of genres of the new book.
      */
-    public Book(String title, List<String> authors, List<Genre> genres, String description) {
+    public Book(String title, List<String> authors, List<Genre> genres, String description, int numPages) {
         this.title = title;
         this.authors = authors == null ? new ArrayList<>() : authors;
         this.genres = genres == null ? new ArrayList<>() : genres;
         this.description = description;
+        this.numPages = numPages;
     }
 
     /**

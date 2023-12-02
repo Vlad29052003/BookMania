@@ -17,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -46,7 +47,6 @@ public class AppUser extends HasEvents {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Type(type = "uuid-char")
     private UUID id;
-
     @Getter
     @Column(name = "username", nullable = false, unique = true)
     @Convert(converter = UsernameAttributeConverter.class)
@@ -92,7 +92,7 @@ public class AppUser extends HasEvents {
 
     @Getter
     @Setter
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "favourite_book")
     private Book favouriteBook;
 

@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import java.util.Date;
 import java.util.function.Function;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +40,10 @@ public class JwtService {
 
     public Date extractExpiration(String jwtToken) {
         return extractClaim(jwtToken, Claims::getExpiration);
+    }
+
+    public Authority extractAuthorization(String jwtToken) {
+        return extractClaim(jwtToken, claims -> claims.get("authorization", Authority.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

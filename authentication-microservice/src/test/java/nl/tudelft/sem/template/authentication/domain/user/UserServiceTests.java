@@ -174,7 +174,7 @@ public class UserServiceTests {
 
         Book newBook = new Book("Title",
                 List.of("First Author", "Second Author"),
-                List.of(Genre.CRIME, Genre.SCIENCE), "Short description.");
+                List.of(Genre.CRIME, Genre.SCIENCE), "Short description.", 5);
         bookRepository.save(newBook);
         UUID bookId = bookRepository.findAll().get(0).getId();
         userService.updateFavouriteBook(username, bookId.toString());
