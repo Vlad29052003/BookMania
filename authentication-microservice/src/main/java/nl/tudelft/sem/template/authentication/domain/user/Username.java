@@ -6,24 +6,24 @@ import lombok.EqualsAndHashCode;
  * A DDD value object representing a NetID in our domain.
  */
 @EqualsAndHashCode
-public class NetId {
-    private final transient String netIdValue;
+public class Username {
+    private final transient String usernameValue;
 
     /**
-     * NetId constructor.
+     * Username constructor.
      *
-     * @param netId the username
+     * @param username the username
      */
-    public NetId(String netId) {
-        if (netId == null || !netId.matches("^[a-zA-z][a-zA-Z0-9]*$")) {
+    public Username(String username) {
+        if (username == null || !username.matches("^[a-zA-z][a-zA-Z0-9]*$")) {
             throw new IllegalArgumentException("Illegal username:"
                     + " the username should start with a letter and not contain any special characters!");
         }
-        this.netIdValue = netId;
+        this.usernameValue = username;
     }
 
     @Override
     public String toString() {
-        return netIdValue;
+        return usernameValue;
     }
 }

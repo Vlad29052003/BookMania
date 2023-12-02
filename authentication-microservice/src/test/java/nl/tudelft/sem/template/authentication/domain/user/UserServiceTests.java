@@ -32,7 +32,7 @@ public class UserServiceTests {
 
     @Test
     public void testGetUserByNetId() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         assertThatThrownBy(() -> userService.getUserByNetId(username))
@@ -43,14 +43,14 @@ public class UserServiceTests {
         userRepository.save(user);
         AppUser retrievedUser = userService.getUserByNetId(username);
 
-        assertThat(retrievedUser.getNetId().toString()).isEqualTo(username.toString());
+        assertThat(retrievedUser.getUsername().toString()).isEqualTo(username.toString());
         assertThat(retrievedUser.getEmail()).isEqualTo(email);
         assertThat(retrievedUser.getPassword().toString()).isEqualTo(password.toString());
     }
 
     @Test
     public void testUpdateName() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         String newName = "Name";
@@ -71,7 +71,7 @@ public class UserServiceTests {
 
     @Test
     public void testUpdateBio() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         String newBio = "Bio";
@@ -92,7 +92,7 @@ public class UserServiceTests {
 
     @Test
     public void testUpdatePicture() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         byte[] newPicture = new byte[]{13, 24, 51, 24, 14};
@@ -113,7 +113,7 @@ public class UserServiceTests {
 
     @Test
     public void testUpdateLocation() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         String newLocation = "Location";
@@ -135,7 +135,7 @@ public class UserServiceTests {
     @Test
     @Transactional
     public void testUpdateFavouriteGenres() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         List<Genre> newFavouriteGenres = new ArrayList<>(List.of(Genre.CRIME, Genre.SCIENCE, Genre.ROMANCE));
@@ -156,7 +156,7 @@ public class UserServiceTests {
     @Test
     @Transactional
     public void testUpdateFavouriteBook() {
-        NetId username = new NetId("username");
+        Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
         assertThatThrownBy(() -> userService.updateFavouriteBook(username, 1))

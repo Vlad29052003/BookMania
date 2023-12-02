@@ -31,11 +31,11 @@ public class UserService {
     /**
      * Get the details of a user.
      *
-     * @param netId the username
+     * @param username the username
      * @return an AppUser containing all the information
      */
-    public AppUser getUserByNetId(NetId netId) {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public AppUser getUserByNetId(Username username) {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
@@ -46,12 +46,12 @@ public class UserService {
     /**
      * Update the name of an existing user.
      *
-     * @param netId the username
+     * @param username the username
      * @param name the name of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updateName(NetId netId, String name) throws UsernameNotFoundException {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public void updateName(Username username, String name) throws UsernameNotFoundException {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
@@ -65,12 +65,12 @@ public class UserService {
     /**
      * Update the bio of an existing user.
      *
-     * @param netId the username
+     * @param username the username
      * @param bio the bio of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updateBio(NetId netId, String bio) throws UsernameNotFoundException {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public void updateBio(Username username, String bio) throws UsernameNotFoundException {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
@@ -84,12 +84,12 @@ public class UserService {
     /**
      * Update the profile picture of an existing user.
      *
-     * @param netId the username
+     * @param username the username
      * @param picture the profile photo of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updatePicture(NetId netId, byte[] picture) throws UsernameNotFoundException {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public void updatePicture(Username username, byte[] picture) throws UsernameNotFoundException {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
@@ -103,12 +103,12 @@ public class UserService {
     /**
      * Update the location of an existing user.
      *
-     * @param netId the username
+     * @param username the username
      * @param location the location of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updateLocation(NetId netId, String location) throws UsernameNotFoundException {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public void updateLocation(Username username, String location) throws UsernameNotFoundException {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
@@ -122,12 +122,12 @@ public class UserService {
     /**
      * Update the list of favourite genres of an existing user.
      *
-     * @param netId the username
+     * @param username the username
      * @param favouriteGenres the list of favourite genres of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updateFavouriteGenres(NetId netId, List<Genre> favouriteGenres) throws UsernameNotFoundException {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public void updateFavouriteGenres(Username username, List<Genre> favouriteGenres) throws UsernameNotFoundException {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
@@ -141,12 +141,12 @@ public class UserService {
     /**
      * Update the favourite book of an existing user.
      *
-     * @param netId the username
+     * @param username the username
      * @param favouriteBookId the id of the favourite book
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void updateFavouriteBook(NetId netId, Integer favouriteBookId) throws UsernameNotFoundException {
-        Optional<AppUser> optionalAppUser = userRepository.findByNetId(netId);
+    public void updateFavouriteBook(Username username, Integer favouriteBookId) throws UsernameNotFoundException {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }

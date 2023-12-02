@@ -17,11 +17,11 @@ import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
-import nl.tudelft.sem.template.authentication.domain.user.NetId;
-import nl.tudelft.sem.template.authentication.domain.user.Role;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.framework.integration.utils.JsonUtil;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,13 +55,13 @@ public class UserControllerTests {
 
     @Test
     public void testGetUserByNetId() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -85,15 +85,15 @@ public class UserControllerTests {
 
     @Test
     public void testGetUserPictureByNetId() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         final byte[] picture = new byte[]{13, 25, 12, 52, 43};
         user.setPicture(picture);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -110,14 +110,14 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateName() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final String newName = "Test Name";
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -129,7 +129,7 @@ public class UserControllerTests {
                 .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
-        Optional<AppUser> userModel = userRepository.findByNetId(testUser);
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getName()).isEqualTo(newName);
@@ -137,14 +137,14 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateBio() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final String newBio = "Short Bio.";
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -156,7 +156,7 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
-        Optional<AppUser> userModel = userRepository.findByNetId(testUser);
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getBio()).isEqualTo(newBio);
@@ -164,14 +164,14 @@ public class UserControllerTests {
 
     @Test
     public void testUpdatePicture() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final byte[] newPicture = new byte[]{13, 25, 12, 52, 43};
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -183,7 +183,7 @@ public class UserControllerTests {
                 .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
-        Optional<AppUser> userModel = userRepository.findByNetId(testUser);
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getPicture()).isEqualTo(newPicture);
@@ -191,14 +191,14 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateLocation() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final String newLocation = "Delft";
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -210,7 +210,7 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
-        Optional<AppUser> userModel = userRepository.findByNetId(testUser);
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getLocation()).isEqualTo(newLocation);
@@ -219,14 +219,14 @@ public class UserControllerTests {
     @Test
     @Transactional
     public void testUpdateFavouriteGenres() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final List<Genre> newFavouriteGenres = List.of(Genre.CRIME, Genre.SCIENCE, Genre.ROMANCE);
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -238,7 +238,7 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
-        Optional<AppUser> userModel = userRepository.findByNetId(testUser);
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getFavouriteGenres().toArray()).isEqualTo(newFavouriteGenres.toArray());
@@ -247,16 +247,16 @@ public class UserControllerTests {
     @Test
     @Transactional
     public void testUpdateFavouriteBook() throws Exception {
-        final NetId testUser = new NetId("SomeUser");
+        final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         final AppUser user = new AppUser(testUser, email, testHashedPassword);
         final Book newFavouriteBook = new Book("Title",
                 List.of("First Author", "Second Author"),
                 List.of(Genre.SCIENCE, Genre.CRIME), "Short description.");
-        user.setRole(Role.REGULAR_USER);
+        user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
@@ -276,7 +276,7 @@ public class UserControllerTests {
                         .content(JsonUtil.serialize(Map.entry("name", 1)))
                         .header("Authorization", "Bearer " + token));
 
-        Optional<AppUser> userModel = userRepository.findByNetId(testUser);
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getFavouriteBook().getTitle()).isEqualTo(newFavouriteBook.getTitle());

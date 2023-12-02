@@ -20,16 +20,12 @@ public class JwtTokenGenerator {
      * Time in milliseconds the JWT token is valid for.
      */
     public static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
-
     @Value("${jwt.secret}")  // automatically loads jwt.secret from resources/application.properties
     private transient String jwtSecret;
-
     /**
      * Time provider to make testing easier.
      */
     private final transient TimeProvider timeProvider;
-
-    private static final String ROLE = "role";
 
     @Autowired
     public JwtTokenGenerator(TimeProvider timeProvider) {
@@ -44,7 +40,7 @@ public class JwtTokenGenerator {
      */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(ROLE, userDetails.getAuthorities().toArray()[0]);
+        claims.put("authorities", userDetails.getAuthorities());
         return Jwts.builder().setClaims(claims).setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(timeProvider.getCurrentTime().toEpochMilli()))
                 .setExpiration(new Date(timeProvider.getCurrentTime().toEpochMilli() + JWT_TOKEN_VALIDITY))
@@ -55,9 +51,9 @@ public class JwtTokenGenerator {
      * Deserialize a Jwt token.
      *
      * @param token The serialized token.
-     * @return the user netId which was used to create the token
+     * @return the username which was used to create the token
      */
-    public String getNetId(String token) {
+    public String getUsername(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)

@@ -12,7 +12,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
-import nl.tudelft.sem.template.authentication.domain.user.Role;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,10 +24,10 @@ public class JwtTokenGeneratorTests {
     private transient TimeProvider timeProvider;
     private transient Instant mockedTime = Instant.parse("2021-12-31T13:25:34.00Z");
 
-    private final String secret = "testSecret123";
+    private final transient String secret = "testSecret123";
 
-    private String netId = "andy";
-    private UserDetails user;
+    private transient String netId = "andy";
+    private transient UserDetails user;
 
     /**
      * Set up mocks.
@@ -40,7 +40,7 @@ public class JwtTokenGeneratorTests {
         jwtTokenGenerator = new JwtTokenGenerator(timeProvider);
         this.injectSecret(secret);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Role.REGULAR_USER.toString()));
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
 
         user = new User(netId, "someHash", roles);
     }
