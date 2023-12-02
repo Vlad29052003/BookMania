@@ -20,6 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import org.hibernate.annotations.GenericGenerator;
@@ -45,16 +46,19 @@ public class Book {
     private UUID id;
 
     @Getter
+    @Setter
     @Column(name = "title", nullable = false)
     private String title;
 
     @Getter
+    @Setter
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "authors", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "name", nullable = false)
     private List<String> authors;
 
     @Getter
+    @Setter
     @ElementCollection(targetClass = Genre.class)
     @CollectionTable(name = "book_genres", joinColumns = @JoinColumn(name = "book_id"))
     @Enumerated(EnumType.STRING)
@@ -62,10 +66,12 @@ public class Book {
     private List<Genre> genres;
 
     @Getter
+    @Setter
     @Column(name = "description")
     private String description;
 
     @Getter
+    @Setter
     @Column(name = "number_of_pages")
     private int numPages;
 

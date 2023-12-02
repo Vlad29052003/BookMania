@@ -8,7 +8,9 @@ import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
+import nl.tudelft.sem.template.authentication.models.UpdateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,16 +35,28 @@ public class BookService {
     }
 
     /**
+     * Gets a book from the overall collection.
+     *
+     * @param bookId      the id of the book to get
+     * @return the book, if found
+     */
+    public Book getBook(String bookId) {
+        var optBook = bookRepository.findById(UUID.fromString(bookId));
+        if (optBook.isEmpty()) {
+            throw new IllegalArgumentException("The book does not exist!");
+        }
+        return optBook.get();
+    }
+
+    /**
      * Adds a book to the database.
      *
      * @param createBookRequestModel contains the book information
      * @param bearerToken            is the jwt token of the user who made the request
      */
     public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
-        Authority authority = jwtService.extractAuthorization(bearerToken.substring(7));
-
-        if (!authority.equals(Authority.ADMIN)) {
-            throw new IllegalCallerException("Only admins may delete books from the system!");
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
+            throw new IllegalCallerException("Only admins may add books to the system!");
         }
         List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
         boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
@@ -60,6 +74,32 @@ public class BookService {
     }
 
     /**
+     * Updates a book in the system.
+     *
+     * @param updateBookRequestModel contains the new information for the book
+     * @param bearerToken            is the jwt token of the user that made the request
+     */
+    @Transactional
+    public void updateBook(UpdateBookRequestModel updateBookRequestModel, String bearerToken) {
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
+            throw new IllegalCallerException("Only admins may edit the books from the system!");
+        }
+        var optBook = bookRepository.findById(UUID.fromString(updateBookRequestModel.getId()));
+        if (optBook.isEmpty()) {
+            throw new IllegalArgumentException("The book does not exist!");
+        }
+
+        Book currentBook = optBook.get();
+        currentBook.setTitle(currentBook.getTitle());
+        currentBook.setAuthors(currentBook.getAuthors());
+        currentBook.setGenres(currentBook.getGenres());
+        currentBook.setDescription(currentBook.getDescription());
+        currentBook.setNumPages(currentBook.getNumPages());
+
+        bookRepository.saveAndFlush(currentBook);
+    }
+
+    /**
      * Deletes a book from the overall collection.
      *
      * @param bookId      is the id of the book to be deleted.
@@ -67,8 +107,7 @@ public class BookService {
      */
     @Transactional
     public void deleteBook(String bookId, String bearerToken) {
-        Authority authority = jwtService.extractAuthorization(bearerToken.substring(7));
-        if (!authority.equals(Authority.ADMIN)) {
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new IllegalCallerException("Only admins may delete books from the system!");
         }
         var optBook = bookRepository.findById(UUID.fromString(bookId));
@@ -84,5 +123,9 @@ public class BookService {
         bookRepository.saveAndFlush(optBook.get());
 
         bookRepository.deleteById(UUID.fromString(bookId));
+    }
+
+    private Authority getAuthority(String bearerToken) {
+        return jwtService.extractAuthorization(bearerToken.substring(7));
     }
 }
