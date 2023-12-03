@@ -42,9 +42,9 @@ public class BookController {
         try {
             return ResponseEntity.ok(bookService.getBook(bookId));
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -61,11 +61,11 @@ public class BookController {
         try {
             bookService.addBook(createBookRequestModel, bearerToken);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } catch (IllegalCallerException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
+            return ResponseEntity.badRequest().build();
         }
 
         return ResponseEntity.ok().build();
@@ -84,11 +84,11 @@ public class BookController {
         try {
             bookService.updateBook(updateBookRequestModel, bearerToken);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (IllegalCallerException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
+            return ResponseEntity.badRequest().build();
         }
 
         return ResponseEntity.ok().build();
@@ -107,11 +107,11 @@ public class BookController {
         try {
             bookService.deleteBook(bookId, bearerToken);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (IllegalCallerException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
+            return ResponseEntity.badRequest().build();
         }
 
         return ResponseEntity.ok().build();

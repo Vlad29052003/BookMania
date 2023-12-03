@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.authentication;
+package nl.tudelft.sem.template.authentication.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doThrow;

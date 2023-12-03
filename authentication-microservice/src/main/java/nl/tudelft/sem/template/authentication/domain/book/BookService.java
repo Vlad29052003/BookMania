@@ -10,7 +10,6 @@ import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.UpdateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,13 +89,16 @@ public class BookService {
         }
 
         Book currentBook = optBook.get();
-        currentBook.setTitle(currentBook.getTitle());
-        currentBook.setAuthors(currentBook.getAuthors());
-        currentBook.setGenres(currentBook.getGenres());
-        currentBook.setDescription(currentBook.getDescription());
-        currentBook.setNumPages(currentBook.getNumPages());
+        UUID curId = currentBook.getId();
+        bookRepository.deleteById(currentBook.getId());
 
-        bookRepository.saveAndFlush(currentBook);
+        Book newBook = new Book(updateBookRequestModel.getTitle(),
+                updateBookRequestModel.getAuthors(),
+                updateBookRequestModel.getGenres(),
+                updateBookRequestModel.getDescription(),
+                updateBookRequestModel.getNumPages());
+        newBook.setId(curId);
+        bookRepository.saveAndFlush(newBook);
     }
 
     /**
@@ -114,13 +116,8 @@ public class BookService {
         if (optBook.isEmpty()) {
             throw new IllegalArgumentException("The book does not exist!");
         }
-        for (AppUser user : optBook.get().getUsersWithBookAsFavorite()) {
-            user.setFavouriteBook(null);
-            userRepository.save(user);
-        }
 
-        optBook.get().getUsersWithBookAsFavorite().clear();
-        bookRepository.saveAndFlush(optBook.get());
+        userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
 
         bookRepository.deleteById(UUID.fromString(bookId));
     }

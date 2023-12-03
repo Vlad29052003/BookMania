@@ -39,9 +39,14 @@ public class Book {
      */
     @Id
     @Getter
+    @Setter
     @Column(name = "book_id", nullable = false)
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue(generator = "useExistingIdOtherwiseGenerateUuid")
+    @GenericGenerator(
+            name = "useExistingIdOtherwiseGenerateUuid",
+            strategy = "nl.tudelft.sem.template.authentication."
+                    + "domain.providers.implementations.UseExistingIdOtherwiseGenerateUuid"
+    )
     @Type(type = "uuid-char")
     private UUID id;
 
@@ -52,10 +57,10 @@ public class Book {
 
     @Getter
     @Setter
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class)
     @CollectionTable(name = "authors", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "name", nullable = false)
-    private List<String> authors;
+    private List<String> authors = new ArrayList<>();
 
     @Getter
     @Setter
@@ -63,7 +68,8 @@ public class Book {
     @CollectionTable(name = "book_genres", joinColumns = @JoinColumn(name = "book_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "genre", nullable = false)
-    private List<Genre> genres;
+    private List<Genre> genres = new ArrayList<>();
+
 
     @Getter
     @Setter
