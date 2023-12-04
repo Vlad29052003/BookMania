@@ -41,10 +41,8 @@ public class BookController {
                                      @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
             return ResponseEntity.ok(bookService.getBook(bookId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
 
@@ -60,12 +58,8 @@ public class BookController {
                                      @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
             bookService.addBook(createBookRequestModel, bearerToken);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (IllegalCallerException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
 
         return ResponseEntity.ok().build();
@@ -83,12 +77,8 @@ public class BookController {
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
             bookService.updateBook(updateBookRequestModel, bearerToken);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalCallerException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
 
         return ResponseEntity.ok().build();
@@ -106,12 +96,8 @@ public class BookController {
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
             bookService.deleteBook(bookId, bearerToken);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalCallerException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
 
         return ResponseEntity.ok().build();

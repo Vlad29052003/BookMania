@@ -16,7 +16,9 @@ import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.UpdateBookRequestModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 public class BookControllerTests {
     private transient BookService bookService;
@@ -46,73 +48,39 @@ public class BookControllerTests {
         when(bookService.getBook(bookId.toString())).thenReturn(book);
         assertEquals(bookController.getBook(bookId.toString(), token), ResponseEntity.ok(book));
 
-        when(bookService.getBook(bookId.toString())).thenThrow(new IllegalArgumentException());
+        when(bookService.getBook(bookId.toString()))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"));
         assertEquals(bookController.getBook(bookId.toString(), token).getStatusCodeValue(), 404);
-    }
-
-    @Test
-    public void testGetBadRequest() {
-        when(bookService.getBook(bookId.toString())).thenThrow(new RuntimeException());
-        assertEquals(bookController.getBook(bookId.toString(), token).getStatusCodeValue(), 400);
     }
 
     @Test
     public void testCreate() {
         assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 200);
 
-        doThrow(new IllegalArgumentException())
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .addBook(any(), any());
-        assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 409);
 
-        doThrow(new IllegalCallerException())
-                .when(bookService)
-                .addBook(any(), any());
-        assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 401);
-
-        doThrow(new RuntimeException())
-                .when(bookService)
-                .addBook(any(), any());
-        assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 400);
+        assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 404);
     }
 
     @Test
     public void testUpdate() {
         assertEquals(bookController.updateBook(updateBookRequestModel, token).getStatusCodeValue(), 200);
 
-        doThrow(new IllegalArgumentException())
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .updateBook(any(), any());
         assertEquals(bookController.updateBook(updateBookRequestModel, token).getStatusCodeValue(), 404);
-
-        doThrow(new IllegalCallerException())
-                .when(bookService)
-                .updateBook(any(), any());
-        assertEquals(bookController.updateBook(updateBookRequestModel, token).getStatusCodeValue(), 401);
-
-        doThrow(new RuntimeException())
-                .when(bookService)
-                .updateBook(any(), any());
-        assertEquals(bookController.updateBook(updateBookRequestModel, token).getStatusCodeValue(), 400);
     }
 
     @Test
     public void testDelete() {
         assertEquals(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue(), 200);
 
-        doThrow(new IllegalArgumentException())
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .deleteBook(any(), any());
         assertEquals(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue(), 404);
-
-        doThrow(new IllegalCallerException())
-                .when(bookService)
-                .deleteBook(any(), any());
-        assertEquals(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue(), 401);
-
-        doThrow(new RuntimeException())
-                .when(bookService)
-                .deleteBook(any(), any());
-        assertEquals(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue(), 400);
     }
 }

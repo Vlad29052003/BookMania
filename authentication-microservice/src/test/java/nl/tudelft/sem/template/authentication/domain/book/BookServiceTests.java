@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -87,7 +88,7 @@ public class BookServiceTests {
             randomUuid = UUID.randomUUID();
         }
         UUID finalRandomUuid = randomUuid;
-        assertThrows(IllegalArgumentException.class, () -> bookService.getBook(finalRandomUuid.toString()));
+        assertThrows(ResponseStatusException.class, () -> bookService.getBook(finalRandomUuid.toString()));
     }
 
     @Test
@@ -120,7 +121,7 @@ public class BookServiceTests {
         bookRequestModel.setDescription("desc");
         bookRequestModel.setNumPages(876);
 
-        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(bookRequestModel, tokenAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.addBook(bookRequestModel, tokenAdmin));
     }
 
     @Test
@@ -133,7 +134,7 @@ public class BookServiceTests {
         bookRequestModel.setDescription("desc");
         bookRequestModel.setNumPages(876);
 
-        assertThrows(IllegalCallerException.class, () -> bookService.addBook(bookRequestModel, tokenNonAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.addBook(bookRequestModel, tokenNonAdmin));
     }
 
     @Test
@@ -147,7 +148,7 @@ public class BookServiceTests {
         bookRequestModel.setDescription("desc");
         bookRequestModel.setNumPages(876);
 
-        assertThrows(IllegalCallerException.class, () -> bookService.updateBook(bookRequestModel, tokenNonAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(bookRequestModel, tokenNonAdmin));
     }
 
     @Test
@@ -166,7 +167,7 @@ public class BookServiceTests {
         bookRequestModel.setDescription("desc");
         bookRequestModel.setNumPages(876);
 
-        assertThrows(IllegalArgumentException.class, () -> bookService.updateBook(bookRequestModel, tokenAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(bookRequestModel, tokenAdmin));
     }
 
     @Test
@@ -209,7 +210,7 @@ public class BookServiceTests {
     @Test
     @Transactional
     public void testDeleteBookNonAdmin() {
-        assertThrows(IllegalCallerException.class, () -> bookService.deleteBook(bookId.toString(), tokenNonAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.deleteBook(bookId.toString(), tokenNonAdmin));
     }
 
     @Test
@@ -220,6 +221,6 @@ public class BookServiceTests {
             randomUuid = UUID.randomUUID();
         }
         UUID finalRandomUuid = randomUuid;
-        assertThrows(IllegalArgumentException.class, () -> bookService.deleteBook(finalRandomUuid.toString(), tokenAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.deleteBook(finalRandomUuid.toString(), tokenAdmin));
     }
 }
