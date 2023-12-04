@@ -31,7 +31,7 @@ public class UserLookupService {
      */
     public List<AppUser> getUsersByName(String name) {
         return userRepository.findAll()
-                .stream().filter(user -> user.getName().contains(name))
+                .stream().filter(user -> user.getUsername().toString().contains(name))
                 .collect(Collectors.toList());
     }
 
