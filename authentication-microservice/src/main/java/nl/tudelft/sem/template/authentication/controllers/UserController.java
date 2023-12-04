@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -171,6 +172,20 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for deleting a user.
+     *
+     * @param bearerToken The token associated with this user
+     * @return a ResponseEntity containing the OK response
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> delete(@RequestHeader(name = AUTHORIZATION) String bearerToken) {
+
+        userService.delete(getNetId(bearerToken));
 
         return ResponseEntity.ok().build();
     }
