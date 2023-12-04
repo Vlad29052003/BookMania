@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class RegistrationRequestModel {
-    private String netId;
+    private String username;
     private String email;
     private String password;
 }

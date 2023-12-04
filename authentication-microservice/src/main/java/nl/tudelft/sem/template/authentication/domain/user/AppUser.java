@@ -1,16 +1,32 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.*;
+import java.util.UUID;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 /**
  * A DDD entity representing an application user in our domain.
@@ -22,21 +38,25 @@ public class AppUser extends HasEvents {
     /**
      * Identifier for the application user.
      */
+    @Getter
+    @Setter
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private int id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Type(type = "uuid-char")
+    private UUID id;
 
-    //@Getter
-    @Column(name = "net_id", nullable = false, unique = true)
-    @Convert(converter = NetIdAttributeConverter.class)
-    private NetId netId;
+    @Getter
+    @Column(name = "username", nullable = false, unique = true)
+    @Convert(converter = UsernameAttributeConverter.class)
+    private Username username;
 
     @Getter
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    //@Getter
+    @Getter
     @Column(name = "password_hash", nullable = false)
     @Convert(converter = HashedPasswordAttributeConverter.class)
     private HashedPassword password;
@@ -80,9 +100,9 @@ public class AppUser extends HasEvents {
     @Setter
     @ManyToMany
     @JoinTable(
-        name = "user_connections",
-        joinColumns = @JoinColumn(name = "follower_id"),
-        inverseJoinColumns = @JoinColumn(name = "followed_id"))
+            name = "user_connections",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "followed_id"))
     private List<AppUser> follows;
 
     @Getter
@@ -93,8 +113,8 @@ public class AppUser extends HasEvents {
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private Role role;
+    @Column(name = "authority")
+    private Authority authority;
 
     @Getter
     @Setter
@@ -104,24 +124,18 @@ public class AppUser extends HasEvents {
     /**
      * Create new application user.
      *
-     * @param netId The NetId for the new user
+     * @param username    The Username for the new user
      * @param password The password for the new user
      */
-    public AppUser(NetId netId, String email, HashedPassword password) {
-        this.netId = netId;
+    public AppUser(Username username, String email, HashedPassword password) {
+        this.username = username;
         this.email = email;
-        this.name = email;
         this.password = password;
         this.favouriteGenres = new ArrayList<>();
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
-        this.role = Role.REGULAR_USER;
-        this.recordThat(new UserWasCreatedEvent(netId));
-    }
-
-    public void changePassword(HashedPassword password) {
-        this.password = password;
-        this.recordThat(new PasswordWasChangedEvent(this));
+        this.authority = Authority.REGULAR_USER;
+        this.recordThat(new UserWasCreatedEvent(username));
     }
 
     /**
@@ -136,21 +150,11 @@ public class AppUser extends HasEvents {
             return false;
         }
         AppUser appUser = (AppUser) o;
-        return id == (appUser.id);
+        return id.equals(appUser.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(netId);
-    }
-
-    @JsonIgnore
-    public NetId getNetId() {
-        return netId;
-    }
-
-    @JsonIgnore
-    public HashedPassword getPassword() {
-        return password;
+        return Objects.hash(username);
     }
 }
