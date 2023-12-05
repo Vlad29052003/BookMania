@@ -1,5 +1,5 @@
 include:
-  - users-microservice/.gitlab-ci.yml
+  - authentication-microservice/.gitlab-ci.yml
 
 gradle_build:
   extends: .build_cached
