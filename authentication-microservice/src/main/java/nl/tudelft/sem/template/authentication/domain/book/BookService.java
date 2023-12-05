@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -84,14 +85,24 @@ public class BookService {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may edit the books from the system!");
         }
-        Optional<Book> optBook = bookRepository.findById(UUID.fromString(updatedBook.getId().toString()));
+        Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
         if (optBook.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
         }
         Book currentBook = optBook.get();
-        bookRepository.deleteById(currentBook.getId());
 
-        bookRepository.saveAndFlush(updatedBook);
+        currentBook.setTitle(updatedBook.getTitle());
+
+        if (updatedBook.getAuthors() != null) {
+            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+        }
+        if (updatedBook.getGenres() != null) {
+            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
+        }
+        currentBook.setDescription(updatedBook.getDescription());
+        currentBook.setNumPages(updatedBook.getNumPages());
+
+        bookRepository.saveAndFlush(currentBook);
     }
 
     /**
@@ -100,7 +111,6 @@ public class BookService {
      * @param bookId      is the id of the book to be deleted.
      * @param bearerToken is the jwt token of the user that made the request
      */
-    @Transactional
     public void deleteBook(String bookId, String bearerToken) {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may delete books from the system!");
