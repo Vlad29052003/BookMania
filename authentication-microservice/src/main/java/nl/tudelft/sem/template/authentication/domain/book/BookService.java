@@ -80,7 +80,6 @@ public class BookService {
      * @param updatedBook contains the new information for the book
      * @param bearerToken            is the jwt token of the user that made the request
      */
-    @Transactional
     public void updateBook(Book updatedBook, String bearerToken) {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may edit the books from the system!");
@@ -111,8 +110,10 @@ public class BookService {
      * @param bookId      is the id of the book to be deleted.
      * @param bearerToken is the jwt token of the user that made the request
      */
+    @Transactional
     public void deleteBook(String bookId, String bearerToken) {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
+            System.out.println(getAuthority(bearerToken));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may delete books from the system!");
         }
         var optBook = bookRepository.findById(UUID.fromString(bookId));
