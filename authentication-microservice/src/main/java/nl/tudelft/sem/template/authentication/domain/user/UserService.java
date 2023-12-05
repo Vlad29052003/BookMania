@@ -161,4 +161,21 @@ public class UserService {
 
         userRepository.save(user);
     }
+
+    /**
+     * Delete a user.
+     *
+     * @param username the username
+     * @throws UsernameNotFoundException if the given username doesn't exist
+     */
+    public void delete(Username username) {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
+        if (optionalAppUser.isEmpty()) {
+            throw new UsernameNotFoundException(NO_SUCH_USER);
+        }
+
+        AppUser user = optionalAppUser.get();
+
+        userRepository.delete(user);
+    }
 }

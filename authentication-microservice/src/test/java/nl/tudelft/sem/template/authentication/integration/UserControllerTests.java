@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -283,5 +284,29 @@ public class UserControllerTests {
         assertThat(userModel.get().getFavouriteBook().getAuthors()).isEqualTo(newFavouriteBook.getAuthors());
         assertThat(userModel.get().getFavouriteBook().getGenres()).isEqualTo(newFavouriteBook.getGenres());
         assertThat(userModel.get().getFavouriteBook().getDescription()).isEqualTo(newFavouriteBook.getDescription());
+    }
+
+    @Test
+    @Transactional
+    public void testDeleteUser() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(user);
+
+        mockMvc.perform(delete("/user")
+                        .header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk());
+
+        mockMvc.perform(get("/user")
+                        .header("Authorization", "Bearer " + token))
+                        .andExpect(status().isUnauthorized());
+
     }
 }

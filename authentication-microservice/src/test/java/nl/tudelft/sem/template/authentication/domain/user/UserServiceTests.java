@@ -182,4 +182,25 @@ public class UserServiceTests {
         assertThat(retrievedUser.getFavouriteBook().getGenres().toArray()).isEqualTo(newBook.getGenres().toArray());
         assertThat(retrievedUser.getFavouriteBook().getDescription()).isEqualTo(newBook.getDescription());
     }
+
+    @Test
+    @Transactional
+    public void testDeleteUser() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        assertThatThrownBy(() -> userService.getUserByNetId(username))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+        AppUser retrievedUser = userService.getUserByNetId(username);
+
+        userService.delete(retrievedUser.getUsername());
+
+        assertThatThrownBy(() -> userService.getUserByNetId(retrievedUser.getUsername()))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);
+    }
 }
