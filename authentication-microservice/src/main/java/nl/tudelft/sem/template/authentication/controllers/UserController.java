@@ -5,6 +5,7 @@ import java.util.Map;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.UserLookupService;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.UserModel;
@@ -12,12 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -29,6 +25,8 @@ public class UserController {
 
     private static final String AUTHORIZATION = "Authorization";
 
+    private final transient UserLookupService userLookupService;
+
     /**
      * Instantiates a new UserController.
      *
@@ -36,9 +34,12 @@ public class UserController {
      * @param jwtTokenGenerator the token service
      */
     @Autowired
-    public UserController(UserService userService, JwtTokenGenerator jwtTokenGenerator) {
+    public UserController(UserService userService, JwtTokenGenerator jwtTokenGenerator,
+                          UserLookupService lookupService) {
         this.userService = userService;
         this.jwtTokenGenerator = jwtTokenGenerator;
+        this.userLookupService = lookupService;
+
     }
 
     /**
@@ -174,4 +175,7 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
+
+
 }

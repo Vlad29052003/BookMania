@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,11 +40,14 @@ public class UserSearchController {
      * @return the users containing the given username
      * @throws ResponseStatusException if the user does not exist or the password is incorrect
      */
-    @GetMapping("/getUser")
-    public ResponseEntity<Iterable<AppUser>> getUser(@RequestParam(name = "user") String userName)
+    @GetMapping("/users/{user}")
+    public ResponseEntity<Iterable<AppUser>> getUser(@PathVariable(name = "user") String userName)
             throws ResponseStatusException {
+        System.out.println(userName+"Searching!!!!!!!");
         try {
-            return ResponseEntity.ok(userLookupService.getUsersByName(userName));
+            Iterable<AppUser> x = userLookupService.getUsersByName(userName);
+            System.out.println(x);
+            return ResponseEntity.ok(x);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -51,20 +55,20 @@ public class UserSearchController {
 
 
 }
-
-//    /**
-//     * Endpoint for user searching.
-//     *
-//     * @return all users
-//     * @throws ResponseStatusException if an error occurs
-//     */
-//    @GetMapping("/getAllUsers")
-//    public ResponseEntity<Iterable<AppUser>> getAllUsers() {
-//        try {
-//            var temp = userLookupService.getAllUsers();
-//            //.stream().map(AppUser::getName)
-//            //.collect(Collectors.toUnmodifiableList());
-//            return ResponseEntity.ok(temp);
-//        } catch (Exception e) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-//        }}
+//
+////    /**
+////     * Endpoint for user searching.
+////     *
+////     * @return all users
+////     * @throws ResponseStatusException if an error occurs
+////     */
+////    @GetMapping("/getAllUsers")
+////    public ResponseEntity<Iterable<AppUser>> getAllUsers() {
+////        try {
+////            var temp = userLookupService.getAllUsers();
+////            //.stream().map(AppUser::getName)
+////            //.collect(Collectors.toUnmodifiableList());
+////            return ResponseEntity.ok(temp);
+////        } catch (Exception e) {
+////            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+////        }}
