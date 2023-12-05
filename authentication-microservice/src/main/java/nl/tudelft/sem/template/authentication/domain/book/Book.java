@@ -60,7 +60,7 @@ public class Book {
     @ElementCollection(targetClass = String.class)
     @CollectionTable(name = "authors", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "name", nullable = false)
-    private List<String> authors = new ArrayList<>();
+    private List<String> authors;
 
     @Getter
     @Setter
@@ -68,7 +68,7 @@ public class Book {
     @CollectionTable(name = "book_genres", joinColumns = @JoinColumn(name = "book_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "genre", nullable = false)
-    private List<Genre> genres = new ArrayList<>();
+    private List<Genre> genres;
 
 
     @Getter

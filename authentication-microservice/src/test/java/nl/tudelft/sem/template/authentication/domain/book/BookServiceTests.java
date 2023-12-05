@@ -140,15 +140,15 @@ public class BookServiceTests {
     @Test
     @Transactional
     public void testUpdateBookNotAdmin() {
-        UpdateBookRequestModel bookRequestModel = new UpdateBookRequestModel();
-        bookRequestModel.setId(bookId.toString());
-        bookRequestModel.setTitle("title");
-        bookRequestModel.setAuthors(List.of("Author1"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("desc");
-        bookRequestModel.setNumPages(876);
+        Book updatedBook = new Book();
+        updatedBook.setId(bookId);
+        updatedBook.setTitle("title");
+        updatedBook.setAuthors(List.of("Author1"));
+        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(876);
 
-        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(bookRequestModel, tokenNonAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(updatedBook, tokenNonAdmin));
     }
 
     @Test
@@ -159,36 +159,36 @@ public class BookServiceTests {
             randomUuid = UUID.randomUUID();
         }
         UUID finalRandomUuid = randomUuid;
-        UpdateBookRequestModel bookRequestModel = new UpdateBookRequestModel();
-        bookRequestModel.setId(finalRandomUuid.toString());
-        bookRequestModel.setTitle("title");
-        bookRequestModel.setAuthors(List.of("Author1"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("desc");
-        bookRequestModel.setNumPages(876);
+        Book updatedBook = new Book();
+        updatedBook.setId(finalRandomUuid);
+        updatedBook.setTitle("title");
+        updatedBook.setAuthors(List.of("Author1"));
+        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(876);
 
-        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(bookRequestModel, tokenAdmin));
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(updatedBook, tokenAdmin));
     }
 
     @Test
     @Transactional
     public void testUpdateBook() {
-        UpdateBookRequestModel bookRequestModel = new UpdateBookRequestModel();
-        bookRequestModel.setId(bookId.toString());
-        bookRequestModel.setTitle("title new");
-        bookRequestModel.setAuthors(List.of("Author1"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("desc");
-        bookRequestModel.setNumPages(876);
-        bookService.updateBook(bookRequestModel, tokenAdmin);
-        Book updatedBook = bookRepository.findByTitle("title new").get(0);
+        Book updatedBook = new Book();
+        updatedBook.setId(bookId);
+        updatedBook.setTitle("title new");
+        updatedBook.setAuthors(List.of("Author1"));
+        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(876);
+        bookService.updateBook(updatedBook, tokenAdmin);
+        Book updatedBookTest = bookRepository.findByTitle("title new").get(0);
 
-        assertEquals(updatedBook.getId().toString(), bookRequestModel.getId());
-        assertEquals(updatedBook.getTitle(), bookRequestModel.getTitle());
-        assertTrue(updatedBook.getAuthors().containsAll(bookRequestModel.getAuthors()));
-        assertTrue(updatedBook.getGenres().containsAll(bookRequestModel.getGenres()));
-        assertEquals(updatedBook.getDescription(), bookRequestModel.getDescription());
-        assertEquals(updatedBook.getNumPages(), bookRequestModel.getNumPages());
+        assertEquals(updatedBookTest.getId(), updatedBook.getId());
+        assertEquals(updatedBookTest.getTitle(), updatedBook.getTitle());
+        assertTrue(updatedBookTest.getAuthors().containsAll(updatedBook.getAuthors()));
+        assertTrue(updatedBookTest.getGenres().containsAll(updatedBook.getGenres()));
+        assertEquals(updatedBookTest.getDescription(), updatedBook.getDescription());
+        assertEquals(updatedBookTest.getNumPages(), updatedBook.getNumPages());
     }
 
     @Test

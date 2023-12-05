@@ -26,7 +26,7 @@ public class BookControllerTests {
     private transient Book book;
     private transient UUID bookId;
     private transient CreateBookRequestModel createBookRequest;
-    private transient UpdateBookRequestModel updateBookRequestModel;
+    private transient Book updatedBook;
     private transient String token;
 
     /**
@@ -39,7 +39,7 @@ public class BookControllerTests {
         this.book = new Book("title", List.of("author"), List.of(Genre.CRIME), "description", 155);
         this.bookId = UUID.randomUUID();
         createBookRequest = new CreateBookRequestModel();
-        updateBookRequestModel = new UpdateBookRequestModel();
+        updatedBook = new Book();
         this.token = "token";
     }
 
@@ -66,12 +66,12 @@ public class BookControllerTests {
 
     @Test
     public void testUpdate() {
-        assertEquals(bookController.updateBook(updateBookRequestModel, token).getStatusCodeValue(), 200);
+        assertEquals(bookController.updateBook(updatedBook, token).getStatusCodeValue(), 200);
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .updateBook(any(), any());
-        assertEquals(bookController.updateBook(updateBookRequestModel, token).getStatusCodeValue(), 404);
+        assertEquals(bookController.updateBook(updatedBook, token).getStatusCodeValue(), 404);
     }
 
     @Test

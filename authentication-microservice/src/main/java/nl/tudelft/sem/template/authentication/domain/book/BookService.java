@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.book;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -77,30 +78,22 @@ public class BookService {
     /**
      * Updates a book in the system.
      *
-     * @param updateBookRequestModel contains the new information for the book
+     * @param updatedBook contains the new information for the book
      * @param bearerToken            is the jwt token of the user that made the request
      */
     @Transactional
-    public void updateBook(UpdateBookRequestModel updateBookRequestModel, String bearerToken) {
+    public void updateBook(Book updatedBook, String bearerToken) {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may edit the books from the system!");
         }
-        var optBook = bookRepository.findById(UUID.fromString(updateBookRequestModel.getId()));
+        Optional<Book> optBook = bookRepository.findById(UUID.fromString(updatedBook.getId().toString()));
         if (optBook.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
         }
-
         Book currentBook = optBook.get();
-        UUID curId = currentBook.getId();
         bookRepository.deleteById(currentBook.getId());
 
-        Book newBook = new Book(updateBookRequestModel.getTitle(),
-                updateBookRequestModel.getAuthors(),
-                updateBookRequestModel.getGenres(),
-                updateBookRequestModel.getDescription(),
-                updateBookRequestModel.getNumPages());
-        newBook.setId(curId);
-        bookRepository.saveAndFlush(newBook);
+        bookRepository.saveAndFlush(updatedBook);
     }
 
     /**

@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.UpdateBookRequestModel;
@@ -53,7 +54,7 @@ public class BookController {
      * @param bearerToken            the jwt token
      * @return the status of the operation
      */
-    @PutMapping("")
+    @PostMapping("")
     public ResponseEntity<?> addBook(@RequestBody CreateBookRequestModel createBookRequestModel,
                                      @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
@@ -68,15 +69,15 @@ public class BookController {
     /**
      * Updates a book in the system.
      *
-     * @param updateBookRequestModel contains the new information for the book
+     * @param updatedBook contains the new information for the book
      * @param bearerToken            is the jwt token of the user that made the request
      * @return the status of the operation
      */
-    @PostMapping("")
-    public ResponseEntity<?> updateBook(@RequestBody UpdateBookRequestModel updateBookRequestModel,
+    @PutMapping("")
+    public ResponseEntity<?> updateBook(@RequestBody Book updatedBook,
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            bookService.updateBook(updateBookRequestModel, bearerToken);
+            bookService.updateBook(updatedBook, bearerToken);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
