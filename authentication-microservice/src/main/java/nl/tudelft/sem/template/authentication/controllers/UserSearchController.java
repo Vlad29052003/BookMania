@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 //import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserLookupService;
+import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,11 +42,10 @@ public class UserSearchController {
      * @throws ResponseStatusException if the user does not exist or the password is incorrect
      */
     @GetMapping("/users/{user}")
-    public ResponseEntity<Iterable<AppUser>> getUser(@PathVariable(name = "user") String userName)
+    public ResponseEntity<Iterable<UserModel>> getUser(@PathVariable(name = "user") String userName)
             throws ResponseStatusException {
-        System.out.println(userName+"Searching!!!!!!!");
         try {
-            Iterable<AppUser> x = userLookupService.getUsersByName(userName);
+            Iterable<UserModel> x = userLookupService.getUsersByName(userName);
             System.out.println(x);
             return ResponseEntity.ok(x);
         } catch (Exception e) {
@@ -55,20 +55,4 @@ public class UserSearchController {
 
 
 }
-//
-////    /**
-////     * Endpoint for user searching.
-////     *
-////     * @return all users
-////     * @throws ResponseStatusException if an error occurs
-////     */
-////    @GetMapping("/getAllUsers")
-////    public ResponseEntity<Iterable<AppUser>> getAllUsers() {
-////        try {
-////            var temp = userLookupService.getAllUsers();
-////            //.stream().map(AppUser::getName)
-////            //.collect(Collectors.toUnmodifiableList());
-////            return ResponseEntity.ok(temp);
-////        } catch (Exception e) {
-////            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-////        }}
+

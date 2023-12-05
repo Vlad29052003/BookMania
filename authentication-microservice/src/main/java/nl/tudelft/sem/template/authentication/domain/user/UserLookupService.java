@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.stereotype.Service;
 
 
@@ -29,30 +30,15 @@ public class UserLookupService {
      * @param name name of user
      * @return users matching name
      */
-    public List<AppUser> getUsersByName(String name) {
+    public List<UserModel> getUsersByName(String name) {
         return userRepository.findAll()
                 .stream().filter(user -> user.getUsername().toString().contains(name))
+                .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
+                        u.getName(), u.getBio(), u.getLocation(),
+                        u.getFavouriteGenres(), u.getFavouriteBook()))
                 .collect(Collectors.toList());
     }
 
+
 }
 
-
-//    /**
-//     * Get user by netId.
-//     *
-//     * @param id id of user
-//     * @return user
-//     */
-//    public AppUser getUserById(NetId id) {
-//
-//  return userRepository.findByNetId(id).orElse(null);}
-
-
-//    /**
-//     * Get all users.
-//     *
-//     * @return all users
-//     */
-//    public List<AppUser> getAllUsers() {
-//        return userRepository.findAll();}

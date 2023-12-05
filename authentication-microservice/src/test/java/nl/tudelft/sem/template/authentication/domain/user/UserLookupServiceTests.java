@@ -10,18 +10,13 @@ import java.util.stream.Collectors;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
-import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
-import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
-import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import nl.tudelft.sem.template.authentication.models.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -39,9 +34,6 @@ public class UserLookupServiceTests {
 
     @Autowired
     private transient AuthenticationService authenticationService;
-
-    @Autowired
-    private transient PasswordHashingService mockPasswordEncoder;
 
     @Autowired
     private transient UserRepository userRepository;
@@ -75,10 +67,8 @@ public class UserLookupServiceTests {
         String email = "email";
         String netId = "user";
         String password = "someHash";
-        Authority authority = Authority.REGULAR_USER;
         UUID id = UUID.randomUUID();
 
-        UserDetails userDetails = new User(netId, password, List.of(authority));
         AppUser appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
         appUser.setId(id);
 
@@ -102,12 +92,10 @@ public class UserLookupServiceTests {
         String email2 = "email2";
         String netId2 = "andrei";
         String password2 = "someHash";
-        Authority authority2 = Authority.REGULAR_USER;
         UUID id2 = UUID.randomUUID();
 
-        UserDetails userDetails2 = new User(netId2, password2, List.of(authority2));
         AppUser appUser2 = new AppUser(new Username(netId2), email2, new HashedPassword(password2));
-        appUser.setId(id2);
+        appUser2.setId(id2);
 
         registrationRequest2 = new RegistrationRequestModel();
         registrationRequest2.setUsername(netId2);
@@ -116,8 +104,12 @@ public class UserLookupServiceTests {
 
     }
 
+    /**
+     * Tests whether the user is correctly returned when using the proper query string.
+     *
+     */
     @Test
-    public void userSearchByName_worksCorrectly() throws Exception {
+    public void userSearchByName_worksCorrectly() {
 
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
@@ -125,7 +117,7 @@ public class UserLookupServiceTests {
 
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("user")
-                .stream().map(user -> user.getUsername().toString()).collect(Collectors.toList());
+                .stream().map(UserModel::getNetId).collect(Collectors.toList());
         List<String> expected = List.of("user");
 
 
@@ -133,8 +125,12 @@ public class UserLookupServiceTests {
     }
 
 
+    /**
+     * Tests whether all users are returned when using an empty query string.
+     *
+     */
     @Test
-    public void userSearchByName_worksCorrectly2() throws Exception {
+    public void userSearchByName_worksCorrectly2() {
 
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
@@ -142,7 +138,7 @@ public class UserLookupServiceTests {
 
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("")
-                .stream().map(user -> user.getUsername().toString()).collect(Collectors.toList());
+                .stream().map(UserModel::getNetId).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
 
         assertThat(foundUsers).containsAll(expected);
