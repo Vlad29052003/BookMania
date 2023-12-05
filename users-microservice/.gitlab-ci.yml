@@ -18,7 +18,7 @@ variables:
       - .gradle/
     policy: pull
 
-build-authentication-microservice:
+build-users-microservice:
   extends:
     - .build_cached
   needs:
@@ -27,9 +27,9 @@ build-authentication-microservice:
     - gradle_build
   stage: build
   script:
-    gradle authentication-microservice:assemble authentication-microservice:testClasses
+    gradle users-microservice:assemble users-microservice:testClasses
 
-checkStyle-authentication-microservice:
+checkStyle-users-microservice:
   extends:
     - .build_cached
   needs:
@@ -38,10 +38,10 @@ checkStyle-authentication-microservice:
     - gradle_build
   stage: staticAnalysis
   script:
-    gradle authentication-microservice:checkstyleMain authentication-microservice:checkStyleTest
+    gradle users-microservice:checkstyleMain users-microservice:checkStyleTest
   allow_failure: true
 
-PMD-authentication-microservice:
+PMD-users-microservice:
   extends:
     - .build_cached
   needs:
@@ -50,10 +50,10 @@ PMD-authentication-microservice:
     - gradle_build
   stage: staticAnalysis
   script:
-    gradle authentication-microservice:pmdMain
+    gradle users-microservice:pmdMain
   allow_failure: true
 
-test-authentication-microservice:
+test-users-microservice:
   extends:
     - .build_cached
   needs:
@@ -62,6 +62,6 @@ test-authentication-microservice:
     - gradle_build
   stage: test
   script:
-    - gradle authentication-microservice:test authentication-microservice:jacocoTestReport
-    - cat authentication-microservice/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
+    - gradle users-microservice:test users-microservice:jacocoTestReport
+    - cat users-microservice/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/
