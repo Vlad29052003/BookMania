@@ -68,7 +68,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                get("/users")
+                get("/c/users")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
@@ -100,7 +100,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                get("/users/picture")
+                get("/c/users/picture")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
@@ -124,7 +124,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                patch("/users/name")
+                patch("/c/users/name")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(Map.entry("name", newName)))
                 .header("Authorization", "Bearer " + token));
@@ -151,7 +151,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                patch("/users/bio")
+                patch("/c/users/bio")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(Map.entry("name", newBio)))
                         .header("Authorization", "Bearer " + token));
@@ -178,7 +178,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                patch("/users/picture")
+                patch("/c/users/picture")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
                 .content(newPicture)
                 .header("Authorization", "Bearer " + token));
@@ -205,7 +205,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                patch("/users/location")
+                patch("/c/users/location")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(Map.entry("name", newLocation)))
                         .header("Authorization", "Bearer " + token));
@@ -233,7 +233,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                patch("/users/favouriteGenres")
+                patch("/c/users/favouriteGenres")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(Map.entry("name", newFavouriteGenres)))
                         .header("Authorization", "Bearer " + token));
@@ -263,7 +263,7 @@ public class UserControllerTests {
         userRepository.save(user);
 
         ResultActions resultActions = mockMvc.perform(
-                patch("/users/favouriteBook")
+                patch("/c/users/favouriteBook")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(Map.entry("name", 1)))
                         .header("Authorization", "Bearer " + token));
@@ -274,7 +274,7 @@ public class UserControllerTests {
         UUID bookId = bookRepository.findAll().get(0).getId();
 
         resultActions = mockMvc.perform(
-                patch("/users/favouriteBook")
+                patch("/c/users/favouriteBook")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bookId.toString())
                         .header("Authorization", "Bearer " + token));

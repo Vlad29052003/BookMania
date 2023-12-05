@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/users/c")
+@RequestMapping("/c/users")
 public class UserController {
     private final transient UserService userService;
 

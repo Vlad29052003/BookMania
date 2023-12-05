@@ -92,7 +92,7 @@ public class JwtIntegrationTests {
     public void validateValidJwtToken() throws Exception {
         userRepository.save(appUser);
 
-        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
         resultActions.andExpect(status().isOk());
@@ -100,7 +100,7 @@ public class JwtIntegrationTests {
 
     @Test
     public void userNotInDatabase_ValidJwtToken() throws Exception {
-        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
         resultActions.andExpect(status().isUnauthorized());

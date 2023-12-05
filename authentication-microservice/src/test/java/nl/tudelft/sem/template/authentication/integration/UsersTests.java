@@ -73,7 +73,7 @@ public class UsersTests {
         model.setPassword(testPassword.toString());
 
         // Act
-        ResultActions resultActions = mockMvc.perform(post("/register")
+        ResultActions resultActions = mockMvc.perform(post("/c/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(model)));
 
@@ -103,7 +103,7 @@ public class UsersTests {
         model.setPassword(newTestPassword.toString());
 
         // Act
-        ResultActions resultActions = mockMvc.perform(post("/register")
+        ResultActions resultActions = mockMvc.perform(post("/c/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(model)));
 
@@ -143,7 +143,7 @@ public class UsersTests {
         model.setPassword(testPassword.toString());
 
         // Act
-        ResultActions resultActions = mockMvc.perform(post("/authenticate")
+        ResultActions resultActions = mockMvc.perform(post("/c/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(model)));
 
@@ -179,7 +179,7 @@ public class UsersTests {
         model.setPassword(testPassword);
 
         // Act
-        ResultActions resultActions = mockMvc.perform(post("/authenticate")
+        ResultActions resultActions = mockMvc.perform(post("/c/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(model)));
 
@@ -212,7 +212,7 @@ public class UsersTests {
         model.setPassword(wrongPassword);
 
         // Act
-        ResultActions resultActions = mockMvc.perform(post("/authenticate")
+        ResultActions resultActions = mockMvc.perform(post("/c/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(model)));
 

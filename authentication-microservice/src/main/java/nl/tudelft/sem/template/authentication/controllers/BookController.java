@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/books/c")
+@RequestMapping("/c/books")
 public class BookController {
     private final transient BookService bookService;
 
