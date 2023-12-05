@@ -28,7 +28,7 @@
 //    @Override
 //    public void run(ApplicationArguments args) throws Exception {
 //        PasswordHashingService passwordHashingService = new PasswordHashingService(passwordEncoder);
-//        AppUser admin = new AppUser(new Username("admin"),
+//        AppUser admin = new AppUser(new Username("administrator"),
 //                "admin@email",
 //                new HashedPassword(passwordHashingService.hash(new Password("pass123")).toString()));
 //        admin.setAuthority(Authority.ADMIN);

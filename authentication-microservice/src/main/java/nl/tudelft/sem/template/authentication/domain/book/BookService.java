@@ -113,7 +113,6 @@ public class BookService {
     @Transactional
     public void deleteBook(String bookId, String bearerToken) {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
-            System.out.println(getAuthority(bearerToken));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may delete books from the system!");
         }
         var optBook = bookRepository.findById(UUID.fromString(bookId));
