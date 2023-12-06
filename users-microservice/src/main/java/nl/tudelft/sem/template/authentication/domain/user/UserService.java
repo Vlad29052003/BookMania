@@ -35,7 +35,7 @@ public class UserService {
      * @param username the username
      * @return an AppUser containing all the information
      */
-    public AppUser getUserByNetId(Username username) {
+    public AppUser getUserByUsername(Username username) {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);

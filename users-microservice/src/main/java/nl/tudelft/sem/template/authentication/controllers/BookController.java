@@ -32,12 +32,10 @@ public class BookController {
      * Gets a book from the overall collection.
      *
      * @param bookId      the id of the book to get
-     * @param bearerToken the jwt token
      * @return the status of the operation
      */
     @GetMapping("/{bookId}")
-    public ResponseEntity<?> getBook(@PathVariable String bookId,
-                                     @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> getBook(@PathVariable String bookId) {
         try {
             return ResponseEntity.ok(bookService.getBook(bookId));
         } catch (ResponseStatusException e) {
