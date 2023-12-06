@@ -303,11 +303,11 @@ public class UserControllerTests {
                 testHashedPassword.toString(), roles));
         userRepository.save(user);
 
-        mockMvc.perform(delete("/user")
+        mockMvc.perform(delete("/c/users")
                         .header("Authorization", "Bearer " + token))
                         .andExpect(status().isOk());
 
-        mockMvc.perform(get("/user")
+        mockMvc.perform(get("/c/users")
                         .header("Authorization", "Bearer " + token))
                         .andExpect(status().isUnauthorized());
 
