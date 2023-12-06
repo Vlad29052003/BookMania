@@ -44,6 +44,8 @@ public class BookServiceTests {
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
 
+    private transient String tokenAuthor;
+
     /**
      * Sets up the testing environment.
      */
@@ -62,6 +64,15 @@ public class BookServiceTests {
         authenticationRequestModel.setUsername("admin");
         authenticationRequestModel.setPassword("pass");
 
+        RegistrationRequestModel registrationRequestModelAuthor = new RegistrationRequestModel();
+        registrationRequestModelAuthor.setUsername("authorTest");
+        registrationRequestModelAuthor.setEmail("authorEmail");
+        registrationRequestModelAuthor.setPassword("pass");
+
+        AuthenticationRequestModel authenticationRequestModelAuthor = new AuthenticationRequestModel();
+        authenticationRequestModelAuthor.setUsername("authorTest");
+        authenticationRequestModelAuthor.setPassword("pass");
+
         authenticationService.registerUser(registrationRequestModel);
         AppUser admin = userRepository.findByUsername(new Username("admin")).get();
         admin.setAuthority(Authority.ADMIN);
@@ -73,6 +84,12 @@ public class BookServiceTests {
         authenticationRequestModel.setUsername("user");
         authenticationService.registerUser(registrationRequestModel);
         tokenNonAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
+
+        authenticationService.registerUser(registrationRequestModelAuthor);
+        AppUser author = userRepository.findByUsername(new Username("authorTest")).get();
+        author.setAuthority(Authority.AUTHOR);
+        userRepository.saveAndFlush(author);
+        tokenAuthor = "Bearer " + authenticationService.authenticateUser(authenticationRequestModelAuthor).getToken();
     }
 
     @Test
@@ -102,6 +119,28 @@ public class BookServiceTests {
         Book newBook = new Book("title new", List.of("Author2", "Author3"), List.of(Genre.SCIENCE), "description", 876);
         bookService.addBook(bookRequestModel, tokenAdmin);
         Book addedBook = bookRepository.findByTitle("title new").get(0);
+
+        assertEquals(newBook.getTitle(), addedBook.getTitle());
+        assertEquals(newBook.getAuthors(), addedBook.getAuthors());
+        assertEquals(newBook.getGenres(), addedBook.getGenres());
+        assertEquals(newBook.getDescription(), addedBook.getDescription());
+        assertEquals(newBook.getNumPages(), addedBook.getNumPages());
+    }
+
+    @Test
+    @Transactional
+    public void testAddBookAsAuthor(){
+        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
+        bookRequestModel.setTitle("titleBook");
+        bookRequestModel.setAuthors(List.of("Author1"));
+        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
+        bookRequestModel.setDescription("descriptionBook");
+        bookRequestModel.setNumPages(550);
+
+        Book newBook = new Book("titleBook", List.of("Author1"), List.of(Genre.SCIENCE),
+                "descriptionBook", 550);
+        bookService.addBook(bookRequestModel, tokenAuthor);
+        Book addedBook = bookRepository.findByTitle("titleBook").get(0);
 
         assertEquals(newBook.getTitle(), addedBook.getTitle());
         assertEquals(newBook.getAuthors(), addedBook.getAuthors());
