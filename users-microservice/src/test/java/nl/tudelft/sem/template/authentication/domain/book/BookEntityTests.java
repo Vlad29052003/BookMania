@@ -34,6 +34,12 @@ public class BookEntityTests {
     }
 
     @Test
+    public void testConstructor() {
+        Book test  = new Book();
+        assertNotEquals(test, null);
+    }
+
+    @Test
     public void testEquals() {
         assertEquals(book1, book1);
         assertEquals(book1, book2);

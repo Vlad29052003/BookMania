@@ -33,6 +33,12 @@ public class UserEntityTests {
     }
 
     @Test
+    public void testConstructor() {
+        AppUser test  = new AppUser();
+        assertNotEquals(test, null);
+    }
+
+    @Test
     public void testEquals() {
         assertEquals(user1, user1);
         assertEquals(user1, user2);
