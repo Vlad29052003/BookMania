@@ -90,7 +90,7 @@ public class BookService {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
             if (optBook.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
             }
             Book currentBook = optBook.get();
 
@@ -155,7 +155,7 @@ public class BookService {
         }
         var optBook = bookRepository.findById(UUID.fromString(bookId));
         if (optBook.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
 
         userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
