@@ -29,7 +29,7 @@ public class UserService {
     /**
      * Instantiates a new UserService.
      *
-     * @param userRepository  the user repository
+     * @param userRepository the user repository
      */
     public UserService(UserRepository userRepository,
                        ReportRepository reportRepository,
@@ -60,7 +60,7 @@ public class UserService {
      * Update the name of an existing user.
      *
      * @param username the username
-     * @param name the name of the user
+     * @param name     the name of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updateName(Username username, String name) throws UsernameNotFoundException {
@@ -79,7 +79,7 @@ public class UserService {
      * Update the bio of an existing user.
      *
      * @param username the username
-     * @param bio the bio of the user
+     * @param bio      the bio of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updateBio(Username username, String bio) throws UsernameNotFoundException {
@@ -98,7 +98,7 @@ public class UserService {
      * Update the profile picture of an existing user.
      *
      * @param username the username
-     * @param picture the profile photo of the user
+     * @param picture  the profile photo of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updatePicture(Username username, byte[] picture) throws UsernameNotFoundException {
@@ -135,7 +135,7 @@ public class UserService {
     /**
      * Update the list of favourite genres of an existing user.
      *
-     * @param username the username
+     * @param username        the username
      * @param favouriteGenres the list of favourite genres of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -154,7 +154,7 @@ public class UserService {
     /**
      * Update the favourite book of an existing user.
      *
-     * @param username the username
+     * @param username        the username
      * @param favouriteBookId the id of the favourite book
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -179,7 +179,7 @@ public class UserService {
     /**
      * (Un)bans a user.
      *
-     * @param username username of the user that should be (un)banned.
+     * @param username    username of the user that should be (un)banned.
      * @param bearerToken jwt token.
      */
     @Transactional
@@ -188,23 +188,19 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
         }
 
-        var optionalAppUser = userRepository.findByUsername(username);
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist!");
         }
 
         AppUser user = optionalAppUser.get();
-        var userReports = reportRepository.findByUserId(user.getId().toString());
-        boolean isReported = userReports.isPresent() && userReports.get().size() != 0;
         if (user.isDeactivated()) {
             user.setDeactivated(false);
         } else {
-            if (!isReported) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User was not reported!");
-            }
             user.setDeactivated(true);
             reportRepository.deleteByUserId(user.getId());
         }
+
         userRepository.saveAndFlush(user);
     }
 
