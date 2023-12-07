@@ -18,6 +18,7 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
      * Find a report by its id.
      */
     Optional<Report> findById(UUID id);
+
     boolean existsByUserId(String userId);
 
     @Modifying
