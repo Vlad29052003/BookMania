@@ -28,11 +28,11 @@ public class UserLookupService {
      * Get users by name.
      *
      * @param name name of user
-     * @return users matching name
+     * @return users matching name that are not deactivated/banned
      */
     public List<UserModel> getUsersByName(String name) {
         return userRepository.findAll()
-                .stream().filter(user -> user.getUsername().toString().contains(name))
+                .stream().filter(user -> !user.isDeactivated() && user.getUsername().toString().contains(name))
                 .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
                         u.getName(), u.getBio(), u.getLocation(),
                         u.getFavouriteGenres(), u.getFavouriteBook()))
