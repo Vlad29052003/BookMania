@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -86,13 +88,42 @@ public class BookService {
      * @param bearerToken            is the jwt token of the user that made the request
      */
     public void updateBook(Book updatedBook, String bearerToken) {
-        if(getAuthority(bearerToken).equals(Authority.ADMIN) || getAuthority(bearerToken).equals(Authority.AUTHOR)) {
+        if(getAuthority(bearerToken).equals(Authority.ADMIN)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
             if (optBook.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
             }
             Book currentBook = optBook.get();
+
+            currentBook.setTitle(updatedBook.getTitle());
+
+            if (updatedBook.getAuthors() != null) {
+                currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+            }
+            if (updatedBook.getGenres() != null) {
+                currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
+            }
+            currentBook.setDescription(updatedBook.getDescription());
+            currentBook.setNumPages(updatedBook.getNumPages());
+
+            bookRepository.saveAndFlush(currentBook);
+        } else if(getAuthority(bearerToken).equals(Authority.AUTHOR)) {
+
+            Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
+            if (optBook.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
+            }
+
+            Book currentBook = optBook.get();
+
+            Optional<AppUser> authorOptional = userRepository
+                    .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
+            AppUser currentAuthor = authorOptional.get();
+
+            if(!currentBook.getAuthors().contains(currentAuthor.getName())) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the authors of the book may edit it!");
+            }
 
             currentBook.setTitle(updatedBook.getTitle());
 

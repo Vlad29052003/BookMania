@@ -41,6 +41,10 @@ public class BookServiceTests {
     private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
+
+    private transient Book book2;
+
+    private transient UUID book2Id;
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
 
@@ -51,9 +55,14 @@ public class BookServiceTests {
      */
     @BeforeEach
     public void setUp() {
-        this.book = new Book("title", List.of("Author1"), List.of(Genre.CRIME, Genre.DRAMA), "description", 257);
+        this.book = new Book("title", List.of("Author1", "authorName"), List.of(Genre.CRIME, Genre.DRAMA), "description", 257);
         bookRepository.saveAndFlush(book);
         bookId = bookRepository.findByTitle("title").get(0).getId();
+
+        this.book2 = new Book("title2", List.of("Author2"), List.of(Genre.CRIME), "testDscription", 550);
+        bookRepository.saveAndFlush(book2);
+        book2Id = bookRepository.findByTitle("title2").get(0).getId();
+
 
         RegistrationRequestModel registrationRequestModel = new RegistrationRequestModel();
         registrationRequestModel.setUsername("admin");
@@ -90,6 +99,8 @@ public class BookServiceTests {
         author.setAuthority(Authority.AUTHOR);
         userRepository.saveAndFlush(author);
         tokenAuthor = "Bearer " + authenticationService.authenticateUser(authenticationRequestModelAuthor).getToken();
+
+        author.setName("authorName");
     }
 
     @Test
@@ -227,6 +238,40 @@ public class BookServiceTests {
         assertTrue(updatedBookTest.getGenres().containsAll(updatedBook.getGenres()));
         assertEquals(updatedBookTest.getDescription(), updatedBook.getDescription());
         assertEquals(updatedBookTest.getNumPages(), updatedBook.getNumPages());
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateBookAsAuthor(){
+        Book updatedBook = new Book();
+        updatedBook.setId(bookId);
+        updatedBook.setTitle("title");
+        updatedBook.setAuthors(List.of("Author1", "authorName"));
+        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(550);
+        bookService.updateBook(updatedBook, tokenAuthor);
+        Book updatedBookTest = bookRepository.findByTitle("title").get(0);
+
+        assertEquals(updatedBookTest.getId(), updatedBook.getId());
+        assertEquals(updatedBookTest.getTitle(), updatedBook.getTitle());
+        assertTrue(updatedBookTest.getAuthors().containsAll(updatedBook.getAuthors()));
+        assertTrue(updatedBookTest.getGenres().containsAll(updatedBook.getGenres()));
+        assertEquals(updatedBookTest.getDescription(), updatedBook.getDescription());
+        assertEquals(updatedBookTest.getNumPages(), updatedBook.getNumPages());
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateBookAsNotAuthorOfTheBook(){
+        Book updatedBook = new Book();
+        updatedBook.setId(book2Id);
+        updatedBook.setTitle("newTitle");
+        updatedBook.setAuthors(List.of("Author2"));
+        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(550);
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(updatedBook, tokenAuthor));
     }
 
     @Test
