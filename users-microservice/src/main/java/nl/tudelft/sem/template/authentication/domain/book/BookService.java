@@ -58,9 +58,7 @@ public class BookService {
      * @param bearerToken            is the jwt token of the user who made the request
      */
     public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
-
-        if(getAuthority(bearerToken).equals(Authority.ADMIN) || getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-
+        if (getAuthority(bearerToken).equals(Authority.ADMIN) || getAuthority(bearerToken).equals(Authority.AUTHOR)) {
             List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
             boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
                     .containsAll(createBookRequestModel.getAuthors()));
@@ -74,9 +72,9 @@ public class BookService {
                     createBookRequestModel.getDescription(),
                     createBookRequestModel.getNumPages());
             bookRepository.saveAndFlush(newBook);
-        }
-        else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins or authors may add books to the system!");
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Only admins or authors may add books to the system!");
         }
     }
 
@@ -88,7 +86,7 @@ public class BookService {
      * @param bearerToken            is the jwt token of the user that made the request
      */
     public void updateBook(Book updatedBook, String bearerToken) {
-        if(getAuthority(bearerToken).equals(Authority.ADMIN)) {
+        if (getAuthority(bearerToken).equals(Authority.ADMIN)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
             if (optBook.isEmpty()) {
@@ -108,9 +106,10 @@ public class BookService {
             currentBook.setNumPages(updatedBook.getNumPages());
 
             bookRepository.saveAndFlush(currentBook);
-        } else if(getAuthority(bearerToken).equals(Authority.AUTHOR)) {
+        } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
+
             if (optBook.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
             }
@@ -121,7 +120,7 @@ public class BookService {
                     .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
             AppUser currentAuthor = authorOptional.get();
 
-            if(!currentBook.getAuthors().contains(currentAuthor.getName())) {
+            if (!currentBook.getAuthors().contains(currentAuthor.getName())) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the authors of the book may edit it!");
             }
 
@@ -137,9 +136,9 @@ public class BookService {
             currentBook.setNumPages(updatedBook.getNumPages());
 
             bookRepository.saveAndFlush(currentBook);
-        }
-        else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins or authors may update books in the system!");
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Only admins or authors may update books in the system!");
         }
     }
 
