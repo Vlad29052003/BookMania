@@ -44,8 +44,6 @@ public class Report {
     private ReportType type;
 
     @Getter
-    @ElementCollection(targetClass = String.class)
-    @CollectionTable(name = "users", joinColumns = @JoinColumn(name = "id"))
     @Column(name = "user_id", nullable = false)
     private String userId;
 
