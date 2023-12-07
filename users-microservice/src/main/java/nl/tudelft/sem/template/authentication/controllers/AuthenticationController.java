@@ -31,6 +31,7 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
+
     /**
      * Endpoint for registration.
      *

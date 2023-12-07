@@ -56,14 +56,14 @@ public class UserControllerTests {
 
     @Test
     public void testGetUserByNetId() throws Exception {
-        final Username testUser = new Username("SomeUser");
+        final String testUser = "SomeUser";
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
-        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        final AppUser user = new AppUser(new Username(testUser), email, testHashedPassword);
         user.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
         roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
-        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+        final String token = jwtTokenGenerator.generateToken(new User(testUser,
                                 testHashedPassword.toString(), roles));
         userRepository.save(user);
 
@@ -86,16 +86,16 @@ public class UserControllerTests {
 
     @Test
     public void testGetUserPictureByNetId() throws Exception {
-        final Username testUser = new Username("SomeUser");
+        final String testUser = "SomeUser";
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
-        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        final AppUser user = new AppUser(new Username(testUser), email, testHashedPassword);
         user.setAuthority(Authority.REGULAR_USER);
         final byte[] picture = new byte[]{13, 25, 12, 52, 43};
         user.setPicture(picture);
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
         roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
-        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+        final String token = jwtTokenGenerator.generateToken(new User(testUser,
                 testHashedPassword.toString(), roles));
         userRepository.save(user);
 
