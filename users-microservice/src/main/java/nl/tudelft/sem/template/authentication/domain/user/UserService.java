@@ -192,9 +192,13 @@ public class UserService {
         }
 
         AppUser user = optionalAppUser.get();
+        boolean isReported = reportRepository.existsByUserId(user.getId().toString());
         if (user.isDeactivated()) {
             user.setDeactivated(false);
         } else {
+            if (!isReported) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User was not reported!");
+            }
             user.setDeactivated(true);
             reportRepository.deleteByUserId(user.getId());
         }
