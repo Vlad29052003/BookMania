@@ -55,11 +55,13 @@ public class BookServiceTests {
      */
     @BeforeEach
     public void setUp() {
-        this.book = new Book("title", List.of("Author1", "authorName"), List.of(Genre.CRIME, Genre.DRAMA), "description", 257);
+        this.book = new Book("title", List.of("Author1", "authorName"),
+                List.of(Genre.CRIME, Genre.DRAMA), "description", 257);
         bookRepository.saveAndFlush(book);
         bookId = bookRepository.findByTitle("title").get(0).getId();
 
-        this.book2 = new Book("title2", List.of("Author2"), List.of(Genre.CRIME), "testDscription", 550);
+        this.book2 = new Book("title2", List.of("Author2"),
+                List.of(Genre.CRIME), "testDscription", 550);
         bookRepository.saveAndFlush(book2);
         book2Id = bookRepository.findByTitle("title2").get(0).getId();
 
@@ -127,7 +129,8 @@ public class BookServiceTests {
         bookRequestModel.setGenres(List.of(Genre.SCIENCE));
         bookRequestModel.setDescription("description");
         bookRequestModel.setNumPages(876);
-        Book newBook = new Book("title new", List.of("Author2", "Author3"), List.of(Genre.SCIENCE), "description", 876);
+        Book newBook = new Book("title new", List.of("Author2", "Author3"),
+                List.of(Genre.SCIENCE), "description", 876);
         bookService.addBook(bookRequestModel, tokenAdmin);
         Book addedBook = bookRepository.findByTitle("title new").get(0);
 
@@ -140,7 +143,7 @@ public class BookServiceTests {
 
     @Test
     @Transactional
-    public void testAddBookAsAuthor(){
+    public void testAddBookAsAuthor() {
         CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
         bookRequestModel.setTitle("titleBook");
         bookRequestModel.setAuthors(List.of("Author1"));
@@ -242,7 +245,7 @@ public class BookServiceTests {
 
     @Test
     @Transactional
-    public void testUpdateBookAsAuthor(){
+    public void testUpdateBookAsAuthor() {
         Book updatedBook = new Book();
         updatedBook.setId(bookId);
         updatedBook.setTitle("title");
@@ -263,7 +266,7 @@ public class BookServiceTests {
 
     @Test
     @Transactional
-    public void testUpdateBookAsNotAuthorOfTheBook(){
+    public void testUpdateBookAsNotAuthorOfTheBook() {
         Book updatedBook = new Book();
         updatedBook.setId(book2Id);
         updatedBook.setTitle("newTitle");
