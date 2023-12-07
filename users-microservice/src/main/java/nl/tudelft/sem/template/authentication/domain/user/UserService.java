@@ -11,6 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -181,6 +182,7 @@ public class UserService {
      * @param username username of the user that should be (un)banned.
      * @param bearerToken jwt token.
      */
+    @Transactional
     public void updateBannedStatus(Username username, String bearerToken) {
         if (!getAuthority(bearerToken).equals(Authority.ADMIN) || expired(bearerToken)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
@@ -192,7 +194,8 @@ public class UserService {
         }
 
         AppUser user = optionalAppUser.get();
-        boolean isReported = reportRepository.existsByUserId(user.getId().toString());
+        var userReports = reportRepository.findByUserId(user.getId().toString());
+        boolean isReported = userReports.isPresent() && userReports.get().size() != 0;
         if (user.isDeactivated()) {
             user.setDeactivated(false);
         } else {

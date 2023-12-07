@@ -1,24 +1,28 @@
 package nl.tudelft.sem.template.authentication.domain.report;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ReportEntityTests {
 
     private transient Report firstReport;
     private transient Report secondReport;
 
+    /**
+     * Set up the testing environment.
+     */
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         firstReport = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Some language");
         secondReport = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Some other language");
 
         firstReport.setId(UUID.randomUUID());
         secondReport.setId(UUID.randomUUID());
-        while(secondReport.getId().equals(firstReport.getId())) {
+        while (secondReport.getId().equals(firstReport.getId())) {
             secondReport.setId(UUID.randomUUID());
         }
     }

@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.report;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,8 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
      */
     Optional<Report> findById(UUID id);
 
-    boolean existsByUserId(String userId);
+    @Query("SELECT * FROM Report r WHERE r.userId = :user_id")
+    Optional<List<Report>> findByUserId(@Param("user_id") String userId);
 
     @Modifying
     @Query("DELETE FROM Report r WHERE r.userId = :user_id")
