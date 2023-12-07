@@ -1,8 +1,10 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,25 @@ public class UserEntityTests {
         this.user1.setId(id1);
         this.user2.setId(id1);
         this.user3.setId(id3);
+    }
+
+    @Test
+    public void testEmptyConstructor() {
+        AppUser test  = new AppUser();
+        assertNotEquals(test, null);
+    }
+
+    @Test
+    public void testConstructor() {
+        assertNotEquals(user1, null);
+        assertEquals(new Username("user1"), user1.getUsername());
+        assertEquals("email1", user1.getEmail());
+        assertEquals(new HashedPassword("hash"), user1.getPassword());
+        assertEquals(new ArrayList<>(), user1.getFavouriteGenres());
+        assertEquals(new ArrayList<>(), user1.getFollows());
+        assertEquals(new ArrayList<>(), user1.getFollowedBy());
+        assertEquals(Authority.REGULAR_USER, user1.getAuthority());
+        assertFalse(user1.isDeactivated());
     }
 
     @Test
