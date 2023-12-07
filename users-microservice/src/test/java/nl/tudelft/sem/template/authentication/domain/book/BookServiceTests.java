@@ -146,12 +146,12 @@ public class BookServiceTests {
     public void testAddBookAsAuthor() {
         CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
         bookRequestModel.setTitle("titleBook");
-        bookRequestModel.setAuthors(List.of("Author1"));
+        bookRequestModel.setAuthors(List.of("authorName"));
         bookRequestModel.setGenres(List.of(Genre.SCIENCE));
         bookRequestModel.setDescription("descriptionBook");
         bookRequestModel.setNumPages(550);
 
-        Book newBook = new Book("titleBook", List.of("Author1"), List.of(Genre.SCIENCE),
+        Book newBook = new Book("titleBook", List.of("authorName"), List.of(Genre.SCIENCE),
                 "descriptionBook", 550);
         bookService.addBook(bookRequestModel, tokenAuthor);
         Book addedBook = bookRepository.findByTitle("titleBook").get(0);
@@ -220,6 +220,25 @@ public class BookServiceTests {
         updatedBook.setNumPages(876);
 
         assertThrows(ResponseStatusException.class, () -> bookService.updateBook(updatedBook, tokenAdmin));
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateBookNotExistingAsAuthor() {
+        UUID randomUuid = UUID.randomUUID();
+        while (randomUuid.equals(bookId)) {
+            randomUuid = UUID.randomUUID();
+        }
+        UUID finalRandomUuid = randomUuid;
+        Book updatedBook = new Book();
+        updatedBook.setId(finalRandomUuid);
+        updatedBook.setTitle("title");
+        updatedBook.setAuthors(List.of("Author1"));
+        updatedBook.setGenres(List.of(Genre.HORROR));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(550);
+
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(updatedBook, tokenAuthor));
     }
 
     @Test

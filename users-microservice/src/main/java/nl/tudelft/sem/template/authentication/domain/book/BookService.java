@@ -59,6 +59,16 @@ public class BookService {
      */
     public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
         if (getAuthority(bearerToken).equals(Authority.ADMIN) || getAuthority(bearerToken).equals(Authority.AUTHOR)) {
+            if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
+                Optional<AppUser> authorOptional = userRepository
+                        .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
+                AppUser currentAuthor = authorOptional.get();
+                if (!createBookRequestModel.getAuthors().contains(currentAuthor.getName())) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                            "Only the authors of the book may add it to the system!");
+                }
+            }
+
             List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
             boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
                     .containsAll(createBookRequestModel.getAuthors()));
