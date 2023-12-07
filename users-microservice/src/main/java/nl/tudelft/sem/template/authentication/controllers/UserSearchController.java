@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserSearchController {
 
 
-    //private final transient JwtUserDetailsService jwtUserDetailsService;
 
     private final transient UserLookupService userLookupService;
 
