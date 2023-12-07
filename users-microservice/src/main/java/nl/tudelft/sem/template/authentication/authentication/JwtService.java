@@ -9,7 +9,6 @@ import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,12 +25,7 @@ public class JwtService {
         this.timeProvider = timeProvider;
     }
 
-    public boolean isValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date(timeProvider.getCurrentTime().toEpochMilli()));
     }
 
@@ -39,7 +33,7 @@ public class JwtService {
         return extractClaim(jwtToken, Claims::getSubject);
     }
 
-    public Date extractExpiration(String jwtToken) {
+    private Date extractExpiration(String jwtToken) {
         return extractClaim(jwtToken, Claims::getExpiration);
     }
 

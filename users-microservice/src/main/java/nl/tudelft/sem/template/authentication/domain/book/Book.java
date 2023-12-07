@@ -12,7 +12,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -99,7 +98,7 @@ public class Book {
         this.genres = genres == null ? new ArrayList<>() : genres;
         this.description = description;
         this.numPages = numPages;
-        usersWithBookAsFavorite = new ArrayList<>();
+        this.usersWithBookAsFavorite = new ArrayList<>();
     }
 
     /**

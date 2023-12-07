@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
@@ -127,7 +126,7 @@ public class UserControllerTests {
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/name")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.serialize(Map.entry("name", newName)))
+                .content(newName)
                 .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
@@ -154,7 +153,7 @@ public class UserControllerTests {
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/bio")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(Map.entry("name", newBio)))
+                        .content(newBio)
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
@@ -208,7 +207,7 @@ public class UserControllerTests {
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/location")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(Map.entry("name", newLocation)))
+                        .content(newLocation)
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
@@ -236,7 +235,7 @@ public class UserControllerTests {
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/favouriteGenres")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(Map.entry("name", newFavouriteGenres)))
+                        .content(JsonUtil.serialize(newFavouriteGenres))
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isOk());
@@ -266,7 +265,7 @@ public class UserControllerTests {
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/favouriteBook")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(Map.entry("name", 1)))
+                        .content("1")
                         .header("Authorization", "Bearer " + token));
 
         resultActions.andExpect(status().isNotFound());

@@ -45,11 +45,11 @@ public class BookControllerTests {
     @Test
     public void testGet() {
         when(bookService.getBook(bookId.toString())).thenReturn(book);
-        assertEquals(bookController.getBook(bookId.toString(), token), ResponseEntity.ok(book));
+        assertEquals(bookController.getBook(bookId.toString()), ResponseEntity.ok(book));
 
         when(bookService.getBook(bookId.toString()))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"));
-        assertEquals(bookController.getBook(bookId.toString(), token).getStatusCodeValue(), 404);
+        assertEquals(bookController.getBook(bookId.toString()).getStatusCodeValue(), 404);
     }
 
     @Test

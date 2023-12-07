@@ -36,13 +36,13 @@ public class UserServiceTests {
         Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
-        assertThatThrownBy(() -> userService.getUserByNetId(username))
+        assertThatThrownBy(() -> userService.getUserByUsername(username))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(UserService.NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
 
         assertThat(retrievedUser.getUsername().toString()).isEqualTo(username.toString());
         assertThat(retrievedUser.getEmail()).isEqualTo(email);
@@ -61,12 +61,12 @@ public class UserServiceTests {
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getName()).isNull();
 
 
         userService.updateName(username, newName);
-        retrievedUser = userService.getUserByNetId(username);
+        retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getName()).isEqualTo(newName);
     }
 
@@ -82,12 +82,12 @@ public class UserServiceTests {
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getBio()).isNull();
 
 
         userService.updateBio(username, newBio);
-        retrievedUser = userService.getUserByNetId(username);
+        retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getBio()).isEqualTo(newBio);
     }
 
@@ -103,12 +103,12 @@ public class UserServiceTests {
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getPicture()).isNull();
 
 
         userService.updatePicture(username, newPicture);
-        retrievedUser = userService.getUserByNetId(username);
+        retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getPicture()).isEqualTo(newPicture);
     }
 
@@ -124,12 +124,12 @@ public class UserServiceTests {
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getLocation()).isNull();
 
 
         userService.updateLocation(username, newLocation);
-        retrievedUser = userService.getUserByNetId(username);
+        retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getLocation()).isEqualTo(newLocation);
     }
 
@@ -146,11 +146,11 @@ public class UserServiceTests {
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getFavouriteGenres()).isEmpty();
 
         userService.updateFavouriteGenres(username, newFavouriteGenres);
-        retrievedUser = userService.getUserByNetId(username);
+        retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getFavouriteGenres().toArray()).isEqualTo(newFavouriteGenres.toArray());
     }
 
@@ -166,7 +166,7 @@ public class UserServiceTests {
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getFavouriteBook()).isNull();
         assertThatThrownBy(() -> userService.updateFavouriteBook(username, UUID.randomUUID().toString()))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -178,7 +178,7 @@ public class UserServiceTests {
         bookRepository.save(newBook);
         UUID bookId = bookRepository.findAll().get(0).getId();
         userService.updateFavouriteBook(username, bookId.toString());
-        retrievedUser = userService.getUserByNetId(username);
+        retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getFavouriteBook().getTitle()).isEqualTo(newBook.getTitle());
         assertThat(retrievedUser.getFavouriteBook().getAuthors().toArray()).isEqualTo(newBook.getAuthors().toArray());
         assertThat(retrievedUser.getFavouriteBook().getGenres().toArray()).isEqualTo(newBook.getGenres().toArray());
@@ -191,17 +191,17 @@ public class UserServiceTests {
         Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
-        assertThatThrownBy(() -> userService.getUserByNetId(username))
+        assertThatThrownBy(() -> userService.getUserByUsername(username))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(UserService.NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
-        AppUser retrievedUser = userService.getUserByNetId(username);
+        AppUser retrievedUser = userService.getUserByUsername(username);
 
         userService.delete(retrievedUser.getUsername());
 
-        assertThatThrownBy(() -> userService.getUserByNetId(retrievedUser.getUsername()))
+        assertThatThrownBy(() -> userService.getUserByUsername(retrievedUser.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(UserService.NO_SUCH_USER);
     }
