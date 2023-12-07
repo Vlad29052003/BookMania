@@ -3,11 +3,15 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * A DDD service for a user.
@@ -15,7 +19,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
     private final transient UserRepository userRepository;
+    private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
+    public final transient JwtService jwtService;
 
     public static final String NO_SUCH_USER = "User does not exist!";
 
@@ -24,9 +30,14 @@ public class UserService {
      *
      * @param userRepository  the user repository
      */
-    public UserService(UserRepository userRepository, BookRepository bookRepository) {
+    public UserService(UserRepository userRepository,
+                       ReportRepository reportRepository,
+                       BookRepository bookRepository,
+                       JwtService jwtService) {
         this.userRepository = userRepository;
+        this.reportRepository = reportRepository;
         this.bookRepository = bookRepository;
+        this.jwtService = jwtService;
     }
 
     /**
@@ -165,6 +176,32 @@ public class UserService {
     }
 
     /**
+     * (Un)bans a user.
+     *
+     * @param username username of the user that should be (un)banned.
+     * @param bearerToken jwt token.
+     */
+    public void updateBannedStatus(Username username, String bearerToken) {
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN) || expired(bearerToken)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
+        }
+
+        var optionalAppUser = userRepository.findByUsername(username);
+        if (optionalAppUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist!");
+        }
+
+        AppUser user = optionalAppUser.get();
+        if (user.isDeactivated()) {
+            user.setDeactivated(false);
+        } else {
+            user.setDeactivated(true);
+            reportRepository.deleteByUserId(user.getId());
+        }
+        userRepository.saveAndFlush(user);
+    }
+
+    /**
      * Delete a user.
      *
      * @param username the username
@@ -179,5 +216,13 @@ public class UserService {
         AppUser user = optionalAppUser.get();
 
         userRepository.delete(user);
+    }
+
+    private Authority getAuthority(String bearerToken) {
+        return jwtService.extractAuthorization(bearerToken.substring(7));
+    }
+
+    private boolean expired(String bearerToken) {
+        return jwtService.isTokenExpired(bearerToken);
     }
 }

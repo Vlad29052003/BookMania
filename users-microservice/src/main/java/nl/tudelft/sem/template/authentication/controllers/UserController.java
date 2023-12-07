@@ -7,6 +7,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -174,6 +175,24 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
 
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Patch request to ban / unban a user.
+     *
+     * @param banUserRequestModel username of user that needs to be (un)banned.
+     * @param bearerToken jwt token.
+     * @return request status.
+     */
+    @PatchMapping("/isDeactivated")
+    public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel,
+                                                @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+        try {
+            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()), bearerToken);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
         return ResponseEntity.ok().build();
     }
 
