@@ -163,4 +163,18 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * Endpoint for updating a user's privacy settings.
+     *
+     * @param isPrivate new privacy setting
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/isPrivate")
+    public ResponseEntity<Void> updatePrivacy(@RequestBody boolean isPrivate) {
+        Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+        userService.updatePrivacy(username, isPrivate);
+
+        return ResponseEntity.ok().build();
+    }
 }
