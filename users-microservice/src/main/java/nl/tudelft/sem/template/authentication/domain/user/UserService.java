@@ -22,7 +22,7 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
-    public final transient JwtService jwtService;
+    private final transient JwtService jwtService;
 
     public static final String NO_SUCH_USER = "User does not exist!";
 
@@ -224,7 +224,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    private Authority getAuthority(String bearerToken) {
+    public Authority getAuthority(String bearerToken) {
         return jwtService.extractAuthorization(bearerToken.substring(7));
     }
 }
