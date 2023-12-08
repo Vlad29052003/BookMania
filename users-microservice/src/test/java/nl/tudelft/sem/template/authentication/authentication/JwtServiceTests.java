@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -60,7 +60,7 @@ public class JwtServiceTests {
         when(timeProvider2.getCurrentTime()).thenReturn(mockedTime2);
         String token = jwtTokenGenerator.generateToken(user);
 
-        assertTrue(jwtService.isValid(token, user));
+        assertFalse(jwtService.isTokenExpired(token));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class JwtServiceTests {
         String token = jwtTokenGenerator.generateToken(user);
 
         assertThrows(ExpiredJwtException.class, () -> {
-            jwtService.isValid(token, user);
+            jwtService.isTokenExpired(token);
         });
     }
 

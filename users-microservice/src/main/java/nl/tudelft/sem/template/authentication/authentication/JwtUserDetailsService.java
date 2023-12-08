@@ -4,6 +4,7 @@ import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,7 +32,7 @@ public class JwtUserDetailsService implements UserDetailsService {
      * @throws UsernameNotFoundException Username was not found
      */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DisabledException {
         var optionalUser = userRepository.findByUsername(new Username(username));
 
         if (optionalUser.isEmpty()) {
@@ -39,6 +40,10 @@ public class JwtUserDetailsService implements UserDetailsService {
         }
 
         var user = optionalUser.get();
+
+        if (user.isDeactivated()) {
+            throw new DisabledException("User is disabled");
+        }
 
         return new User(user.getUsername().toString(), user.getPassword().toString(),
                 List.of(user.getAuthority()));
