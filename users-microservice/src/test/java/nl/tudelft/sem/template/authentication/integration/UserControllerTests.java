@@ -23,6 +23,7 @@ import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
+import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -286,6 +287,34 @@ public class UserControllerTests {
         assertThat(userModel.get().getFavouriteBook().getAuthors()).isEqualTo(newFavouriteBook.getAuthors());
         assertThat(userModel.get().getFavouriteBook().getGenres()).isEqualTo(newFavouriteBook.getGenres());
         assertThat(userModel.get().getFavouriteBook().getDescription()).isEqualTo(newFavouriteBook.getDescription());
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateBannedStatus() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        user.setAuthority(Authority.REGULAR_USER);
+        userRepository.save(user);
+
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(
+                new User(testUser.toString(), testHashedPassword.toString(), roles));
+
+        BanUserRequestModel banUser = new BanUserRequestModel();
+        banUser.setUsername(user.getUsername().toString());
+        banUser.setBanned(false);
+
+        ResultActions resultActions = mockMvc.perform(
+                patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUser))
+                        .header("Authorization", "Bearer " + token));
+
+        resultActions.andExpect(status().isUnauthorized());
     }
 
     @Test
