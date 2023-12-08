@@ -14,6 +14,7 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.models.CreateReportModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -53,26 +54,15 @@ class ReportServiceTests {
     }
 
     @Test
-    public void getAllReportsExpiredTest() {
-        when(jwtService.isTokenExpired(anyString())).thenReturn(true);
-        when(jwtService.extractAuthorization(anyString())).thenReturn(Authority.REGULAR_USER);
-        assertThrows(ResponseStatusException.class, () -> reportService.getAllReports("Expired token"));
-    }
-
-    @Test
     void addReportGoodTest() {
         when(jwtService.isTokenExpired(anyString())).thenReturn(false);
         when(userRepository.existsById(any())).thenReturn(true);
-        Report report = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Some language");
+        CreateReportModel report = new CreateReportModel();
+        report.setReportType(ReportType.REVIEW);
+        report.setUserId(UUID.randomUUID().toString());
+        report.setText("Something");
         assertDoesNotThrow(() -> reportService.addReport(report, "User token"));
         verify(reportRepository, times(1)).saveAndFlush(any());
-    }
-
-    @Test
-    void addReportExpiredTest() {
-        when(jwtService.isTokenExpired(anyString())).thenReturn(true);
-        Report report = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Some language");
-        assertThrows(ResponseStatusException.class, () -> reportService.addReport(report, "Expired token"));
     }
 
     @Test

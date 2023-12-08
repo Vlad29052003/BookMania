@@ -184,7 +184,7 @@ public class UserService {
      */
     @Transactional
     public void updateBannedStatus(Username username, String bearerToken) {
-        if (!getAuthority(bearerToken).equals(Authority.ADMIN) || expired(bearerToken)) {
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
         }
 
@@ -223,9 +223,5 @@ public class UserService {
 
     private Authority getAuthority(String bearerToken) {
         return jwtService.extractAuthorization(bearerToken.substring(7));
-    }
-
-    private boolean expired(String bearerToken) {
-        return jwtService.isTokenExpired(bearerToken);
     }
 }

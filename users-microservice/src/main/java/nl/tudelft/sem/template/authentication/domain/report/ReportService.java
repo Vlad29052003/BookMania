@@ -5,6 +5,7 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.models.CreateReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class ReportService {
      * @return a list of all reports in the database.
      */
     public List<Report> getAllReports(String bearerToken) {
-        if (!getAuthority(bearerToken).equals(Authority.ADMIN) || expired(bearerToken)) {
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can access reports!");
         }
         return reportRepository.findAll();
@@ -47,16 +48,16 @@ public class ReportService {
     /**
      * Adds a new report to the database.
      *
-     * @param report report to be added.
+     * @param reportModel report to be added.
      * @param bearerToken jwt token.
      */
-    public void addReport(Report report, String bearerToken) {
-        if (expired(bearerToken)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token!");
-        }
-        if (!userRepository.existsById(UUID.fromString(report.getUserId()))) {
+    public void addReport(CreateReportModel reportModel, String bearerToken) {
+        if (!userRepository.existsById(UUID.fromString(reportModel.getUserId()))) {
             throw new ResponseStatusException((HttpStatus.NOT_FOUND), "Reported user not found!");
         }
+        Report report = new Report(reportModel.getReportType(),
+                                    reportModel.getUserId(),
+                                    reportModel.getText());
         reportRepository.saveAndFlush(report);
     }
 
@@ -67,7 +68,7 @@ public class ReportService {
      * @param bearerToken jwt token.
      */
     public void remove(String id, String bearerToken) {
-        if (!getAuthority(bearerToken).equals(Authority.ADMIN) || expired(bearerToken)) {
+        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can access reports!");
         }
         var optReport = reportRepository.findById(UUID.fromString(id));
@@ -79,9 +80,5 @@ public class ReportService {
 
     private Authority getAuthority(String bearerToken) {
         return jwtService.extractAuthorization(bearerToken.substring(7));
-    }
-
-    private boolean expired(String bearerToken) {
-        return jwtService.isTokenExpired(bearerToken);
     }
 }

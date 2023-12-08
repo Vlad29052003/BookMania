@@ -2,8 +2,8 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportService;
+import nl.tudelft.sem.template.authentication.models.CreateReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,15 +49,15 @@ public class ReportController {
     /**
      * Post request for adding a new report.
      *
-     * @param report new Report object.
+     * @param reportModel model of new report.
      * @param bearerToken jwt token.
      * @return request status.
      */
     @PostMapping("")
-    public ResponseEntity<?> addReport(@RequestBody Report report,
+    public ResponseEntity<?> addReport(@RequestBody CreateReportModel reportModel,
                                        @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            reportService.addReport(report, bearerToken);
+            reportService.addReport(reportModel, bearerToken);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

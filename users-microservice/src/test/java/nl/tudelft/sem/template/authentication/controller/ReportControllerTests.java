@@ -12,6 +12,7 @@ import nl.tudelft.sem.template.authentication.controllers.ReportController;
 import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportService;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
+import nl.tudelft.sem.template.authentication.models.CreateReportModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,8 @@ public class ReportControllerTests {
     private transient ReportService reportService;
     private transient ReportController reportController;
     private transient Report report;
-    private transient UUID repordId;
+    private transient CreateReportModel reportModel;
+    private transient UUID reportId;
     private transient String token;
 
     /**
@@ -33,8 +35,12 @@ public class ReportControllerTests {
     public void setUp() {
         this.reportService = mock(ReportService.class);
         this.reportController = new ReportController(reportService);
+        this.reportModel = new CreateReportModel();
+        this.reportModel.setReportType(ReportType.REVIEW);
+        this.reportModel.setUserId(UUID.randomUUID().toString());
+        this.reportModel.setText("Text");
         this.report = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Report");
-        this.repordId = UUID.randomUUID();
+        this.reportId = UUID.randomUUID();
         this.token = "someToken";
     }
 
@@ -50,27 +56,23 @@ public class ReportControllerTests {
 
     @Test
     public void addReportTest() {
-        assertEquals(reportController.addReport(report, token).getStatusCodeValue(), 200);
-
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token!"))
-                .when(reportService).addReport(any(), any());
-        assertEquals(reportController.addReport(report, token).getStatusCodeValue(), 401);
+        assertEquals(reportController.addReport(reportModel, token).getStatusCodeValue(), 200);
 
         doThrow(new ResponseStatusException((HttpStatus.NOT_FOUND), "Reported user not found!"))
                 .when(reportService).addReport(any(), any());
-        assertEquals(reportController.addReport(report, token).getStatusCodeValue(), 404);
+        assertEquals(reportController.addReport(reportModel, token).getStatusCodeValue(), 404);
     }
 
     @Test
     public void deleteReportTest() {
-        assertEquals(reportController.deleteReport(repordId.toString(), token).getStatusCodeValue(), 200);
+        assertEquals(reportController.deleteReport(reportId.toString(), token).getStatusCodeValue(), 200);
 
         doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can access reports!"))
                 .when(reportService).remove(any(), any());
-        assertEquals(reportController.deleteReport(repordId.toString(), token).getStatusCodeValue(), 401);
+        assertEquals(reportController.deleteReport(reportId.toString(), token).getStatusCodeValue(), 401);
 
         doThrow(new ResponseStatusException((HttpStatus.NOT_FOUND), "The report does not exist!"))
                 .when(reportService).remove(any(), any());
-        assertEquals(reportController.deleteReport(repordId.toString(), token).getStatusCodeValue(), 404);
+        assertEquals(reportController.deleteReport(reportId.toString(), token).getStatusCodeValue(), 404);
     }
 }
