@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
 import java.util.List;
+import java.util.Map;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
@@ -174,7 +175,6 @@ public class UserController {
     public ResponseEntity<Void> updatePrivacy(@RequestBody String isPrivate) {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         userService.updatePrivacy(username, Boolean.parseBoolean(isPrivate));
-        //System.out.println(Boolean.parseBoolean(isPrivate));
 
         return ResponseEntity.ok().build();
     }
