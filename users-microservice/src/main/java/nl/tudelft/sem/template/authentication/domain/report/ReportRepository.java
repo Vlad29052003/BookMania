@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.report;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,12 +15,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReportRepository extends JpaRepository<Report, UUID> {
 
-    /**
-     * Find a report by its id.
-     */
-    Optional<Report> findById(UUID id);
-
     @Modifying
     @Query("DELETE FROM Report r WHERE r.userId = :user_id")
-    void deleteByUserId(@Param("user_id") UUID id);
+    void deleteByUserId(@Param("user_id") String id);
+
+    @Query("SELECT r FROM Report r WHERE r.userId = :user_id")
+    Optional<List<Report>> getByUserId(@Param("user_id") String id);
 }
