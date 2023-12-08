@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import nl.tudelft.sem.template.authentication.domain.user.UserLookupService;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/c")
 public class UserSearchController {
-
-
 
     private final transient UserLookupService userLookupService;
 
@@ -35,13 +34,29 @@ public class UserSearchController {
      *
      * @param userName The username query parameter
      * @return the users containing the given username
-     * @throws ResponseStatusException if the user does not exist or the password is incorrect
+     * @throws ResponseStatusException if there is no user found
      */
     @GetMapping("/users/{user}")
     public ResponseEntity<Iterable<UserModel>> getUser(@PathVariable(name = "user") String userName)
             throws ResponseStatusException {
         try {
             Iterable<UserModel> x = userLookupService.getUsersByName(userName);
+            return ResponseEntity.ok(x);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    /** Endpoint for user searching by favourite book.
+     * @param bookId The bookId query parameter
+     * @return the users containing the given favourite book
+     * @throws ResponseStatusException if there is no user found
+     */
+    @GetMapping("/users/{bookId}")
+    public ResponseEntity<Iterable<UserModel>> getUsersByFavouriteBook(@PathVariable(name = "bookId") String bookId)
+            throws ResponseStatusException {
+        try {
+            Iterable<UserModel> x = userLookupService.getUsersByFavouriteBook(bookId);
             return ResponseEntity.ok(x);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
