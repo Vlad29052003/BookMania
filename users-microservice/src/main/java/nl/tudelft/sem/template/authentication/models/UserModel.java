@@ -18,4 +18,5 @@ public class UserModel {
     private String location;
     private List<Genre> favouriteGenres;
     private Book favouriteBook;
+    private boolean isPrivate;
 }

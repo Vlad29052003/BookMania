@@ -45,7 +45,7 @@ public class UserController {
         AppUser user = userService.getUserByUsername(username);
 
         UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
-                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
+                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook(), user.isPrivate());
 
         return ResponseEntity.ok(userModel);
     }
@@ -171,9 +171,9 @@ public class UserController {
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/isPrivate")
-    public ResponseEntity<Void> updatePrivacy(@RequestBody boolean isPrivate) {
+    public ResponseEntity<Void> updatePrivacy(@RequestBody String isPrivate) {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        userService.updatePrivacy(username, isPrivate);
+        userService.updatePrivacy(username, Boolean.parseBoolean(isPrivate));
 
         return ResponseEntity.ok().build();
     }

@@ -37,7 +37,7 @@ public class UserLookupService {
                                 && user.getUsername().toString().contains(name))
                 .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
                         u.getName(), u.getBio(), u.getLocation(),
-                        u.getFavouriteGenres(), u.getFavouriteBook()))
+                        u.getFavouriteGenres(), u.getFavouriteBook(), u.isPrivate()))
                 .collect(Collectors.toList());
     }
 
