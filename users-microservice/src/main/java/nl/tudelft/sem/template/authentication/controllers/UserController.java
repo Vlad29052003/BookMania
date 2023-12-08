@@ -174,6 +174,7 @@ public class UserController {
     public ResponseEntity<Void> updatePrivacy(@RequestBody String isPrivate) {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         userService.updatePrivacy(username, Boolean.parseBoolean(isPrivate));
+        //System.out.println(Boolean.parseBoolean(isPrivate));
 
         return ResponseEntity.ok().build();
     }
