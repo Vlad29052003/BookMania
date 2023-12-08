@@ -174,7 +174,6 @@ public class UserLookupServiceTests {
 
         userService.updatePrivacy(new Username(netId3), true);
 
-        // Assert
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getNetId).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
