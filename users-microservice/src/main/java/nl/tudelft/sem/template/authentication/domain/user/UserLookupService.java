@@ -35,9 +35,7 @@ public class UserLookupService {
                 .stream().filter(
                         user -> (!user.isDeactivated() && !user.isPrivate())
                                 && user.getUsername().toString().contains(name))
-                .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
-                        u.getName(), u.getBio(), u.getLocation(),
-                        u.getFavouriteGenres(), u.getFavouriteBook(), u.isPrivate()))
+                .map(UserModel::new)
                 .collect(Collectors.toList());
     }
 
