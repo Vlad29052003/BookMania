@@ -21,6 +21,14 @@ public class UserModel {
     private Book favouriteBook;
     private boolean isPrivate;
 
+
+    /**
+     * Constructor for the UserModel Class that takes
+     * an AppUser as input
+     *
+     * @param user user for which the model instance is
+     *             to be made for
+     */
     public UserModel(AppUser user) {
         this.netId = user.getUsername().toString();
         this.email = user.getEmail();
