@@ -33,6 +33,7 @@ public class Report {
     private ReportType type;
 
     @Getter
+    @Setter
     @Column(name = "user_id", nullable = false)
     private String userId;
 

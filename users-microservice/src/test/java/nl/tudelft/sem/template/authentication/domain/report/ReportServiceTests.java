@@ -1,94 +1,112 @@
 package nl.tudelft.sem.template.authentication.domain.report;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.Collections;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class ReportServiceTests {
 
-    @Mock
-    private ReportRepository reportRepository;
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private JwtService jwtService;
-    @InjectMocks
-    private ReportService reportService;
+    @Autowired
+    private transient ReportService reportService;
+
+    @Autowired
+    private transient ReportRepository reportRepository;
+
+    @Autowired
+    private transient UserRepository userRepository;
+
+    private AppUser madeReport;
+    private AppUser isReported;
+    private Report report;
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    public void getAllReportsGoodTest() {
-        when(jwtService.extractAuthorization(anyString())).thenReturn(Authority.ADMIN);
-        when(reportRepository.findAll()).thenReturn(Collections.emptyList());
-        assertDoesNotThrow(() -> reportService.getAllReports("Admin token"));
-        verify(reportRepository, times(1)).findAll();
+        madeReport = new AppUser(new Username("madeReport"), "made@report", new HashedPassword("pass"));
+        isReported = new AppUser(new Username("reported"), "is@reported", new HashedPassword("pwd"));
     }
 
     @Test
     public void getAllReportsNotAdminTest() {
-        when(jwtService.extractAuthorization(anyString())).thenReturn(Authority.REGULAR_USER);
-        assertThrows(ResponseStatusException.class, () -> reportService.getAllReports("User token"));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> reportService.getAllReports("REGULAR_USER"));
+        assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void addReportGoodTest() {
-        when(jwtService.isTokenExpired(anyString())).thenReturn(false);
-        when(userRepository.existsById(any())).thenReturn(true);
-        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "Something");
-        while (report.getId().equals(UUID.fromString(report.getUserId()))) {
-            report.setId(UUID.randomUUID());
-        }
-        assertDoesNotThrow(() -> reportService.addReport(report, "User token"));
-        verify(reportRepository, times(1)).saveAndFlush(any());
+    public void getAllReportsGoodTest() {
+        assertDoesNotThrow(() -> reportService.getAllReports("ADMIN"));
+        assertEquals(reportService.getAllReports("ADMIN"), new ArrayList<>());
+        report = new Report(UUID.randomUUID(), ReportType.COMMENT, UUID.randomUUID().toString(), "text");
+        reportRepository.save(report);
+        assertEquals(reportService.getAllReports("ADMIN"), List.of(report));
     }
 
     @Test
-    void removeGoodTest() {
-        when(jwtService.extractAuthorization(anyString())).thenReturn(Authority.ADMIN);
-        UUID reportId = UUID.randomUUID();
-        when(reportRepository.findById(reportId)).thenReturn(Optional.of(new Report()));
-        assertDoesNotThrow(() -> reportService.remove(reportId.toString(), "Admin token"));
-        verify(reportRepository, times(1)).deleteById(reportId);
+    public void nonExistentUserMakesReportTest() {
+        report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "text");
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> reportService.addReport(report, madeReport.getUsername()));
+        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
     }
 
     @Test
-    void removeNotFoundTest() {
-        when(jwtService.extractAuthorization(anyString())).thenReturn(Authority.ADMIN);
-        UUID reportId = UUID.randomUUID();
-        when(reportRepository.findById(reportId)).thenReturn(Optional.empty());
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> reportService.remove(reportId.toString(), "Admin token"));
-        assert (exception.getStatus() == HttpStatus.NOT_FOUND);
+    public void addReportToNonExistentUserTest() {
+        userRepository.save(madeReport);
+        report = new Report(UUID.randomUUID(), ReportType.COMMENT, UUID.randomUUID().toString(), "text");
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> reportService.addReport(report, madeReport.getUsername()));
+        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
     }
 
     @Test
-    void removeNotAdminTest() {
-        when(jwtService.extractAuthorization(anyString())).thenReturn(Authority.REGULAR_USER);
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> reportService.remove(UUID.randomUUID().toString(), "User token"));
-        assert (exception.getStatus() == HttpStatus.UNAUTHORIZED);
+    public void addReportGoodTest() {
+        userRepository.save(madeReport);
+        userRepository.save(isReported);
+        report = new Report(UUID.randomUUID(), ReportType.COMMENT, isReported.getId().toString(), "text");
+        assertDoesNotThrow(() -> reportService.addReport(report, madeReport.getUsername()));
+        assertThat(reportRepository.findAll()).isEqualTo(List.of(report));
     }
 
+    @Test
+    public void removeReportNotAdminTest() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> reportService.remove(UUID.randomUUID().toString(), "REGULAR_USER"));
+        assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void removeNonExistentReportTest() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> reportService.remove(UUID.randomUUID().toString(), "ADMIN"));
+        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void removeGoodTest() {
+        report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "text");
+        reportRepository.save(report);
+        assertDoesNotThrow(() -> reportService.remove(report.getId().toString(), "ADMIN"));
+        assertThat(reportRepository.findAll()).isEmpty();
+    }
 }

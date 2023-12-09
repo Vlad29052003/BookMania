@@ -1,17 +1,17 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
+import java.util.ArrayList;
 import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportService;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,13 +34,14 @@ public class ReportController {
     /**
      * Get request for viewing all the reports.
      *
-     * @param bearerToken the jwt token.
      * @return request status.
      */
     @GetMapping("")
-    public ResponseEntity<?> getAllReports(@RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> getAllReports() {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                            .get(0).getAuthority();
         try {
-            return ResponseEntity.ok(reportService.getAllReports(bearerToken));
+            return ResponseEntity.ok(reportService.getAllReports(authority));
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
@@ -50,14 +51,13 @@ public class ReportController {
      * Post request for adding a new report.
      *
      * @param report new report.
-     * @param bearerToken jwt token.
      * @return request status.
      */
     @PostMapping("")
-    public ResponseEntity<?> addReport(@RequestBody Report report,
-                                       @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> addReport(@RequestBody Report report) {
+        Username madeRequest = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         try {
-            reportService.addReport(report, bearerToken);
+            reportService.addReport(report, madeRequest);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
@@ -68,14 +68,14 @@ public class ReportController {
      * Delete request for removing a report.
      *
      * @param reportId id of report.
-     * @param bearerToken jwt token.
      * @return request status.
      */
     @DeleteMapping("{reportId}")
-    public ResponseEntity<?> deleteReport(@PathVariable String reportId,
-                                          @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> deleteReport(@PathVariable String reportId) {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                            .get(0).getAuthority();
         try {
-            reportService.remove(reportId, bearerToken);
+            reportService.remove(reportId, authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

@@ -1,73 +1,135 @@
 package nl.tudelft.sem.template.authentication.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.controllers.ReportController;
+import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.report.Report;
-import nl.tudelft.sem.template.authentication.domain.report.ReportService;
+import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
+import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
 
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@AutoConfigureMockMvc
 public class ReportControllerTests {
+    @Autowired
+    private MockMvc mockMvc;
 
-    private transient ReportService reportService;
-    private transient ReportController reportController;
-    private transient Report report;
-    private transient String token;
+    @Autowired
+    private transient JwtTokenGenerator jwtTokenGenerator;
+
+    @Autowired
+    private transient ReportRepository reportRepository;
+
+    @Autowired
+    private transient UserRepository userRepository;
+
+    private AppUser madeReport;
+    private AppUser isReported;
+    private AppUser admin;
+    private String userToken;
+    private String adminToken;
 
     /**
      * Set up the testing environment.
      */
     @BeforeEach
     public void setUp() {
-        this.reportService = mock(ReportService.class);
-        this.reportController = new ReportController(reportService);
-        this.report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "Report");
-        while (report.getId().equals(UUID.fromString(report.getUserId()))) {
-            report.setId(UUID.randomUUID());
-        }
-        this.token = "someToken";
+        madeReport = new AppUser(new Username("user"), "user@regular", new HashedPassword("pass"));
+        madeReport.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> rolesUser = new ArrayList<>();
+        rolesUser.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        userToken = jwtTokenGenerator.generateToken(new User(madeReport.getUsername().toString(),
+                madeReport.getPassword().toString(), rolesUser));
+
+        isReported = new AppUser(new Username("reported"), "oopsie@report", new HashedPassword("????"));
+        isReported.setAuthority(Authority.REGULAR_USER);
+
+        admin = new AppUser(new Username("admin"), "admin@admin", new HashedPassword("pwd"));
+        admin.setAuthority(Authority.ADMIN);
+        Collection<SimpleGrantedAuthority> rolesAdmin = new ArrayList<>();
+        rolesAdmin.add(new SimpleGrantedAuthority(Authority.ADMIN.toString()));
+        adminToken = jwtTokenGenerator.generateToken(new User(admin.getUsername().toString(),
+                admin.getPassword().toString(), rolesAdmin));
     }
 
     @Test
-    public void getAllReportsTest() {
-        when(reportService.getAllReports(token)).thenReturn(List.of(report));
-        assertEquals(reportController.getAllReports(token), ResponseEntity.ok(List.of(report)));
+    public void testGetAllReports() throws Exception {
+        userRepository.save(madeReport);
+        userRepository.save(admin);
 
-        when(reportService.getAllReports(token))
-                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can access reports!"));
-        assertEquals(reportController.getAllReports(token).getStatusCodeValue(), 401);
+        mockMvc.perform(get("/c/reports")
+                .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/c/reports")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void addReportTest() {
-        assertEquals(reportController.addReport(report, token).getStatusCodeValue(), 200);
+    public void testAddReport() throws Exception {
+        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "text");
+        userRepository.save(madeReport);
+        mockMvc.perform(post("/c/reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(report))
+                        .header("Authorization", "Bearer " + userToken))
+                        .andExpect(status().isNotFound());
 
-        doThrow(new ResponseStatusException((HttpStatus.NOT_FOUND), "Reported user not found!"))
-                .when(reportService).addReport(any(), any());
-        assertEquals(reportController.addReport(report, token).getStatusCodeValue(), 404);
+        userRepository.save(isReported);
+        report.setUserId(isReported.getId().toString());
+        mockMvc.perform(post("/c/reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(report))
+                        .header("Authorization", "Bearer " + userToken))
+                        .andExpect(status().isOk());
     }
 
     @Test
-    public void deleteReportTest() {
-        assertEquals(reportController.deleteReport(report.getId().toString(), token).getStatusCodeValue(), 200);
+    public void testRemove() throws Exception {
+        userRepository.save(admin);
+        userRepository.save(madeReport);
+        userRepository.save(isReported);
+        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "text");
+        mockMvc.perform(delete("/c/reports/" + report.getId())
+                        .header("Authorization", "Bearer " + userToken))
+                        .andExpect(status().isUnauthorized());
 
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can access reports!"))
-                .when(reportService).remove(any(), any());
-        assertEquals(reportController.deleteReport(report.getId().toString(), token).getStatusCodeValue(), 401);
+        mockMvc.perform(delete("/c/reports/" + report.getId())
+                        .header("Authorization", "Bearer " + adminToken))
+                        .andExpect(status().isNotFound());
 
-        doThrow(new ResponseStatusException((HttpStatus.NOT_FOUND), "The report does not exist!"))
-                .when(reportService).remove(any(), any());
-        assertEquals(reportController.deleteReport(report.getId().toString(), token).getStatusCodeValue(), 404);
+        report.setUserId(isReported.getId().toString());
+        reportRepository.save(report);
+        mockMvc.perform(delete("/c/reports/" + report.getId())
+                        .header("Authorization", "Bearer " + adminToken))
+                        .andExpect(status().isOk());
+        assertThat(reportRepository.findAll()).isEmpty();
     }
 }
