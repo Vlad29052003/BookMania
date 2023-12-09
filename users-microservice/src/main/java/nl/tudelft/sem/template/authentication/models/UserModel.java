@@ -23,8 +23,7 @@ public class UserModel {
 
 
     /**
-     * Constructor for the UserModel Class that takes
-     * an AppUser as input
+     * Constructor for the UserModel Class that take an AppUser as input.
      *
      * @param user user for which the model instance is
      *             to be made for
