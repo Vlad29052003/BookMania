@@ -1,6 +1,8 @@
 package nl.tudelft.sem.template.authentication.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,14 +15,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
+import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
+import nl.tudelft.sem.template.authentication.controllers.UserController;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.report.Report;
+import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
+import nl.tudelft.sem.template.authentication.domain.report.ReportType;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
@@ -30,7 +38,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.DirtiesContext;
@@ -54,6 +64,9 @@ public class UserControllerTests {
 
     @Autowired
     private transient BookRepository bookRepository;
+
+    @Autowired
+    private transient ReportRepository reportRepository;
 
     @Test
     public void testGetUserByNetId() throws Exception {
@@ -291,30 +304,33 @@ public class UserControllerTests {
 
     @Test
     @Transactional
-    public void testUpdateBannedStatus() throws Exception {
-        final Username testUser = new Username("SomeUser");
-        final String email = "test@email.com";
-        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
-        final AppUser user = new AppUser(testUser, email, testHashedPassword);
-        user.setAuthority(Authority.REGULAR_USER);
-        userRepository.save(user);
+    public void testUpdateBannedStatus() {
+        UserRepository ur = mock(UserRepository.class);
+        ReportRepository rr = mock(ReportRepository.class);
+        UserService us = new UserService(ur, rr, mock(BookRepository.class), mock(JwtService.class));
+        final UserController uc = new UserController(us);
 
-        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
-        final String token = jwtTokenGenerator.generateToken(
-                new User(testUser.toString(), testHashedPassword.toString(), roles));
+        Username username = new Username("user");
+        HashedPassword pass = new HashedPassword("pass");
+        AppUser user = new AppUser(username, "mail", pass);
+        user.setId(UUID.randomUUID());
+        String adminToken = "adminToken";
 
-        BanUserRequestModel banUser = new BanUserRequestModel();
-        banUser.setUsername(user.getUsername().toString());
-        banUser.setBanned(false);
+        when(us.getAuthority(adminToken)).thenReturn(Authority.ADMIN);
+        when(ur.findByUsername(username)).thenReturn(Optional.empty());
 
-        ResultActions resultActions = mockMvc.perform(
-                patch("/c/users/isDeactivated")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(banUser))
-                        .header("Authorization", "Bearer " + token));
+        BanUserRequestModel ban = new BanUserRequestModel();
+        ban.setBanned(false);
+        ban.setUsername(username.toString());
 
-        resultActions.andExpect(status().isUnauthorized());
+        ResponseEntity<?> re = uc.updateBannedStatus(ban, adminToken);
+        assertThat(re.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        Report report = new Report(ReportType.REVIEW, user.getId().toString(), "text");
+        when(ur.findByUsername(username)).thenReturn(Optional.of(user));
+        when(rr.getByUserId(user.getId().toString())).thenReturn(Optional.of(List.of(report)));
+
+        assertThat(uc.updateBannedStatus(ban, adminToken).getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
