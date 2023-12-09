@@ -12,7 +12,7 @@ import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserModel {
-    private String netId;
+    private String username;
     private String email;
     private String name;
     private String bio;
@@ -29,7 +29,7 @@ public class UserModel {
      *             to be made for
      */
     public UserModel(AppUser user) {
-        this.netId = user.getUsername().toString();
+        this.username = user.getUsername().toString();
         this.email = user.getEmail();
         this.name = user.getName();
         this.bio = user.getBio();

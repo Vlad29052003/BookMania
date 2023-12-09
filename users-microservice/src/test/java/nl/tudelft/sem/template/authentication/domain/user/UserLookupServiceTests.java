@@ -124,7 +124,7 @@ public class UserLookupServiceTests {
 
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("user")
-                .stream().map(UserModel::getNetId).collect(Collectors.toList());
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user");
 
 
@@ -145,7 +145,7 @@ public class UserLookupServiceTests {
 
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("")
-                .stream().map(UserModel::getNetId).collect(Collectors.toList());
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
 
         assertThat(foundUsers).containsAll(expected);
@@ -175,7 +175,7 @@ public class UserLookupServiceTests {
         userService.updatePrivacy(new Username(netId3), true);
 
         List<String> foundUsers = userLookupService.getUsersByName("")
-                .stream().map(UserModel::getNetId).collect(Collectors.toList());
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
 
         assertThat(foundUsers).containsAll(expected);
