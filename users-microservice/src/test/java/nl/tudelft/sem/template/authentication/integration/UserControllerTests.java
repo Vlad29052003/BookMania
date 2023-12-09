@@ -75,7 +75,7 @@ public class UserControllerTests {
         String response = resultActions.andReturn().getResponse().getContentAsString();
         UserModel userModel = new ObjectMapper().readValue(response, UserModel.class);
 
-        assertThat(userModel.getNetId()).isEqualTo(testUser.toString());
+        assertThat(userModel.getUsername()).isEqualTo(testUser.toString());
         assertThat(userModel.getEmail()).isEqualTo(email);
         assertThat(userModel.getName()).isNull();
         assertThat(userModel.getBio()).isNull();

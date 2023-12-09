@@ -11,7 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserModel {
-    private String netId;
+    private String username;
     private String email;
     private String name;
     private String bio;

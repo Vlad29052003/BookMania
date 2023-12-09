@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.stereotype.Service;
@@ -43,18 +44,30 @@ public class UserLookupService {
      * @param bookId id of the favourite book
      * @return users matching favourite book that are not deactivated/banned
      */
-    public List<UserModel> getUsersByFavouriteBook(String bookId) {
-        List<UserModel> users = userRepository.findAll()
-                .stream().filter(user -> !user.isDeactivated() && user.getFavouriteBook().getId().toString().equals(bookId))
+    public List<UserModel> getUsersByFavouriteBook(UUID bookId) {
+        List<AppUser> users = userRepository.findAll()
+                .stream().filter(user -> !user.isDeactivated() && user.getFavouriteBook() != null)
+                .collect(Collectors.toList());
+
+        if(users.isEmpty()) {
+            throw new IllegalArgumentException("No users found!");
+        }
+
+        boolean bookExists = users
+                .stream().anyMatch(user -> user.getFavouriteBook().getId().equals(bookId));
+
+        if(!bookExists) {
+            throw new IllegalArgumentException("No users with this favourite book found!");
+        }
+
+        List<UserModel> res = users
+                .stream().filter(user -> bookExists)
                 .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
                         u.getName(), u.getBio(), u.getLocation(),
                         u.getFavouriteGenres(), u.getFavouriteBook()))
                 .collect(Collectors.toList());
 
-        if(users.isEmpty()) {
-            throw new IllegalArgumentException("No users with favourite book: " +  bookId + " found!");
-        }
-        return users;
+        return res;
     }
 
 
