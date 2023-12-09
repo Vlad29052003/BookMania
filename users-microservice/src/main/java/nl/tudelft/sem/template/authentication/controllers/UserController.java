@@ -45,8 +45,7 @@ public class UserController {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         AppUser user = userService.getUserByUsername(username);
 
-        UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
-                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook(), user.isPrivate());
+        UserModel userModel = new UserModel(user);
 
         return ResponseEntity.ok(userModel);
     }
