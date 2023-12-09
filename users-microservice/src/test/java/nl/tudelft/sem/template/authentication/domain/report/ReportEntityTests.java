@@ -17,8 +17,8 @@ public class ReportEntityTests {
      */
     @BeforeEach
     public void setUp() {
-        firstReport = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Some language");
-        secondReport = new Report(ReportType.REVIEW, UUID.randomUUID().toString(), "Some other language");
+        firstReport = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "Some language");
+        secondReport = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "Some other language");
 
         firstReport.setId(UUID.randomUUID());
         secondReport.setId(UUID.randomUUID());

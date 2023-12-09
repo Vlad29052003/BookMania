@@ -326,7 +326,7 @@ public class UserControllerTests {
         ResponseEntity<?> re = uc.updateBannedStatus(ban, adminToken);
         assertThat(re.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
-        Report report = new Report(ReportType.REVIEW, user.getId().toString(), "text");
+        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
         when(ur.findByUsername(username)).thenReturn(Optional.of(user));
         when(rr.getByUserId(user.getId().toString())).thenReturn(Optional.of(List.of(report)));
 

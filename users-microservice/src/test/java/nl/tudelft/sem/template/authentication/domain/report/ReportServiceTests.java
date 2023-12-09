@@ -14,7 +14,6 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.models.CreateReportModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -57,10 +56,10 @@ class ReportServiceTests {
     void addReportGoodTest() {
         when(jwtService.isTokenExpired(anyString())).thenReturn(false);
         when(userRepository.existsById(any())).thenReturn(true);
-        CreateReportModel report = new CreateReportModel();
-        report.setReportType(ReportType.REVIEW);
-        report.setUserId(UUID.randomUUID().toString());
-        report.setText("Something");
+        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, UUID.randomUUID().toString(), "Something");
+        while (report.getId().equals(UUID.fromString(report.getUserId()))) {
+            report.setId(UUID.randomUUID());
+        }
         assertDoesNotThrow(() -> reportService.addReport(report, "User token"));
         verify(reportRepository, times(1)).saveAndFlush(any());
     }

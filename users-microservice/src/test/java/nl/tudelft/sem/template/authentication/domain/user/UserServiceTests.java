@@ -235,7 +235,7 @@ public class UserServiceTests {
         assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
         verify(ur, never()).saveAndFlush(any(AppUser.class));
 
-        Report report = new Report(ReportType.REVIEW, appUser.getId().toString(), "text");
+        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, appUser.getId().toString(), "text");
         when(rr.getByUserId(appUser.getId().toString())).thenReturn(Optional.of(List.of(report)));
         assertDoesNotThrow(() -> us.updateBannedStatus(username, adminToken));
         assertDoesNotThrow(() -> us.updateBannedStatus(username, adminToken));

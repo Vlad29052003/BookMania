@@ -2,21 +2,16 @@ package nl.tudelft.sem.template.authentication.domain.report;
 
 import java.util.Objects;
 import java.util.UUID;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 @Entity
@@ -29,12 +24,6 @@ public class Report {
     @Getter
     @Setter
     @Column(name = "report_id", nullable = false)
-    @GeneratedValue(generator = "useExistingIdOtherwiseGenerateUuid")
-    @GenericGenerator(
-            name = "useExistingIdOtherwiseGenerateUuid",
-            strategy = "nl.tudelft.sem.template.authentication."
-                    + "domain.providers.implementations.UseExistingIdOtherwiseGenerateUuid"
-    )
     @Type(type = "uuid-char")
     private UUID id;
 
@@ -54,11 +43,13 @@ public class Report {
     /**
      * Creates a new Report.
      *
+     * @param id id of the report as received from the Review microservice
      * @param type report type.
      * @param userId id of the targeted user.
      * @param text text of the report.
      */
-    public Report(ReportType type, String userId, String text) {
+    public Report(UUID id, ReportType type, String userId, String text) {
+        this.id = id;
         this.type = type;
         this.userId = userId;
         this.text = text;

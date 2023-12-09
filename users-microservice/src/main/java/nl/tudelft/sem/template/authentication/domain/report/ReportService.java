@@ -5,7 +5,6 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.models.CreateReportModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,16 +47,13 @@ public class ReportService {
     /**
      * Adds a new report to the database.
      *
-     * @param reportModel report to be added.
+     * @param report report to be added.
      * @param bearerToken jwt token.
      */
-    public void addReport(CreateReportModel reportModel, String bearerToken) {
-        if (!userRepository.existsById(UUID.fromString(reportModel.getUserId()))) {
+    public void addReport(Report report, String bearerToken) {
+        if (!userRepository.existsById(UUID.fromString(report.getUserId()))) {
             throw new ResponseStatusException((HttpStatus.NOT_FOUND), "Reported user not found!");
         }
-        Report report = new Report(reportModel.getReportType(),
-                                    reportModel.getUserId(),
-                                    reportModel.getText());
         reportRepository.saveAndFlush(report);
     }
 
