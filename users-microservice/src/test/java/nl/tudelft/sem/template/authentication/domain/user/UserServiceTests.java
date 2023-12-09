@@ -2,22 +2,13 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -46,6 +37,9 @@ public class UserServiceTests {
 
     @Autowired
     private transient BookRepository bookRepository;
+
+    @Autowired
+    private transient  ReportRepository reportRepository;
 
     @Test
     public void testGetUserByNetId() {
@@ -204,42 +198,39 @@ public class UserServiceTests {
     @Test
     @Transactional
     public void testUpdateBannedStatus() {
-        UserRepository ur = mock(UserRepository.class);
-        ReportRepository rr = mock(ReportRepository.class);
-        UserService us = new UserService(ur, rr, mock(BookRepository.class), mock(JwtService.class));
-
-        String adminToken = "adminToken";
-        String userToken = "userToken";
         Username username = new Username("user");
-        AppUser appUser = new AppUser(username, "mail", new HashedPassword("pwd"));
-        appUser.setId(UUID.randomUUID());
-
-        when(us.getAuthority(adminToken)).thenReturn(Authority.ADMIN);
-        when(us.getAuthority(userToken)).thenReturn(Authority.REGULAR_USER);
+        String email = "user@user.com";
+        HashedPassword hashedPassword = new HashedPassword("pass");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-                                    () -> us.updateBannedStatus(username, userToken));
+                                    () -> userService.updateBannedStatus(username, "ADMIN"));
+        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+
+        AppUser user = new AppUser(username, email, hashedPassword);
+        userRepository.save(user);
+
+        e = assertThrows(ResponseStatusException.class,
+                                    () -> userService.updateBannedStatus(username, "REGULAR_USER"));
         assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
-        verify(ur, never()).saveAndFlush(any(AppUser.class));
 
-        when(ur.findByUsername(username)).thenReturn(Optional.empty());
         e = assertThrows(ResponseStatusException.class,
-                                    () -> us.updateBannedStatus(username, adminToken));
+                                    () -> userService.updateBannedStatus(username, "ADMIN"));
         assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
-        verify(ur, never()).saveAndFlush(any(AppUser.class));
 
-        when(ur.findByUsername(username)).thenReturn(Optional.of(appUser));
-        when(rr.getByUserId(appUser.getId().toString())).thenReturn(Optional.empty());
-        e = assertThrows(ResponseStatusException.class,
-                                    () -> us.updateBannedStatus(username, adminToken));
-        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
-        verify(ur, never()).saveAndFlush(any(AppUser.class));
+        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
+        while (report.getId().equals(user.getId())) {
+            report.setId(UUID.randomUUID());
+        }
+        reportRepository.save(report);
 
-        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, appUser.getId().toString(), "text");
-        when(rr.getByUserId(appUser.getId().toString())).thenReturn(Optional.of(List.of(report)));
-        assertDoesNotThrow(() -> us.updateBannedStatus(username, adminToken));
-        assertDoesNotThrow(() -> us.updateBannedStatus(username, adminToken));
-        verify(ur, times(2)).saveAndFlush(any(AppUser.class));
+        userService.updateBannedStatus(username, "ADMIN");
+        assertThat(reportRepository.getByUserId(user.getId().toString())).isEmpty();
+        assertThat(userRepository.findByUsername(username)).isPresent();
+        assertThat(userRepository.findByUsername(username).get().isDeactivated()).isTrue();
+
+        userService.updateBannedStatus(username, "ADMIN");
+        assertThat(userRepository.findByUsername(username)).isPresent();
+        assertThat(userRepository.findByUsername(username).get().isDeactivated()).isFalse();
     }
 
     @Test

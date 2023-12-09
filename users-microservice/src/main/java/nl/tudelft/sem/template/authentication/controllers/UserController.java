@@ -1,7 +1,6 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
+import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -159,14 +157,14 @@ public class UserController {
      * Patch request to ban / unban a user.
      *
      * @param banUserRequestModel username of user that needs to be (un)banned.
-     * @param bearerToken jwt token.
      * @return request status.
      */
     @PatchMapping("/isDeactivated")
-    public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel,
-                                                @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel) {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                                                .get(0).getAuthority();
         try {
-            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()), bearerToken);
+            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()), authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

@@ -3,7 +3,6 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -22,23 +21,21 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
-    private final transient JwtService jwtService;
-
     public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
      * Instantiates a new UserService.
      *
-     * @param userRepository the user repository
+     * @param userRepository the user repository.
+     * @param reportRepository the report repository.
+     * @param bookRepository the book repository.
      */
     public UserService(UserRepository userRepository,
                        ReportRepository reportRepository,
-                       BookRepository bookRepository,
-                       JwtService jwtService) {
+                       BookRepository bookRepository) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.bookRepository = bookRepository;
-        this.jwtService = jwtService;
     }
 
     /**
@@ -180,11 +177,11 @@ public class UserService {
      * (Un)bans a user.
      *
      * @param username    username of the user that should be (un)banned.
-     * @param bearerToken jwt token.
+     * @param authority jwt token.
      */
     @Transactional
-    public void updateBannedStatus(Username username, String bearerToken) {
-        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
+    public void updateBannedStatus(Username username, String authority) {
+        if (!authority.equals(Authority.ADMIN.toString())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
         }
 
@@ -222,9 +219,5 @@ public class UserService {
         AppUser user = optionalAppUser.get();
 
         userRepository.delete(user);
-    }
-
-    public Authority getAuthority(String bearerToken) {
-        return jwtService.extractAuthorization(bearerToken.substring(7));
     }
 }
