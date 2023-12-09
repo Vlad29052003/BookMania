@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.annotation.DirtiesContext;
@@ -64,6 +65,24 @@ public class JwtUserDetailsServiceTests {
 
         // Assert
         assertThatExceptionOfType(UsernameNotFoundException.class)
+                .isThrownBy(action);
+    }
+
+    @Test
+    public void loadUserByUsername_withDisabledUser_throwsException() {
+        final Username testUser = new Username("SomeUser");
+        final String email = "testEmail";
+        final String testPasswordHash = "password123Hash";
+
+        AppUser appUser = new AppUser(testUser, email, new HashedPassword(testPasswordHash));
+        appUser.setDeactivated(true);
+        userRepository.save(appUser);
+
+        // Act
+        ThrowableAssert.ThrowingCallable action = () -> jwtUserDetailsService.loadUserByUsername("SomeUser");
+
+        // Assert
+        assertThatExceptionOfType(DisabledException.class)
                 .isThrownBy(action);
     }
 }

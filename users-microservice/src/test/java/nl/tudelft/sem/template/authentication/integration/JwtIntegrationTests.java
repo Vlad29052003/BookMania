@@ -46,11 +46,13 @@ public class JwtIntegrationTests {
     private transient String secret;
     private TimeProvider timeProvider;
     private transient JwtTokenGenerator jwtTokenGenerator;
-    private transient Instant mockedTime = Instant.parse("2050-12-31T13:25:34.00Z");
-    private transient Instant expiredTime = Instant.parse("1999-12-31T13:25:34.00Z");
+    private final transient Instant mockedTime = Instant.parse("2150-12-31T13:25:34.00Z");
+    private final transient Instant expiredTime = Instant.parse("1999-12-31T13:25:34.00Z");
     private transient UserDetails user;
     private transient AppUser appUser;
     private transient String jwtToken;
+    private transient String jwtExpiredToken;
+    private transient String nullUsernameJwtToken;
 
     /**
      * Sets up the testing environment.
@@ -72,6 +74,23 @@ public class JwtIntegrationTests {
         appUser = new AppUser(username, "email@email.com", hashedPassword);
 
         jwtToken = jwtTokenGenerator.generateToken(user);
+
+        user = mock(UserDetails.class);
+        when(user.getUsername()).thenReturn(null);
+        when(user.getAuthorities()).thenReturn(null);
+        nullUsernameJwtToken = jwtTokenGenerator.generateToken(user);
+
+        user = new User("username", "someHash", List.of(Authority.REGULAR_USER));
+        when(timeProvider.getCurrentTime()).thenReturn(expiredTime);
+        jwtExpiredToken = jwtTokenGenerator.generateToken(user);
+    }
+
+    @Test
+    public void notBearerJwtToken() throws Exception {
+        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+                .header("Authorization", "token"));
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(header().string("WWW-Authenticate", "Bearer"));
     }
 
     @Test
@@ -108,11 +127,35 @@ public class JwtIntegrationTests {
 
     @Test
     public void expiredToken() throws Exception {
-        when(timeProvider.getCurrentTime()).thenReturn(expiredTime);
-
-        String jwtExpiredToken = jwtTokenGenerator.generateToken(user);
+        userRepository.saveAndFlush(appUser);
         ResultActions resultActions = mockMvc.perform(get("/validate-token")
                 .header("Authorization", "Bearer " + jwtExpiredToken));
+
+        resultActions.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void deactivatedUser() throws Exception {
+        appUser.setDeactivated(true);
+        userRepository.saveAndFlush(appUser);
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
+                .header("Authorization", "Bearer " + jwtToken));
+
+        resultActions.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void someException() throws Exception {
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
+                .header("Authorization", "Bearer "));
+
+        resultActions.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testNullUsernameInToken() throws Exception {
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
+                .header("Authorization", "Bearer " + nullUsernameJwtToken));
 
         resultActions.andExpect(status().isUnauthorized());
     }

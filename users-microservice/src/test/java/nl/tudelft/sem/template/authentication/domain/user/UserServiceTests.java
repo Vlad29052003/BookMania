@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,5 +205,13 @@ public class UserServiceTests {
         assertThatThrownBy(() -> userService.getUserByUsername(retrievedUser.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(UserService.NO_SUCH_USER);
+    }
+
+    @Test
+    @Transactional
+    public void testDeleteUserNotFound() {
+        assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser")))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);;
     }
 }

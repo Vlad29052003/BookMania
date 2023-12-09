@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.ArrayList;
@@ -52,11 +53,24 @@ public class BookEntityTests {
     }
 
     @Test
+    public void testConstructor2() {
+        Book test = new Book("title", null, null, "desc", 255);
+        assertNotEquals(test, null);
+        assertEquals("title", test.getTitle());
+        assertEquals(new ArrayList<>(), test.getAuthors());
+        assertEquals(new ArrayList<>(), test.getGenres());
+        assertEquals("desc", test.getDescription());
+        assertEquals(255, test.getNumPages());
+        assertEquals(new ArrayList<>(), test.getUsersWithBookAsFavorite());
+    }
+
+    @Test
     public void testEquals() {
         assertEquals(book1, book1);
         assertEquals(book1, book2);
         assertNotEquals(book1, book3);
         assertNotEquals(book1, null);
+        assertFalse(book1.equals(new ArrayList<>()));
     }
 
     @Test

@@ -62,6 +62,10 @@ public class BookService {
             if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
                 Optional<AppUser> authorOptional = userRepository
                         .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
+                if (authorOptional.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                            "Only the authors of the book may add it to the system!");
+                }
                 AppUser currentAuthor = authorOptional.get();
                 if (!createBookRequestModel.getAuthors().contains(currentAuthor.getName())) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,

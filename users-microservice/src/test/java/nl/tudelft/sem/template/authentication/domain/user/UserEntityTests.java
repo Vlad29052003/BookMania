@@ -59,6 +59,7 @@ public class UserEntityTests {
         assertEquals(user1, user2);
         assertNotEquals(user1, user3);
         assertNotEquals(user1, null);
+        assertFalse(user1.equals(new ArrayList<>()));
     }
 
     @Test
