@@ -169,26 +169,8 @@ public class UserLookupServiceTests {
         assertThat(foundUsers).containsAll(expected);
     }
 
-//    @Test
-//    public void testGetFavouriteBook(){
-//        authenticationService.registerUser(registrationRequest);
-//        authenticationService.registerUser(registrationRequest2);
-//
-//        // find all users
-//        Iterable<AppUser> users = userRepository.findAll();
-//        AppUser user = users.iterator().next();
-//        AppUser user2 = users.iterator().next();
-//
-//        user.setFavouriteBook(book);
-//        user2.setFavouriteBook(book);
-//
-//        assertEquals(book, user.getFavouriteBook());
-//        assertEquals(book, user2.getFavouriteBook());
-//    }
-
     @Test
     public void testUserSearchByFavouriteBook() {
-        // Arrange
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
@@ -199,7 +181,6 @@ public class UserLookupServiceTests {
 
         userRepository.save(user);
 
-        // Assert
         List<String> foundUsers = userLookupService.getUsersByFavouriteBook(bookId)
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user");

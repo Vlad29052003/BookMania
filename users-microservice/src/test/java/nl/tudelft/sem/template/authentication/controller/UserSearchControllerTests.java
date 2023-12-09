@@ -7,13 +7,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
-
 import nl.tudelft.sem.template.authentication.controllers.UserSearchController;
 import nl.tudelft.sem.template.authentication.domain.user.UserLookupService;
 import nl.tudelft.sem.template.authentication.models.UserModel;
-import org.h2.engine.User;
 import org.junit.jupiter.api.Test;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 

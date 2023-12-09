@@ -49,14 +49,14 @@ public class UserLookupService {
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteBook() != null)
                 .collect(Collectors.toList());
 
-        if(users.isEmpty()) {
+        if (users.isEmpty()) {
             throw new IllegalArgumentException("No users found!");
         }
 
         boolean bookExists = users
                 .stream().anyMatch(user -> user.getFavouriteBook().getId().equals(bookId));
 
-        if(!bookExists) {
+        if (!bookExists) {
             throw new IllegalArgumentException("No users with this favourite book found!");
         }
 
