@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -144,6 +145,21 @@ public class UserLookupServiceTests {
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getNetId).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
+
+        assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    public void searchDeactivatedUsed() {
+        authenticationService.registerUser(registrationRequest);
+        AppUser appUser = userRepository.findAll().get(0);
+        appUser.setDeactivated(true);
+        userRepository.saveAndFlush(appUser);
+        Username search = appUser.getUsername();
+
+        List<String> foundUsers = userLookupService.getUsersByName(search.toString())
+                .stream().map(UserModel::getNetId).collect(Collectors.toList());
+        List<String> expected = new ArrayList<>();
 
         assertThat(foundUsers).containsAll(expected);
     }

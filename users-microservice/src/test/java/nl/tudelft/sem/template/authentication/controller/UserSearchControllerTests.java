@@ -1,7 +1,7 @@
 package nl.tudelft.sem.template.authentication.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,12 +29,12 @@ public class UserSearchControllerTests {
         assertThat(res).containsExactlyInAnyOrderElementsOf(exp);
     }
 
-
-
     @Test
     public void getUsersExceptionTest() {
         when(userLookupService.getUsersByName("name")).thenThrow(new RuntimeException());
 
-        assertThrows(ResponseStatusException.class, () -> userSearchController.getUser("name"));
+        assertThatThrownBy(() -> userSearchController.getUser("name"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("400 BAD_REQUEST");
     }
 }

@@ -4,7 +4,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 import java.lang.reflect.Field;
 import java.time.Instant;
@@ -87,24 +90,27 @@ public class JwtIntegrationTests {
 
     @Test
     public void notBearerJwtToken() throws Exception {
-        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "token"));
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(header().string("WWW-Authenticate", "Bearer"));
+                .andExpect(header().string("WWW-Authenticate", "Bearer"))
+                .andExpect(content().string(containsString("")));
     }
 
     @Test
     public void missingJwtToken() throws Exception {
-        ResultActions resultActions = mockMvc.perform(get("/validate-token"));
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token"));
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(header().string("WWW-Authenticate", "Bearer"));
+                .andExpect(header().string("WWW-Authenticate", "Bearer"))
+                .andExpect(content().string(containsString("")));
     }
 
     @Test
     public void forgedJwtToken() throws Exception {
-        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + "thisIsTheForgedToken"));
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("")));
     }
 
     @Test
@@ -114,7 +120,8 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
-        resultActions.andExpect(status().isOk());
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().string(containsString("")));
     }
 
     @Test
@@ -122,16 +129,18 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("User does not exist!")));
     }
 
     @Test
     public void expiredToken() throws Exception {
         userRepository.saveAndFlush(appUser);
-        ResultActions resultActions = mockMvc.perform(get("/validate-token")
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtExpiredToken));
 
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("JWT token has expired")));
     }
 
     @Test
@@ -141,7 +150,8 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("User is deactivated")));
     }
 
     @Test
@@ -149,7 +159,8 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer "));
 
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("Unauthorized")));
     }
 
     @Test
@@ -157,7 +168,8 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + nullUsernameJwtToken));
 
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("Unauthorized")));
     }
 
     private void injectSecret(String secret) throws NoSuchFieldException, IllegalAccessException {

@@ -15,26 +15,9 @@ import org.springframework.stereotype.Component;
 public class JwtService {
     @Value("${jwt.secret}")
     private transient String jwtSecret;
-    /**
-     * Time provider to make testing easier.
-     */
-    private final transient TimeProvider timeProvider;
-
-    @Autowired
-    public JwtService(TimeProvider timeProvider) {
-        this.timeProvider = timeProvider;
-    }
-
-    public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date(timeProvider.getCurrentTime().toEpochMilli()));
-    }
 
     public String extractUsername(String jwtToken) {
         return extractClaim(jwtToken, Claims::getSubject);
-    }
-
-    private Date extractExpiration(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getExpiration);
     }
 
     public Authority extractAuthorization(String jwtToken) {

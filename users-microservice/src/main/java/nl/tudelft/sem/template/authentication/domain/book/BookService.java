@@ -100,6 +100,9 @@ public class BookService {
      * @param bearerToken            is the jwt token of the user that made the request
      */
     public void updateBook(Book updatedBook, String bearerToken) {
+        if(updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The authors and genres cannot be null!");
+        }
         if (getAuthority(bearerToken).equals(Authority.ADMIN)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
@@ -109,13 +112,8 @@ public class BookService {
             Book currentBook = optBook.get();
 
             currentBook.setTitle(updatedBook.getTitle());
-
-            if (updatedBook.getAuthors() != null) {
-                currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            }
-            if (updatedBook.getGenres() != null) {
-                currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            }
+            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
@@ -139,13 +137,8 @@ public class BookService {
             }
 
             currentBook.setTitle(updatedBook.getTitle());
-
-            if (updatedBook.getAuthors() != null) {
-                currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            }
-            if (updatedBook.getGenres() != null) {
-                currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            }
+            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
