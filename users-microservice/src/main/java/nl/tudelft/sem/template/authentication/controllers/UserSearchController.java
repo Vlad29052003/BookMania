@@ -1,16 +1,16 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
+import java.util.List;
 import java.util.UUID;
+
+import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.UserLookupService;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -59,6 +59,17 @@ public class UserSearchController {
             throws ResponseStatusException {
         try {
             Iterable<UserModel> x = userLookupService.getUsersByFavouriteBook(bookId);
+            return ResponseEntity.ok(x);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/users/favGenres")
+    public ResponseEntity<Iterable<UserModel>> getUsersByFavouriteGenres(@RequestBody List<Genre> genres)
+            throws ResponseStatusException {
+        try {
+            Iterable<UserModel> x = userLookupService.getUsersByFavouriteGenres(genres);
             return ResponseEntity.ok(x);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

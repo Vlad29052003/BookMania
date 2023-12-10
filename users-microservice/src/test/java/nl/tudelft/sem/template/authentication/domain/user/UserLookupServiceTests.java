@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import nl.tudelft.sem.template.authentication.Application;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
@@ -28,6 +30,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @ExtendWith(SpringExtension.class)
@@ -179,11 +182,42 @@ public class UserLookupServiceTests {
 
         user.setFavouriteBook(book);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         List<String> foundUsers = userLookupService.getUsersByFavouriteBook(bookId)
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user");
+
+        assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    @Transactional
+    public void testUserSearchByFavGenre() {
+        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("pass"));
+
+        user.setFavouriteGenres(List.of(Genre.CRIME));
+
+        userRepository.save(user);
+
+        List<String> foundUsers = userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME))
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+        List<String> expected = List.of("user");
+
+        assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    @Transactional
+    public void testUserSearchByFavGenre2() {
+        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("pass"));
+        user.setFavouriteGenres(List.of(Genre.CRIME));
+
+        userRepository.save(user);
+
+        List<String> foundUsers = userLookupService.getUsersByFavouriteGenres(List.of(Genre.SCIENCE))
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+        List<String> expected = List.of();
 
         assertThat(foundUsers).containsAll(expected);
     }
