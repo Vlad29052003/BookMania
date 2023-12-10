@@ -9,7 +9,6 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -55,24 +54,24 @@ public class UserSearchController {
      * @throws ResponseStatusException if there is no user found
      */
     @GetMapping("/users/favBook")
-    public ResponseEntity<Iterable<UserModel>> getUsersByFavouriteBook(@RequestParam UUID bookId)
+    public ResponseEntity<?> getUsersByFavouriteBook(@RequestParam UUID bookId)
             throws ResponseStatusException {
         try {
             Iterable<UserModel> x = userLookupService.getUsersByFavouriteBook(bookId);
             return ResponseEntity.ok(x);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
 
     @PostMapping("/users/favGenres")
-    public ResponseEntity<Iterable<UserModel>> getUsersByFavouriteGenres(@RequestBody List<Genre> genres)
+    public ResponseEntity<?> getUsersByFavouriteGenres(@RequestBody List<Genre> genres)
             throws ResponseStatusException {
         try {
             Iterable<UserModel> x = userLookupService.getUsersByFavouriteGenres(genres);
             return ResponseEntity.ok(x);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
 }

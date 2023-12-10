@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,6 +32,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @ExtendWith(SpringExtension.class)
@@ -192,9 +194,35 @@ public class UserLookupServiceTests {
     }
 
     @Test
+    public void testUserSearchByFavouriteBook2() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        Iterable<AppUser> users = userRepository.findAll();
+        AppUser user = users.iterator().next();
+
+        user.setFavouriteBook(book);
+
+        userRepository.saveAndFlush(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("No users with these favourite book found!");
+    }
+
+    @Test
+    public void testNoUsersFoundWhileSearch() {
+//        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
+//        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
     @Transactional
     public void testUserSearchByFavGenre() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("pass"));
+        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
 
         user.setFavouriteGenres(List.of(Genre.CRIME));
 
@@ -210,7 +238,7 @@ public class UserLookupServiceTests {
     @Test
     @Transactional
     public void testUserSearchByFavGenre2() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("pass"));
+        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
         user.setFavouriteGenres(List.of(Genre.CRIME));
 
         userRepository.save(user);
@@ -220,5 +248,15 @@ public class UserLookupServiceTests {
         List<String> expected = List.of();
 
         assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    @Transactional
+    public void testNoUsersFoundWhileSearchByGenre() {
+        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class);
     }
 }

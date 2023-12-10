@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -53,14 +55,14 @@ public class UserLookupService {
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
-            throw new IllegalArgumentException("No users found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found!");
         }
 
         boolean bookExists = users
                 .stream().anyMatch(user -> user.getFavouriteBook().getId().equals(bookId));
 
         if (!bookExists) {
-            throw new IllegalArgumentException("No users with this favourite book found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users with these favourite book found!");
         }
 
         List<UserModel> res = users
@@ -81,13 +83,14 @@ public class UserLookupService {
      */
     public List<UserModel> getUsersByFavouriteGenres(List<Genre> genre) {
         List<UserModel> res = new ArrayList<>();
+
         List<AppUser> users = userRepository.findAll()
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteGenres() != null
                         && !user.getFavouriteGenres().isEmpty())
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
-            throw new IllegalArgumentException("No users found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found!");
         }
 
         for(AppUser user : users) {
