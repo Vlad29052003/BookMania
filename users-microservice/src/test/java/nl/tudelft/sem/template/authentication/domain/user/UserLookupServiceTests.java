@@ -150,16 +150,20 @@ public class UserLookupServiceTests {
     }
 
     @Test
-    public void searchDeactivatedUsed() {
-        authenticationService.registerUser(registrationRequest);
-        AppUser appUser = userRepository.findAll().get(0);
-        appUser.setDeactivated(true);
-        userRepository.saveAndFlush(appUser);
-        Username search = appUser.getUsername();
+    public void userSearchByName_worksCorrectly_deactivatedUser() {
 
-        List<String> foundUsers = userLookupService.getUsersByName(search.toString())
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        AppUser deactivated = userRepository.findByUsername(new Username("user")).get();
+        deactivated.setDeactivated(true);
+        userRepository.saveAndFlush(deactivated);
+
+        // Assert
+        List<String> foundUsers = userLookupService.getUsersByName("user")
                 .stream().map(UserModel::getNetId).collect(Collectors.toList());
         List<String> expected = new ArrayList<>();
+
 
         assertThat(foundUsers).containsAll(expected);
     }

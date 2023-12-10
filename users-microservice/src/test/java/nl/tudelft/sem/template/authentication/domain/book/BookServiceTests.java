@@ -274,11 +274,27 @@ public class BookServiceTests {
 
     @Test
     @Transactional
-    public void testUpdateBookNullLists() {
+    public void testUpdateBookNullListAuthors() {
         Book updatedBook = new Book();
         updatedBook.setId(bookId);
         updatedBook.setTitle("title new");
         updatedBook.setAuthors(null);
+        updatedBook.setGenres(List.of(Genre.CRIME));
+        updatedBook.setDescription("desc");
+        updatedBook.setNumPages(876);
+
+        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenAdmin))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("400 BAD_REQUEST \"The authors and genres cannot be null!\"");
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateBookNullListGenres() {
+        Book updatedBook = new Book();
+        updatedBook.setId(bookId);
+        updatedBook.setTitle("title new");
+        updatedBook.setAuthors(List.of("Author1"));
         updatedBook.setGenres(null);
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);

@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -19,6 +21,8 @@ import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
+import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.DirtiesContext;
@@ -33,6 +38,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -94,7 +101,7 @@ public class JwtIntegrationTests {
                 .header("Authorization", "token"));
         resultActions.andExpect(status().isUnauthorized())
                 .andExpect(header().string("WWW-Authenticate", "Bearer"))
-                .andExpect(content().string(containsString("")));
+                .andExpect(content().string(""));
     }
 
     @Test
@@ -102,7 +109,7 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token"));
         resultActions.andExpect(status().isUnauthorized())
                 .andExpect(header().string("WWW-Authenticate", "Bearer"))
-                .andExpect(content().string(containsString("")));
+                .andExpect(content().string(""));
     }
 
     @Test
@@ -110,18 +117,25 @@ public class JwtIntegrationTests {
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + "thisIsTheForgedToken"));
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("")));
+                .andExpect(content().string("Unable to parse JWT token"));
     }
 
     @Test
     public void validateValidJwtToken() throws Exception {
         userRepository.save(appUser);
+        UUID id = userRepository.findAll().get(0).getId();
+        TokenValidationResponse model = new TokenValidationResponse();
+        TokenValidationResponse expected = new TokenValidationResponse();
+        expected.setId(id);
 
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
-                .header("Authorization", "Bearer " + jwtToken));
+                .header("Authorization", "Bearer " + jwtToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(model)));
 
-        resultActions.andExpect(status().isOk())
-                .andExpect(content().string(containsString("")));
+        resultActions.andExpect(status().isOk());
+
+        assertThat(model).isEqualTo(expected);
     }
 
     @Test
@@ -130,7 +144,7 @@ public class JwtIntegrationTests {
                 .header("Authorization", "Bearer " + jwtToken));
 
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("User does not exist!")));
+                .andExpect(content().string("User does not exist!"));
     }
 
     @Test
@@ -140,7 +154,7 @@ public class JwtIntegrationTests {
                 .header("Authorization", "Bearer " + jwtExpiredToken));
 
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("JWT token has expired")));
+                .andExpect(content().string(("JWT token has expired")));
     }
 
     @Test
@@ -151,7 +165,7 @@ public class JwtIntegrationTests {
                 .header("Authorization", "Bearer " + jwtToken));
 
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("User is deactivated")));
+                .andExpect(content().string("User is deactivated"));
     }
 
     @Test
@@ -160,7 +174,7 @@ public class JwtIntegrationTests {
                 .header("Authorization", "Bearer "));
 
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("Unauthorized")));
+                .andExpect(content().string("Unauthorized"));
     }
 
     @Test
@@ -169,7 +183,7 @@ public class JwtIntegrationTests {
                 .header("Authorization", "Bearer " + nullUsernameJwtToken));
 
         resultActions.andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("Unauthorized")));
+                .andExpect(content().string(("Unauthorized")));
     }
 
     private void injectSecret(String secret) throws NoSuchFieldException, IllegalAccessException {
