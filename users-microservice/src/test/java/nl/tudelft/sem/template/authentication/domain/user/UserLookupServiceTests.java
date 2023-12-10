@@ -70,15 +70,15 @@ public class UserLookupServiceTests {
                 jwtService, userRepository, passwordHashingService);
 
         String email = "email";
-        String netId = "user";
+        String username = "user";
         String password = "someHash";
         UUID id = UUID.randomUUID();
 
-        AppUser appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
+        AppUser appUser = new AppUser(new Username(username), email, new HashedPassword(password));
         appUser.setId(id);
 
         registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setUsername(netId);
+        registrationRequest.setUsername(username);
         registrationRequest.setEmail(email);
         registrationRequest.setPassword(password);
 
@@ -95,15 +95,15 @@ public class UserLookupServiceTests {
 
 
         String email2 = "email2";
-        String netId2 = "andrei";
+        String username2 = "andrei";
         String password2 = "someHash";
         UUID id2 = UUID.randomUUID();
 
-        AppUser appUser2 = new AppUser(new Username(netId2), email2, new HashedPassword(password2));
+        AppUser appUser2 = new AppUser(new Username(username2), email2, new HashedPassword(password2));
         appUser2.setId(id2);
 
         registrationRequest2 = new RegistrationRequestModel();
-        registrationRequest2.setUsername(netId2);
+        registrationRequest2.setUsername(username2);
         registrationRequest2.setEmail(email2);
         registrationRequest2.setPassword(password2);
 
@@ -119,14 +119,11 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
-
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("user")
                 .stream().map(UserModel::getNetId).collect(Collectors.toList());
-        List<String> expected = List.of("user");
 
-
-        assertThat(foundUsers).containsAll(expected);
+        assertThat(foundUsers).containsExactlyInAnyOrder("user");
     }
 
 
@@ -140,13 +137,11 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
-
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getNetId).collect(Collectors.toList());
-        List<String> expected = List.of("user", "andrei");
 
-        assertThat(foundUsers).containsAll(expected);
+        assertThat(foundUsers).containsExactlyInAnyOrder("user", "andrei");
     }
 
     @Test
@@ -165,6 +160,6 @@ public class UserLookupServiceTests {
         List<String> expected = new ArrayList<>();
 
 
-        assertThat(foundUsers).containsAll(expected);
+        assertThat(foundUsers).isEqualTo(expected);
     }
 }

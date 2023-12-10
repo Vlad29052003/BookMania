@@ -40,7 +40,7 @@ public class BookService {
     /**
      * Gets a book from the overall collection.
      *
-     * @param bookId      the id of the book to get
+     * @param bookId the id of the book to get
      * @return the book, if found
      */
     public Book getBook(String bookId) {
@@ -97,10 +97,10 @@ public class BookService {
      * Updates a book in the system.
      *
      * @param updatedBook contains the new information for the book
-     * @param bearerToken            is the jwt token of the user that made the request
+     * @param bearerToken is the jwt token of the user that made the request
      */
     public void updateBook(Book updatedBook, String bearerToken) {
-        if(updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
+        if (updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The authors and genres cannot be null!");
         }
         if (getAuthority(bearerToken).equals(Authority.ADMIN)) {

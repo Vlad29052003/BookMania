@@ -27,7 +27,7 @@ public class UserController {
     /**
      * Instantiates a new UserController.
      *
-     * @param userService       the registration service
+     * @param userService the registration service
      */
     @Autowired
     public UserController(UserService userService) {
@@ -80,7 +80,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's bio.
      *
-     * @param bio         the new bio of the user
+     * @param bio the new bio of the user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/bio")
@@ -94,7 +94,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's profile picture.
      *
-     * @param picture     the new profile photo of the user
+     * @param picture the new profile photo of the user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping(value = "/picture", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -108,7 +108,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's location.
      *
-     * @param location    the new location of the user
+     * @param location the new location of the user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/location")

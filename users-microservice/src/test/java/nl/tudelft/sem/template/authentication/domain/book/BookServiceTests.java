@@ -309,13 +309,13 @@ public class BookServiceTests {
     public void testUpdateBookAsAuthor() {
         Book updatedBook = new Book();
         updatedBook.setId(bookId);
-        updatedBook.setTitle("title");
+        updatedBook.setTitle("new title");
         updatedBook.setAuthors(List.of("Author1", "authorName"));
-        updatedBook.setGenres(List.of(Genre.SCIENCE));
-        updatedBook.setDescription("desc");
-        updatedBook.setNumPages(550);
+        updatedBook.setGenres(List.of(Genre.SCIENCE, Genre.ROMANCE, Genre.HORROR));
+        updatedBook.setDescription("desc desc");
+        updatedBook.setNumPages(5501);
         bookService.updateBook(updatedBook, tokenAuthor);
-        Book updatedBookTest = bookRepository.findByTitle("title").get(0);
+        Book updatedBookTest = bookRepository.findByTitle("new title").get(0);
 
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
         assertThat(updatedBookTest.getTitle()).isEqualTo(updatedBook.getTitle());
