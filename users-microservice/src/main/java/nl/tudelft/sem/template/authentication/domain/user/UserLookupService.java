@@ -32,10 +32,10 @@ public class UserLookupService {
      */
     public List<UserModel> getUsersByName(String name) {
         return userRepository.findAll()
-                .stream().filter(user -> !user.isDeactivated() && user.getUsername().toString().contains(name))
-                .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
-                        u.getName(), u.getBio(), u.getLocation(),
-                        u.getFavouriteGenres(), u.getFavouriteBook()))
+                .stream().filter(
+                        user -> (!user.isDeactivated() && !user.isPrivate())
+                                && user.getUsername().toString().contains(name))
+                .map(UserModel::new)
                 .collect(Collectors.toList());
     }
 

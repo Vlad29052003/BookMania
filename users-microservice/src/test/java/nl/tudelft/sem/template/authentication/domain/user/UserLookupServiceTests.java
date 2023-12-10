@@ -37,6 +37,9 @@ public class UserLookupServiceTests {
     private transient UserLookupService userLookupService;
 
     @Autowired
+    private transient UserService userService;
+
+    @Autowired
     private transient AuthenticationService authenticationService;
 
     @Autowired
@@ -121,7 +124,7 @@ public class UserLookupServiceTests {
 
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("user")
-                .stream().map(UserModel::getNetId).collect(Collectors.toList());
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user");
 
 
@@ -142,7 +145,37 @@ public class UserLookupServiceTests {
 
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("")
-                .stream().map(UserModel::getNetId).collect(Collectors.toList());
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+        List<String> expected = List.of("user", "andrei");
+
+        assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    public void userSearchByName_withPrivateUser() {
+
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        String email3 = "private@user.com";
+        String netId3 = "privateuser";
+        String password3 = "pass";
+        UUID id3 = UUID.randomUUID();
+
+        AppUser appUser3 = new AppUser(new Username(netId3), email3, new HashedPassword(password3));
+        appUser3.setId(id3);
+
+        RegistrationRequestModel registrationRequest3 = new RegistrationRequestModel();
+        registrationRequest3.setUsername(netId3);
+        registrationRequest3.setEmail(email3);
+        registrationRequest3.setPassword(password3);
+
+        authenticationService.registerUser(registrationRequest3);
+
+        userService.updatePrivacy(new Username(netId3), true);
+
+        List<String> foundUsers = userLookupService.getUsersByName("")
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
 
         assertThat(foundUsers).containsAll(expected);
