@@ -1,5 +1,13 @@
 package nl.tudelft.sem.template.authentication.controller;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.UserController;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -14,13 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import java.util.List;
-import java.util.UUID;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class UserControllerTests {
     private transient UserService userService;
@@ -29,6 +30,9 @@ public class UserControllerTests {
     private transient UserModel userModel;
     private Username username;
 
+    /**
+     * Sets up the testing environment.
+     */
     @BeforeEach
     public void setUp() {
         this.userService = mock(UserService.class);
