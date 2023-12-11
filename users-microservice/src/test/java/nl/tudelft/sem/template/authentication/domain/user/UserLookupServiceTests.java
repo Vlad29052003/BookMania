@@ -2,15 +2,12 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import nl.tudelft.sem.template.authentication.Application;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
@@ -212,9 +209,6 @@ public class UserLookupServiceTests {
 
     @Test
     public void testNoUsersFoundWhileSearch() {
-//        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
-//        userRepository.save(user);
-
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
                 .isInstanceOf(ResponseStatusException.class);
     }

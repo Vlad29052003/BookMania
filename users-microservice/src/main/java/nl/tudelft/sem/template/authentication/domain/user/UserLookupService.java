@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.http.HttpStatus;
@@ -65,14 +64,12 @@ public class UserLookupService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users with these favourite book found!");
         }
 
-        List<UserModel> res = users
+        return users
                 .stream().filter(user -> bookExists)
                 .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
                         u.getName(), u.getBio(), u.getLocation(),
                         u.getFavouriteGenres(), u.getFavouriteBook()))
                 .collect(Collectors.toList());
-
-        return res;
     }
 
     /**
@@ -82,8 +79,6 @@ public class UserLookupService {
      * @return users matching favourite genre that are not deactivated/banned
      */
     public List<UserModel> getUsersByFavouriteGenres(List<Genre> genre) {
-        List<UserModel> res = new ArrayList<>();
-
         List<AppUser> users = userRepository.findAll()
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteGenres() != null
                         && !user.getFavouriteGenres().isEmpty())
@@ -93,9 +88,11 @@ public class UserLookupService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found!");
         }
 
-        for(AppUser user : users) {
-            for(Genre g : user.getFavouriteGenres()) {
-                if(genre.contains(g)) {
+        List<UserModel> res = new ArrayList<>();
+
+        for (AppUser user : users) {
+            for (Genre g : user.getFavouriteGenres()) {
+                if (genre.contains(g)) {
                     res.add(new UserModel(user.getUsername().toString(), user.getEmail(),
                             user.getName(), user.getBio(), user.getLocation(),
                             user.getFavouriteGenres(), user.getFavouriteBook()));
