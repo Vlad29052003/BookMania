@@ -35,10 +35,10 @@ public class UserLookupService {
      */
     public List<UserModel> getUsersByName(String name) {
         return userRepository.findAll()
-                .stream().filter(user -> !user.isDeactivated() && user.getUsername().toString().contains(name))
-                .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
-                        u.getName(), u.getBio(), u.getLocation(),
-                        u.getFavouriteGenres(), u.getFavouriteBook()))
+                .stream().filter(
+                        user -> (!user.isDeactivated() && !user.isPrivate())
+                                && user.getUsername().toString().contains(name))
+                .map(UserModel::new)
                 .collect(Collectors.toList());
     }
 
@@ -50,7 +50,8 @@ public class UserLookupService {
      */
     public List<UserModel> getUsersByFavouriteBook(UUID bookId) {
         List<AppUser> users = userRepository.findAll()
-                .stream().filter(user -> !user.isDeactivated() && user.getFavouriteBook() != null)
+                .stream().filter(user -> !user.isDeactivated()
+                        && !user.isPrivate() && user.getFavouriteBook() != null)
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
@@ -66,9 +67,7 @@ public class UserLookupService {
 
         return users
                 .stream().filter(user -> bookExists)
-                .map(u -> new UserModel(u.getUsername().toString(), u.getEmail(),
-                        u.getName(), u.getBio(), u.getLocation(),
-                        u.getFavouriteGenres(), u.getFavouriteBook()))
+                .map(UserModel::new)
                 .collect(Collectors.toList());
     }
 
@@ -81,7 +80,7 @@ public class UserLookupService {
     public List<UserModel> getUsersByFavouriteGenres(List<Genre> genre) {
         List<AppUser> users = userRepository.findAll()
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteGenres() != null
-                        && !user.getFavouriteGenres().isEmpty())
+                        && !user.isPrivate() && !user.getFavouriteGenres().isEmpty())
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
@@ -93,9 +92,7 @@ public class UserLookupService {
         for (AppUser user : users) {
             for (Genre g : user.getFavouriteGenres()) {
                 if (genre.contains(g)) {
-                    res.add(new UserModel(user.getUsername().toString(), user.getEmail(),
-                            user.getName(), user.getBio(), user.getLocation(),
-                            user.getFavouriteGenres(), user.getFavouriteBook()));
+                    res.add(new UserModel(user));
                     break;
                 }
             }

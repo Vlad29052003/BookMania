@@ -53,9 +53,7 @@ public class UserSearchControllerTests {
         UUID bookId = UUID.randomUUID();
         book.setId(bookId);
 
-        UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(),
-                user.getName(), user.getBio(), user.getLocation(),
-                user.getFavouriteGenres(), user.getFavouriteBook());
+        UserModel userModel = new UserModel(user);
 
         when(userLookupService.getUsersByFavouriteBook(bookId)).thenReturn(List.of(userModel));
 
@@ -80,9 +78,7 @@ public class UserSearchControllerTests {
         AppUser user = new AppUser(new Username("username"), "email", new HashedPassword("password"));
         user.setFavouriteGenres(List.of(Genre.CRIME));
 
-        UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(),
-                user.getName(), user.getBio(), user.getLocation(),
-                user.getFavouriteGenres(), user.getFavouriteBook());
+        UserModel userModel = new UserModel(user);
 
         when(userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME))).thenReturn(List.of(userModel));
 

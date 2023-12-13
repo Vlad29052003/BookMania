@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
 import java.util.List;
+import java.util.Map;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
@@ -44,8 +45,7 @@ public class UserController {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         AppUser user = userService.getUserByUsername(username);
 
-        UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
-                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
+        UserModel userModel = new UserModel(user);
 
         return ResponseEntity.ok(userModel);
     }
@@ -160,6 +160,20 @@ public class UserController {
     public ResponseEntity<Void> delete() {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         userService.delete(username);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating a user's privacy settings.
+     *
+     * @param isPrivate new privacy setting
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/isPrivate")
+    public ResponseEntity<Void> updatePrivacy(@RequestBody String isPrivate) {
+        Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+        userService.updatePrivacy(username, Boolean.parseBoolean(isPrivate));
 
         return ResponseEntity.ok().build();
     }
