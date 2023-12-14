@@ -1,11 +1,9 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import java.util.ArrayList;
+import io.jsonwebtoken.lang.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import io.jsonwebtoken.lang.Collections;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.http.HttpStatus;
