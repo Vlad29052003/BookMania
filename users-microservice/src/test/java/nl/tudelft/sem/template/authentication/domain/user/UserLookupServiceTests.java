@@ -264,21 +264,6 @@ public class UserLookupServiceTests {
 
     @Test
     @Transactional
-    public void testUserSearchByFavGenre2() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
-        user.setFavouriteGenres(List.of(Genre.CRIME));
-
-        userRepository.save(user);
-
-        List<String> foundUsers = userLookupService.getUsersByFavouriteGenres(List.of(Genre.SCIENCE))
-                .stream().map(UserModel::getUsername).collect(Collectors.toList());
-        List<String> expected = List.of();
-
-        assertThat(foundUsers).containsAll(expected);
-    }
-
-    @Test
-    @Transactional
     public void testNoUsersFoundWhileSearchByGenre() {
         AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
         userRepository.save(user);

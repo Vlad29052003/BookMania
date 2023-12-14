@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import io.jsonwebtoken.lang.Collections;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.http.HttpStatus;
@@ -78,27 +80,17 @@ public class UserLookupService {
      * @return users matching favourite genre that are not deactivated/banned
      */
     public List<UserModel> getUsersByFavouriteGenres(List<Genre> genre) {
-        List<AppUser> users = userRepository.findAll()
+        List<UserModel> users = userRepository.findAll()
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteGenres() != null
-                        && !user.isPrivate() && !user.getFavouriteGenres().isEmpty())
+                        && !user.isPrivate() && !user.getFavouriteGenres().isEmpty() && Collections.containsAny(
+                                user.getFavouriteGenres(), genre))
+                .map(UserModel::new)
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found!");
         }
-
-        List<UserModel> res = new ArrayList<>();
-
-        for (AppUser user : users) {
-            for (Genre g : user.getFavouriteGenres()) {
-                if (genre.contains(g)) {
-                    res.add(new UserModel(user));
-                    break;
-                }
-            }
-        }
-
-        return res;
+        return users;
     }
 
 
