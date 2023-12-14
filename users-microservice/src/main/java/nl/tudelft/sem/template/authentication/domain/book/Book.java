@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -32,7 +33,7 @@ import org.hibernate.annotations.Type;
 @Table(name = "books")
 @NoArgsConstructor
 @ToString
-public class Book {
+public class Book extends HasEvents {
     /**
      * Identifier for the book.
      */
@@ -99,6 +100,7 @@ public class Book {
         this.description = description;
         this.numPages = numPages;
         this.usersWithBookAsFavorite = new ArrayList<>();
+        this.recordThat(new BookWasCreatedEvent(this));
     }
 
     /**
