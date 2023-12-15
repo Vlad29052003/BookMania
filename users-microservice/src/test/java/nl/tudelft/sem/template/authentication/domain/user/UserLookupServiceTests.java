@@ -214,7 +214,7 @@ public class UserLookupServiceTests {
 
         user.setFavouriteBook(book);
 
-        userRepository.saveAndFlush(user);
+        userRepository.save(user);
 
         List<String> foundUsers = userLookupService.getUsersByFavouriteBook(bookId)
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
@@ -233,11 +233,11 @@ public class UserLookupServiceTests {
 
         user.setFavouriteBook(book);
 
-        userRepository.saveAndFlush(user);
+        userRepository.save(user);
 
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("No users with these favourite book found!");
+                .hasMessageContaining("No users with this favourite book found!");
     }
 
     @Test
