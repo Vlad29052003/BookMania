@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import nl.tudelft.sem.template.authentication.application.user.UserWasCreatedListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -47,6 +49,8 @@ public class AuthenticationServiceTests {
     private transient AuthenticationResponseModel authenticationResponse;
     private transient TokenValidationResponse tokenValidationResponse;
     private transient UserRepository userRepository;
+
+    private transient UserWasCreatedListener userWasCreatedListener;
     private final transient String token = "Bearer token";
 
     /**
@@ -60,6 +64,7 @@ public class AuthenticationServiceTests {
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
+        userWasCreatedListener = mock(UserWasCreatedListener.class);
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
                 jwtService, userRepository, passwordHashingService);
@@ -94,6 +99,7 @@ public class AuthenticationServiceTests {
     public void registerUser() {
         authenticationService.registerUser(registrationRequest);
         verify(userRepository, times(1)).save(any());
+        verify(userWasCreatedListener, times(1)).onAccountWasCreated(any());
     }
 
     @Test

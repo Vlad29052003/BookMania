@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
  * A DDD service for a user.
  */
 @Service
-public class UserService {
+public class UserService extends HasEvents {
     private final transient UserRepository userRepository;
     private final transient BookRepository bookRepository;
 
@@ -177,6 +178,8 @@ public class UserService {
         }
 
         AppUser user = optionalAppUser.get();
+
+        this.recordThat(new UserWasDeletedEvent(user.getId()));
 
         userRepository.delete(user);
     }
