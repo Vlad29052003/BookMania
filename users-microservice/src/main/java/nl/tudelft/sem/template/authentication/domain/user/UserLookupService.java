@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
  * A DDD service for looking up users.
  */
 @Service
-public class UserLookupService {
+public class    UserLookupService {
     private final transient UserRepository userRepository;
 
     /**
@@ -62,7 +62,7 @@ public class UserLookupService {
                 .stream().anyMatch(user -> user.getFavouriteBook().getId().equals(bookId));
 
         if (!bookExists) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users with these favourite book found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users with this favourite book found!");
         }
 
         return users
@@ -74,14 +74,14 @@ public class UserLookupService {
     /**
      * Get users by favourite genre.
      *
-     * @param genre genre of the favourite book
+     * @param genres genre of the favourite book
      * @return users matching favourite genre that are not deactivated/banned
      */
-    public List<UserModel> getUsersByFavouriteGenres(List<Genre> genre) {
+    public List<UserModel> getUsersByFavouriteGenres(List<Genre> genres) {
         List<UserModel> users = userRepository.findAll()
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteGenres() != null
                         && !user.isPrivate() && !user.getFavouriteGenres().isEmpty() && Collections.containsAny(
-                                user.getFavouriteGenres(), genre))
+                                user.getFavouriteGenres(), genres))
                 .map(UserModel::new)
                 .collect(Collectors.toList());
 
