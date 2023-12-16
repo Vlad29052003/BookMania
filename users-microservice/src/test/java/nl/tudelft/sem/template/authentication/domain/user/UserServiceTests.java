@@ -203,18 +203,18 @@ public class UserServiceTests {
         HashedPassword hashedPassword = new HashedPassword("pass");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-                                    () -> userService.updateBannedStatus(username, "ADMIN"));
+                                    () -> userService.updateBannedStatus(username, true, "ADMIN"));
         assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
 
         AppUser user = new AppUser(username, email, hashedPassword);
         userRepository.save(user);
 
         e = assertThrows(ResponseStatusException.class,
-                                    () -> userService.updateBannedStatus(username, "REGULAR_USER"));
+                                    () -> userService.updateBannedStatus(username, true, "REGULAR_USER"));
         assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
 
         e = assertThrows(ResponseStatusException.class,
-                                    () -> userService.updateBannedStatus(username, "ADMIN"));
+                                    () -> userService.updateBannedStatus(username, true, "ADMIN"));
         assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
 
         Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
@@ -223,12 +223,16 @@ public class UserServiceTests {
         }
         reportRepository.save(report);
 
-        userService.updateBannedStatus(username, "ADMIN");
+        userService.updateBannedStatus(username, true, "ADMIN");
         assertThat(reportRepository.getByUserId(user.getId().toString())).isEmpty();
         assertThat(userRepository.findByUsername(username)).isPresent();
         assertThat(userRepository.findByUsername(username).get().isDeactivated()).isTrue();
 
-        userService.updateBannedStatus(username, "ADMIN");
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.updateBannedStatus(username, true, "ADMIN"));
+        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+
+        userService.updateBannedStatus(username, false, "ADMIN");
         assertThat(userRepository.findByUsername(username)).isPresent();
         assertThat(userRepository.findByUsername(username).get().isDeactivated()).isFalse();
     }

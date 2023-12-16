@@ -177,10 +177,11 @@ public class UserService {
      * (Un)bans a user.
      *
      * @param username    username of the user that should be (un)banned.
+     * @param toBan (de-)activated status we wish the user to have after the request.
      * @param authority jwt token.
      */
     @Transactional
-    public void updateBannedStatus(Username username, String authority) {
+    public void updateBannedStatus(Username username, boolean toBan, String authority) {
         if (!authority.equals(Authority.ADMIN.toString())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
         }
@@ -191,6 +192,11 @@ public class UserService {
         }
 
         AppUser user = optionalAppUser.get();
+        if (user.isDeactivated() == toBan) {
+            String banned = toBan ? "banned" : "not banned";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is already " + banned + "!");
+        }
+
         if (user.isDeactivated()) {
             user.setDeactivated(false);
             userRepository.saveAndFlush(user);

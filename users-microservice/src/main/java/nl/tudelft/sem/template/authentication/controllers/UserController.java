@@ -156,7 +156,7 @@ public class UserController {
     /**
      * Patch request to ban / unban a user.
      *
-     * @param banUserRequestModel username of user that needs to be (un)banned.
+     * @param banUserRequestModel username and future status of user that needs to be (un)banned.
      * @return request status.
      */
     @PatchMapping("/isDeactivated")
@@ -164,7 +164,9 @@ public class UserController {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                                                 .get(0).getAuthority();
         try {
-            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()), authority);
+            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
+                                            banUserRequestModel.isBanned(),
+                                            authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

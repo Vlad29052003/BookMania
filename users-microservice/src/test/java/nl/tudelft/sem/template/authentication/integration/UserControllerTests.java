@@ -322,7 +322,7 @@ public class UserControllerTests {
                 hashedPasswordUser.toString(), rolesUser));
 
         BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
-        banUserRequestModel.setBanned(false);
+        banUserRequestModel.setBanned(true);
         banUserRequestModel.setUsername(testUser.toString());
 
         mockMvc.perform(patch("/c/users/isDeactivated")
@@ -353,6 +353,13 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + tokenAdmin))
                         .andExpect(status().isOk());
 
+        mockMvc.perform(patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUserRequestModel))
+                        .header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().isNotFound());
+
+        banUserRequestModel.setBanned(false);
         mockMvc.perform(patch("/c/users/isDeactivated")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(banUserRequestModel))
