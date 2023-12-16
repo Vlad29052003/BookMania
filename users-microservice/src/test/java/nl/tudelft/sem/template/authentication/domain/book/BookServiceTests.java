@@ -68,36 +68,36 @@ public class BookServiceTests {
 
         RegistrationRequestModel registrationRequestModel = new RegistrationRequestModel();
         registrationRequestModel.setUsername("admin");
-        registrationRequestModel.setEmail("email");
-        registrationRequestModel.setPassword("pass");
+        registrationRequestModel.setEmail("email@gmail.com");
+        registrationRequestModel.setPassword("Password123!");
 
         AuthenticationRequestModel authenticationRequestModel = new AuthenticationRequestModel();
         authenticationRequestModel.setUsername("admin");
-        authenticationRequestModel.setPassword("pass");
+        authenticationRequestModel.setPassword("Password123!");
 
         RegistrationRequestModel registrationRequestModelAuthor = new RegistrationRequestModel();
         registrationRequestModelAuthor.setUsername("authorTest");
-        registrationRequestModelAuthor.setEmail("authorEmail");
-        registrationRequestModelAuthor.setPassword("pass");
+        registrationRequestModelAuthor.setEmail("authorEmail@gmail.com");
+        registrationRequestModelAuthor.setPassword("Password123!");
 
         AuthenticationRequestModel authenticationRequestModelAuthor = new AuthenticationRequestModel();
         authenticationRequestModelAuthor.setUsername("authorTest");
-        authenticationRequestModelAuthor.setPassword("pass");
+        authenticationRequestModelAuthor.setPassword("Password123!");
 
         authenticationService.registerUser(registrationRequestModel);
-        AppUser admin = userRepository.findByUsername(new Username("admin")).get();
+        AppUser admin = userRepository.findByUsername(new Username("admin")).orElseThrow();
         admin.setAuthority(Authority.ADMIN);
         userRepository.saveAndFlush(admin);
         tokenAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
 
         registrationRequestModel.setUsername("user");
-        registrationRequestModel.setEmail("user_email");
+        registrationRequestModel.setEmail("user_email@gmail.com");
         authenticationRequestModel.setUsername("user");
         authenticationService.registerUser(registrationRequestModel);
         tokenNonAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
 
         authenticationService.registerUser(registrationRequestModelAuthor);
-        AppUser author = userRepository.findByUsername(new Username("authorTest")).get();
+        AppUser author = userRepository.findByUsername(new Username("authorTest")).orElseThrow();
         author.setAuthority(Authority.AUTHOR);
         userRepository.saveAndFlush(author);
         tokenAuthor = "Bearer " + authenticationService.authenticateUser(authenticationRequestModelAuthor).getToken();

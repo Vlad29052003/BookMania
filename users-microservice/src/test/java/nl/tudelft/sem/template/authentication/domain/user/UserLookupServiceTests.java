@@ -66,21 +66,21 @@ public class UserLookupServiceTests {
     @BeforeEach
     public void setUp() {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
-        when(passwordHashingService.hash(new Password("someOtherHash"))).thenReturn(new HashedPassword("someHash"));
+        when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
                 jwtService, userRepository, passwordHashingService);
 
-        String email = "email";
-        String netId = "user";
-        String password = "someHash";
+        String email = "email@gmail.com";
+        String username = "user";
+        String password = "someHash123!";
         UUID id = UUID.randomUUID();
 
-        AppUser appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
+        AppUser appUser = new AppUser(new Username(username), email, new HashedPassword(password));
         appUser.setId(id);
 
         registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setUsername(netId);
+        registrationRequest.setUsername(username);
         registrationRequest.setEmail(email);
         registrationRequest.setPassword(password);
 
@@ -96,16 +96,16 @@ public class UserLookupServiceTests {
         tokenValidationResponse.setId(id);
 
 
-        String email2 = "email2";
-        String netId2 = "andrei";
-        String password2 = "someHash";
+        String email2 = "email2@gmail.com";
+        String username2 = "andrei";
+        String password2 = "someHash1!";
         UUID id2 = UUID.randomUUID();
 
-        AppUser appUser2 = new AppUser(new Username(netId2), email2, new HashedPassword(password2));
+        AppUser appUser2 = new AppUser(new Username(username2), email2, new HashedPassword(password2));
         appUser2.setId(id2);
 
         registrationRequest2 = new RegistrationRequestModel();
-        registrationRequest2.setUsername(netId2);
+        registrationRequest2.setUsername(username2);
         registrationRequest2.setEmail(email2);
         registrationRequest2.setPassword(password2);
 
@@ -158,21 +158,21 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest2);
 
         String email3 = "private@user.com";
-        String netId3 = "privateuser";
-        String password3 = "pass";
+        String username3 = "privateuser";
+        String password3 = "Pass123!";
         UUID id3 = UUID.randomUUID();
 
-        AppUser appUser3 = new AppUser(new Username(netId3), email3, new HashedPassword(password3));
+        AppUser appUser3 = new AppUser(new Username(username3), email3, new HashedPassword(password3));
         appUser3.setId(id3);
 
         RegistrationRequestModel registrationRequest3 = new RegistrationRequestModel();
-        registrationRequest3.setUsername(netId3);
+        registrationRequest3.setUsername(username3);
         registrationRequest3.setEmail(email3);
         registrationRequest3.setPassword(password3);
 
         authenticationService.registerUser(registrationRequest3);
 
-        userService.updatePrivacy(new Username(netId3), true);
+        userService.updatePrivacy(new Username(username3), true);
 
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
