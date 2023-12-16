@@ -226,4 +226,23 @@ public class UserService {
 
         userRepository.delete(user);
     }
+
+    /**
+     * Updates the privacy settings of a user.
+     *
+     * @param username the username
+     * @param isPrivate new privacy setting
+     * @throws UsernameNotFoundException if the given username doesn't exist
+     */
+    public void updatePrivacy(Username username, boolean isPrivate) {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
+        if (optionalAppUser.isEmpty()) {
+            throw new UsernameNotFoundException(NO_SUCH_USER);
+        }
+
+        AppUser user = optionalAppUser.get();
+        user.setPrivate(isPrivate);
+
+        userRepository.saveAndFlush(user);
+    }
 }

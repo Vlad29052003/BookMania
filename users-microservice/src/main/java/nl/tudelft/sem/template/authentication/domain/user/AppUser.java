@@ -121,6 +121,11 @@ public class AppUser extends HasEvents {
     @Column(name = "deactivated")
     private boolean isDeactivated;
 
+    @Getter
+    @Setter
+    @Column(name = "private")
+    private boolean isPrivate;
+
     /**
      * Create new application user.
      *
@@ -135,6 +140,7 @@ public class AppUser extends HasEvents {
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
         this.authority = Authority.REGULAR_USER;
+        this.isPrivate = false;
         this.recordThat(new UserWasCreatedEvent(username));
     }
 
