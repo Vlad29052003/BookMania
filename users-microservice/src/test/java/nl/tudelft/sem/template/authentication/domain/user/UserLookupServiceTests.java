@@ -251,7 +251,7 @@ public class UserLookupServiceTests {
     @Test
     @Transactional
     public void testUserSearchByFavGenre() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
+        AppUser user = new AppUser(new Username("user"), "email@gmail.com", new HashedPassword("Password123!"));
 
         user.setFavouriteGenres(List.of(Genre.CRIME));
 
@@ -267,7 +267,7 @@ public class UserLookupServiceTests {
     @Test
     @Transactional
     public void testNoUsersFoundWhileSearchByGenre() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
+        AppUser user = new AppUser(new Username("user"), "email@gmail.com", new HashedPassword("Password123!"));
         userRepository.save(user);
 
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))

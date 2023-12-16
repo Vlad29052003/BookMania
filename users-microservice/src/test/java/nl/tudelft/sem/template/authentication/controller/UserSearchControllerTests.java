@@ -46,7 +46,7 @@ public class UserSearchControllerTests {
 
     @Test
     public void getUsersByFavBookTest() {
-        AppUser user = new AppUser(new Username("username"), "email", new HashedPassword("password"));
+        AppUser user = new AppUser(new Username("username"), "email@gmail.com", new HashedPassword("Password123!"));
         Book book = new Book("title", List.of("author"), List.of(Genre.CRIME), "description", 155);
         user.setFavouriteBook(book);
 
@@ -75,7 +75,7 @@ public class UserSearchControllerTests {
 
     @Test
     public void getUsersByFavGenresTest() {
-        AppUser user = new AppUser(new Username("username"), "email", new HashedPassword("password"));
+        AppUser user = new AppUser(new Username("username"), "email@gmail.com", new HashedPassword("Password123!"));
         user.setFavouriteGenres(List.of(Genre.CRIME));
 
         UserModel userModel = new UserModel(user);
