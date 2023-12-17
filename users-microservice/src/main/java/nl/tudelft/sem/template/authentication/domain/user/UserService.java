@@ -7,9 +7,10 @@ import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.UserModel;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * A DDD service for a user.
@@ -211,7 +212,7 @@ public class UserService {
     public UserModel getUserDetails(UUID userId) {
         Optional<AppUser> optionalAppUser = userRepository.findById(userId);
         if (optionalAppUser.isEmpty()) {
-            throw new UsernameNotFoundException(NO_SUCH_USER);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
         }
 
         AppUser user = optionalAppUser.get();
