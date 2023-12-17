@@ -211,6 +211,28 @@ public class UserServiceTests {
     public void testDeleteUserNotFound() {
         assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser")))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);;
+                .hasMessage(UserService.NO_SUCH_USER);
+    }
+
+    @Test
+    @Transactional
+    public void testUpdatePrivacy() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        String newName = "Name";
+        assertThatThrownBy(() -> userService.updateName(username, newName))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.isPrivate()).isFalse();
+
+
+        userService.updatePrivacy(username, true);
+        retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.isPrivate()).isTrue();
     }
 }

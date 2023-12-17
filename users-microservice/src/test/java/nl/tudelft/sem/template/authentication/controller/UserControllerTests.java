@@ -47,8 +47,7 @@ public class UserControllerTests {
         this.user = new AppUser(new Username("user"), "email", new HashedPassword("hash"));
         when(userService.getUserByUsername(new Username("user"))).thenReturn(user);
 
-        this.userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
-                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
+        this.userModel = new UserModel(user);
 
         this.username = new Username("user");
     }
