@@ -213,10 +213,6 @@ public class UserServiceTests {
                                     () -> userService.updateBannedStatus(username, true, "REGULAR_USER"));
         assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
 
-        e = assertThrows(ResponseStatusException.class,
-                                    () -> userService.updateBannedStatus(username, true, "ADMIN"));
-        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
-
         Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
         while (report.getId().equals(user.getId())) {
             report.setId(UUID.randomUUID());

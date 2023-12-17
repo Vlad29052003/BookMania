@@ -17,9 +17,6 @@ import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
-import nl.tudelft.sem.template.authentication.domain.report.Report;
-import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
-import nl.tudelft.sem.template.authentication.domain.report.ReportType;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
@@ -57,9 +54,6 @@ public class UserControllerTests {
 
     @Autowired
     private transient BookRepository bookRepository;
-
-    @Autowired
-    private transient ReportRepository reportRepository;
 
     @Test
     public void testGetUserByNetId() throws Exception {
@@ -338,15 +332,6 @@ public class UserControllerTests {
                         .andExpect(status().isNotFound());
 
         userRepository.save(user);
-        mockMvc.perform(patch("/c/users/isDeactivated")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtil.serialize(banUserRequestModel))
-                        .header("Authorization", "Bearer " + tokenAdmin))
-                        .andExpect(status().isNotFound());
-
-        Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
-        reportRepository.save(report);
-
         mockMvc.perform(patch("/c/users/isDeactivated")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(banUserRequestModel))

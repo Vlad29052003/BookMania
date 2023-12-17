@@ -202,9 +202,6 @@ public class UserService {
             userRepository.saveAndFlush(user);
             return;
         }
-        if (reportRepository.getByUserId(user.getId().toString()).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User was not reported!");
-        }
         user.setDeactivated(true);
         reportRepository.deleteByUserId(user.getId().toString());
         userRepository.saveAndFlush(user);
