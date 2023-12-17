@@ -76,7 +76,7 @@ public class UserControllerTests {
         String response = resultActions.andReturn().getResponse().getContentAsString();
         UserModel userModel = new ObjectMapper().readValue(response, UserModel.class);
 
-        assertThat(userModel.getNetId()).isEqualTo(testUser);
+        assertThat(userModel.getUsername()).isEqualTo(testUser.toString());
         assertThat(userModel.getEmail()).isEqualTo(email);
         assertThat(userModel.getName()).isNull();
         assertThat(userModel.getBio()).isNull();
@@ -374,5 +374,32 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + token))
                         .andExpect(status().isUnauthorized());
 
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateUser() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(user);
+        assertThat(user.isPrivate()).isFalse();
+
+        mockMvc.perform(patch("/c/users/isPrivate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.valueOf(true))
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
+
+        assertThat(userModel).isPresent();
+        assertThat(userModel.get().isPrivate()).isTrue();
     }
 }
