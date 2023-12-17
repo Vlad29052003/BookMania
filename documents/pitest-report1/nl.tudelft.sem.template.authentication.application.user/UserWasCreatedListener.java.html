@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+
+
+<h1>UserWasCreatedListener.java</h1>
+
+<table class="src">
+
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_1'/>
+1
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_1'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>package nl.tudelft.sem.template.authentication.application.user;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_2'/>
+2
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_2'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_3'/>
+3
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_3'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedEvent;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_4'/>
+4
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_4'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.context.event.EventListener;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_5'/>
+5
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_5'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.stereotype.Component;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_6'/>
+6
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_6'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_7'/>
+7
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_7'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>/**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_8'/>
+8
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_8'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * This event listener is automatically called when a domain entity is saved</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_9'/>
+9
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_9'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * which has stored events of type: UserWasCreated.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_10'/>
+10
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_10'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_11'/>
+11
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_11'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>@Component</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_12'/>
+12
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_12'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>public class UserWasCreatedListener {</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_13'/>
+13
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_13'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_14'/>
+14
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_14'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * The name of the function indicated which event is listened to.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_15'/>
+15
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_15'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * The format is onEVENTNAME.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_16'/>
+16
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_16'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_17'/>
+17
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_17'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param event The event to react to</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_18'/>
+18
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_18'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_19'/>
+19
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_19'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    @EventListener</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_20'/>
+20
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_20'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public void onAccountWasCreated(UserWasCreatedEvent event) {</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_21'/>
+21
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_21'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        // Handler code here</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_22'/>
+22
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_22'>1</a>
+<span>
+
+1. onAccountWasCreated : removed call to java/io/PrintStream::println &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        System.out.println(&#34;Account (&#34; + event.getUsername().toString() + &#34;) was created.&#34;);</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_23'/>
+23
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_23'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@295bf2a_24'/>
+24
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_24'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>}</span></pre></td></tr>
+
+
+
+<tr><td></td><td></td><td><h2>Mutations</h2></td></tr>
+
+
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@295bf2a_22'>22</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@295bf2a_22'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>onAccountWasCreated<br/><b>Killed by : </b>nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedListenerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedListenerTests]/[method:onAccountWasCreated()]</span></span> removed call to java/io/PrintStream::println &rarr; KILLED</p> 
+</td>
+</tr>
+
+</table>
+
+
+<h2>Active mutators</h2>
+<ul>
+
+<li class='mutator'>BOOLEAN_FALSE_RETURN</li>
+
+<li class='mutator'>BOOLEAN_TRUE_RETURN</li>
+
+<li class='mutator'>CONDITIONALS_BOUNDARY_MUTATOR</li>
+
+<li class='mutator'>EMPTY_RETURN_VALUES</li>
+
+<li class='mutator'>INCREMENTS_MUTATOR</li>
+
+<li class='mutator'>INVERT_NEGS_MUTATOR</li>
+
+<li class='mutator'>MATH_MUTATOR</li>
+
+<li class='mutator'>NEGATE_CONDITIONALS_MUTATOR</li>
+
+<li class='mutator'>NULL_RETURN_VALUES</li>
+
+<li class='mutator'>PRIMITIVE_RETURN_VALS_MUTATOR</li>
+
+<li class='mutator'>VOID_METHOD_CALL_MUTATOR</li>
+
+</ul>
+
+<h2>Tests examined</h2>
+<ul>
+<li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testUpdateLocation()] (683 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNullListAuthors()] (949 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testUpdateLocation()] (688 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBookNonAdmin()] (1014 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testUpdateName()] (687 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookAsAuthor()] (939 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testUpdateBio()] (680 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookAsNotAuthorOfTheBook()] (977 ms)</li><li>nl.tudelft.sem.template.authentication.authentication.AuthenticationServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.AuthenticationServiceTests]/[method:authenticateUser()] (5 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testGetUserPictureByNetId()] (611 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testCreate()] (1050 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNullListGenres()] (984 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testUpdatePicture()] (655 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testDeleteFavouriteBook()] (855 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNotExistingAsAuthor()] (958 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBook()] (1148 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBook()] (855 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserLookupServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserLookupServiceTests]/[method:userSearchByName_worksCorrectly()] (501 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testGetNoBooks()] (813 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:authorNotPresentInTheDbAnymore()] (864 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testGetNotFound()] (1432 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNotAdmin()] (986 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserLookupServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserLookupServiceTests]/[method:userSearchByName_worksCorrectly_deactivatedUser()] (512 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookNotAdmin()] (910 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:authorNotPresentInAuthors()] (910 ms)</li><li>nl.tudelft.sem.template.authentication.integration.JwtIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.JwtIntegrationTests]/[method:validateValidJwtToken()] (489 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testUpdateFavouriteBook()] (582 ms)</li><li>nl.tudelft.sem.template.authentication.integration.JwtIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.JwtIntegrationTests]/[method:deactivatedUser()] (436 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:register_withValidData_worksCorrectly()] (753 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testUpdateAndDelete()] (817 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testGetUserByNetId()] (638 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookAlmostAlreadyExisting()] (873 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBook()] (899 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookAlreadyExisting()] (884 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookAsAuthor()] (893 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserLookupServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserLookupServiceTests]/[method:userSearchByName_worksCorrectly2()] (507 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBookNonExistent()] (974 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testUpdateName()] (693 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testUpdateFavouriteGenres()] (617 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withValidUser_returnsToken()] (586 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedListenerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedListenerTests]/[method:onAccountWasCreated()] (2 ms)</li><li>nl.tudelft.sem.template.authentication.integration.JwtIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.JwtIntegrationTests]/[method:expiredToken()] (435 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testGet()] (1465 ms)</li><li>nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests]/[method:loadUserByUsername_withValidUser_returnsCorrectUser()] (574 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testUpdateFavouriteGenres()] (593 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testDeleteUser()] (583 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBookWhileUserHasItAsFavorite()] (881 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testUpdateBio()] (712 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:register_withExistingUser_throwsException()] (627 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNotExisting()] (997 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withInvalidPassword_returns403()] (597 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testUpdateFavouriteBook()] (606 ms)</li><li>nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests]/[method:loadUserByUsername_withNonexistentUser_throwsException()] (427 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testDeleteUser()] (574 ms)</li><li>nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests]/[method:loadUserByUsername_withDisabledUser_throwsException()] (450 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UserControllerTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UserControllerTests]/[method:testGetUserByNetId()] (592 ms)</li><li>nl.tudelft.sem.template.authentication.domain.user.UserServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.user.UserServiceTests]/[method:testUpdatePicture()] (719 ms)</li>
+</ul>
+
+<br/>
+
+Report generated by <a href='http://pitest.org'>PIT</a> 1.5.1
+
+</body>
+</html>

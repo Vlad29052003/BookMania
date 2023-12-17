@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.book;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -168,7 +169,7 @@ public class BookServiceTests {
     public void testAddBookAlreadyExisting() {
         CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
         bookRequestModel.setTitle("title");
-        bookRequestModel.setAuthors(List.of("Author1"));
+        bookRequestModel.setAuthors(List.of("Author1", "authorName"));
         bookRequestModel.setGenres(List.of(Genre.SCIENCE));
         bookRequestModel.setDescription("desc");
         bookRequestModel.setNumPages(876);
@@ -176,6 +177,27 @@ public class BookServiceTests {
         assertThatThrownBy(() -> bookService.addBook(bookRequestModel, tokenAdmin))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("409 CONFLICT \"The book is already in the system!\"");
+    }
+
+    @Test
+    @Transactional
+    public void testAddBookAlmostAlreadyExisting() {
+        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
+        bookRequestModel.setTitle("title");
+        bookRequestModel.setAuthors(List.of("Author1"));
+        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
+        bookRequestModel.setDescription("desc");
+        bookRequestModel.setNumPages(876);
+
+        bookService.addBook(bookRequestModel, tokenAdmin);
+
+        Book added = (Book) bookRepository.findByTitle("title")
+                .stream().filter(b -> b.getAuthors().contains("Author1") && b.getAuthors().size() == 1).toArray()[0];
+        assertThat(added.getTitle()).isEqualTo(bookRequestModel.getTitle());
+        assertThat(new ArrayList<>(added.getAuthors())).isEqualTo(bookRequestModel.getAuthors());
+        assertThat(new ArrayList<>(added.getGenres())).isEqualTo(bookRequestModel.getGenres());
+        assertThat(added.getDescription()).isEqualTo(bookRequestModel.getDescription());
+        assertThat(added.getNumPages()).isEqualTo(bookRequestModel.getNumPages());
     }
 
     @Test

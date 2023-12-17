@@ -75,7 +75,7 @@ public class BookService {
 
             List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
             boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
-                    .containsAll(createBookRequestModel.getAuthors()));
+                    .equals(new HashSet<>(createBookRequestModel.getAuthors())));
             if (invalid) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
             }
