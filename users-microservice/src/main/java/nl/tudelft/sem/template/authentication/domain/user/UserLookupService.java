@@ -65,9 +65,7 @@ public class    UserLookupService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users with this favourite book found!");
         }
 
-        return users
-                .stream().filter(user -> bookExists)
-                .map(UserModel::new)
+        return users.stream().map(UserModel::new)
                 .collect(Collectors.toList());
     }
 
@@ -80,8 +78,8 @@ public class    UserLookupService {
     public List<UserModel> getUsersByFavouriteGenres(List<Genre> genres) {
         List<UserModel> users = userRepository.findAll()
                 .stream().filter(user -> !user.isDeactivated() && user.getFavouriteGenres() != null
-                        && !user.isPrivate() && !user.getFavouriteGenres().isEmpty() && Collections.containsAny(
-                                user.getFavouriteGenres(), genres))
+                        && !user.isPrivate() && !user.getFavouriteGenres().isEmpty()
+                        && Collections.containsAny(user.getFavouriteGenres(), genres))
                 .map(UserModel::new)
                 .collect(Collectors.toList());
 

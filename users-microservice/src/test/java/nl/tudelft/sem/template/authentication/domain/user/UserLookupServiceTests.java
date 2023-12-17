@@ -248,7 +248,7 @@ public class UserLookupServiceTests {
     }
 
     @Test
-    public void testUserSearchByFavouriteBook2() {
+    public void testUserSearchByFavouriteBookNoResults1() {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
@@ -265,9 +265,44 @@ public class UserLookupServiceTests {
     }
 
     @Test
+    public void testUserSearchByFavouriteBookNoResults2() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        Iterable<AppUser> users = userRepository.findAll();
+        AppUser user = users.iterator().next();
+
+        Book favBook = bookRepository.findAll().get(0);
+        user.setFavouriteBook(favBook);
+        user.setDeactivated(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(favBook.getId()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setDeactivated(false);
+        user.setPrivate(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(favBook.getId()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setPrivate(false);
+        user.setFavouriteBook(null);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(favBook.getId()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+    }
+
+    @Test
     public void testNoUsersFoundWhileSearch() {
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
     }
 
     @Test
@@ -293,6 +328,44 @@ public class UserLookupServiceTests {
         userRepository.save(user);
 
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setDeactivated(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setDeactivated(false);
+        user.setPrivate(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setPrivate(false);
+        user.setFavouriteGenres(null);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setFavouriteGenres(new ArrayList<>());
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setFavouriteGenres(new ArrayList<>(List.of(Genre.ROMANCE, Genre.BIOGRAPHY)));
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
     }
 }

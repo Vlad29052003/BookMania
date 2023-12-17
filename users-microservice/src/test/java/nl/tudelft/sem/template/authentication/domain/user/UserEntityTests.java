@@ -75,4 +75,10 @@ public class UserEntityTests {
         assertThat(user1.hashCode()).isEqualTo(user2.hashCode());
         assertThat(user1.hashCode()).isEqualTo(Objects.hash(user1.getId()));
     }
+
+    @Test
+    public void testToString() {
+        assertThat(user1.toString()).isNotEqualTo(user2.toString());
+        assertThat(user1.toString()).isEqualTo(user1.toString());
+    }
 }

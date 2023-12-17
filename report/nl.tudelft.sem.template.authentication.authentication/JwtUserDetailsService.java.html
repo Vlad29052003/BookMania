@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+
+
+<h1>JwtUserDetailsService.java</h1>
+
+<table class="src">
+
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_1'/>
+1
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_1'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>package nl.tudelft.sem.template.authentication.authentication;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_2'/>
+2
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_2'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_3'/>
+3
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_3'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import java.util.List;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_4'/>
+4
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_4'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import nl.tudelft.sem.template.authentication.domain.user.UserRepository;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_5'/>
+5
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_5'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import nl.tudelft.sem.template.authentication.domain.user.Username;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_6'/>
+6
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_6'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.beans.factory.annotation.Autowired;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_7'/>
+7
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_7'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.security.authentication.DisabledException;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_8'/>
+8
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_8'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.security.core.userdetails.User;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_9'/>
+9
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_9'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.security.core.userdetails.UserDetails;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_10'/>
+10
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_10'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.security.core.userdetails.UserDetailsService;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_11'/>
+11
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_11'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.security.core.userdetails.UsernameNotFoundException;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_12'/>
+12
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_12'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.springframework.stereotype.Service;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_13'/>
+13
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_13'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_14'/>
+14
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_14'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>/**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_15'/>
+15
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_15'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * User details service responsible for retrieving the user from the DB.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_16'/>
+16
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_16'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_17'/>
+17
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_17'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>@Service</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_18'/>
+18
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_18'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>public class JwtUserDetailsService implements UserDetailsService {</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_19'/>
+19
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_19'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_20'/>
+20
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_20'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    private final transient UserRepository userRepository;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_21'/>
+21
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_21'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_22'/>
+22
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_22'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    @Autowired</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_23'/>
+23
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_23'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>    public JwtUserDetailsService(UserRepository userRepository) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_24'/>
+24
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_24'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>        this.userRepository = userRepository;</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_25'/>
+25
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_25'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_26'/>
+26
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_26'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_27'/>
+27
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_27'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_28'/>
+28
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_28'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Loads user information required for authentication from the DB.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_29'/>
+29
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_29'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_30'/>
+30
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_30'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param username The username of the user we want to authenticate</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_31'/>
+31
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_31'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return The authentication user information of that user</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_32'/>
+32
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_32'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @throws UsernameNotFoundException Username was not found</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_33'/>
+33
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_33'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_34'/>
+34
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_34'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    @Override</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_35'/>
+35
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_35'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DisabledException {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_36'/>
+36
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_36'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>        var optionalUser = userRepository.findByUsername(new Username(username));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_37'/>
+37
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_37'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_38'/>
+38
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_38'>1</a>
+<span>
+
+1. loadUserByUsername : negated conditional &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        if (optionalUser.isEmpty()) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_39'/>
+39
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_39'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>            throw new UsernameNotFoundException(&#34;User does not exist!&#34;);</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_40'/>
+40
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_40'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_41'/>
+41
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_41'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_42'/>
+42
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_42'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>        var user = optionalUser.get();</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_43'/>
+43
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_43'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_44'/>
+44
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_44'>1</a>
+<span>
+
+1. loadUserByUsername : negated conditional &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        if (user.isDeactivated()) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_45'/>
+45
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_45'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>            throw new DisabledException(&#34;User is disabled&#34;);</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_46'/>
+46
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_46'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_47'/>
+47
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_47'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_48'/>
+48
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_48'>1</a>
+<span>
+
+1. loadUserByUsername : replaced return value with null for nl/tudelft/sem/template/authentication/authentication/JwtUserDetailsService::loadUserByUsername &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new User(user.getUsername().toString(), user.getPassword().toString(),</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_49'/>
+49
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_49'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>                List.of(user.getAuthority()));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_50'/>
+50
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_50'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@3b663112_51'/>
+51
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_51'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>}</span></pre></td></tr>
+
+
+
+<tr><td></td><td></td><td><h2>Mutations</h2></td></tr>
+
+
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@3b663112_38'>38</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_38'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>loadUserByUsername<br/><b>Killed by : </b>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withValidUser_returnsToken()]</span></span> negated conditional &rarr; KILLED</p> 
+</td>
+</tr>
+
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@3b663112_44'>44</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_44'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>loadUserByUsername<br/><b>Killed by : </b>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withValidUser_returnsToken()]</span></span> negated conditional &rarr; KILLED</p> 
+</td>
+</tr>
+
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@3b663112_48'>48</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@3b663112_48'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>loadUserByUsername<br/><b>Killed by : </b>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withValidUser_returnsToken()]</span></span> replaced return value with null for nl/tudelft/sem/template/authentication/authentication/JwtUserDetailsService::loadUserByUsername &rarr; KILLED</p> 
+</td>
+</tr>
+
+</table>
+
+
+<h2>Active mutators</h2>
+<ul>
+
+<li class='mutator'>CONDITIONALS_BOUNDARY</li>
+
+<li class='mutator'>EMPTY_RETURNS</li>
+
+<li class='mutator'>FALSE_RETURNS</li>
+
+<li class='mutator'>INCREMENTS</li>
+
+<li class='mutator'>INVERT_NEGS</li>
+
+<li class='mutator'>MATH</li>
+
+<li class='mutator'>NEGATE_CONDITIONALS</li>
+
+<li class='mutator'>NULL_RETURNS</li>
+
+<li class='mutator'>PRIMITIVE_RETURNS</li>
+
+<li class='mutator'>TRUE_RETURNS</li>
+
+<li class='mutator'>VOID_METHOD_CALLS</li>
+
+</ul>
+
+<h2>Tests examined</h2>
+<ul>
+<li>nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests]/[method:loadUserByUsername_withValidUser_returnsCorrectUser()] (965 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNullListAuthors()] (1131 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookAlreadyExisting()] (1231 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookNotAdmin()] (1766 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testUpdateAndDelete()] (1205 ms)</li><li>nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests]/[method:loadUserByUsername_withNonexistentUser_throwsException()] (1681 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testGetNoBooks()] (1265 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withValidUser_returnsToken()] (687 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:authorNotPresentInAuthors()] (1541 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookAsNotAuthorOfTheBook()] (1121 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testGet()] (1784 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookAlmostAlreadyExisting()] (1288 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBookAsAuthor()] (1336 ms)</li><li>nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServiceTests]/[method:loadUserByUsername_withDisabledUser_throwsException()] (1171 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testDeleteFavouriteBook()] (1221 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBook()] (1728 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBookNonExistent()] (1309 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testAddBook()] (1270 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBookWhileUserHasItAsFavorite()] (1115 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNotExistingAsAuthor()] (1383 ms)</li><li>nl.tudelft.sem.template.authentication.integration.BookIntegrationTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.BookIntegrationTests]/[method:testCreate()] (1192 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNullListGenres()] (1346 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNotExisting()] (1806 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withNonexistentUsername_returns401()] (763 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBook()] (1145 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testDeleteBookNonAdmin()] (1293 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testGetNotFound()] (1675 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookNotAdmin()] (1339 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:authorNotPresentInTheDbAnymore()] (1260 ms)</li><li>nl.tudelft.sem.template.authentication.domain.book.BookServiceTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.domain.book.BookServiceTests]/[method:testUpdateBookAsAuthor()] (1600 ms)</li><li>nl.tudelft.sem.template.authentication.integration.UsersTests.[engine:junit-jupiter]/[class:nl.tudelft.sem.template.authentication.integration.UsersTests]/[method:login_withInvalidPassword_returns403()] (848 ms)</li>
+</ul>
+
+<br/>
+
+Report generated by <a href='https://pitest.org'>PIT</a> 1.11.6
+
+</body>
+</html>
