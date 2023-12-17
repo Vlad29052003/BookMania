@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/c/unauthorized/")
-public class UnauthorizedController {
+@RequestMapping("/c/unauthenticated/")
+public class UnauthenticatedController {
     private final transient UserService userService;
 
     @Autowired
-    public UnauthorizedController(UserService userService) {
+    public UnauthenticatedController(UserService userService) {
         this.userService = userService;
     }
 

@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.controllers.UnauthorizedController;
+import nl.tudelft.sem.template.authentication.controllers.UnauthenticatedController;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 public class UnauthorizedControllerTests {
     private transient UserService userService;
-    private transient UnauthorizedController unauthorizedController;
+    private transient UnauthenticatedController unauthorizedController;
     private transient UserModel userModel;
     private transient UUID userId;
 
@@ -27,7 +27,7 @@ public class UnauthorizedControllerTests {
     @BeforeEach
     public void setUp() {
         this.userService = mock(UserService.class);
-        this.unauthorizedController = new UnauthorizedController(userService);
+        this.unauthorizedController = new UnauthenticatedController(userService);
         AppUser appUser = new AppUser(new Username("user"), "email@mail.com", new HashedPassword("mock"));
         this.userModel = new UserModel(appUser);
         this.userId = UUID.randomUUID();
