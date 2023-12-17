@@ -6,6 +6,8 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +24,7 @@ public class UserService {
     /**
      * Instantiates a new UserService.
      *
-     * @param userRepository  the user repository
+     * @param userRepository the user repository
      */
     public UserService(UserRepository userRepository, BookRepository bookRepository) {
         this.userRepository = userRepository;
@@ -48,7 +50,7 @@ public class UserService {
      * Update the name of an existing user.
      *
      * @param username the username
-     * @param name the name of the user
+     * @param name     the name of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updateName(Username username, String name) throws UsernameNotFoundException {
@@ -67,7 +69,7 @@ public class UserService {
      * Update the bio of an existing user.
      *
      * @param username the username
-     * @param bio the bio of the user
+     * @param bio      the bio of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updateBio(Username username, String bio) throws UsernameNotFoundException {
@@ -86,7 +88,7 @@ public class UserService {
      * Update the profile picture of an existing user.
      *
      * @param username the username
-     * @param picture the profile photo of the user
+     * @param picture  the profile photo of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updatePicture(Username username, byte[] picture) throws UsernameNotFoundException {
@@ -123,7 +125,7 @@ public class UserService {
     /**
      * Update the list of favourite genres of an existing user.
      *
-     * @param username the username
+     * @param username        the username
      * @param favouriteGenres the list of favourite genres of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -142,7 +144,7 @@ public class UserService {
     /**
      * Update the favourite book of an existing user.
      *
-     * @param username the username
+     * @param username        the username
      * @param favouriteBookId the id of the favourite book
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -184,7 +186,7 @@ public class UserService {
     /**
      * Updates the privacy settings of a user.
      *
-     * @param username the username
+     * @param username  the username
      * @param isPrivate new privacy setting
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -198,5 +200,21 @@ public class UserService {
         user.setPrivate(isPrivate);
 
         userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * Gets the user details for a specific user.
+     *
+     * @param userId is the user to get the details for.
+     * @return a UserModel object with the details.
+     */
+    public UserModel getUserDetails(UUID userId) {
+        Optional<AppUser> optionalAppUser = userRepository.findById(userId);
+        if (optionalAppUser.isEmpty()) {
+            throw new UsernameNotFoundException(NO_SUCH_USER);
+        }
+
+        AppUser user = optionalAppUser.get();
+        return new UserModel(user);
     }
 }
