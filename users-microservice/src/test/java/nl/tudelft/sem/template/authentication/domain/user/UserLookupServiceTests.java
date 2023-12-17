@@ -203,21 +203,21 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest2);
 
         String email3 = "private@user.com";
-        String netId3 = "privateuser";
+        String username3 = "privateUser";
         String password3 = "pass";
         UUID id3 = UUID.randomUUID();
 
-        AppUser appUser3 = new AppUser(new Username(netId3), email3, new HashedPassword(password3));
+        AppUser appUser3 = new AppUser(new Username(username3), email3, new HashedPassword(password3));
         appUser3.setId(id3);
 
         RegistrationRequestModel registrationRequest3 = new RegistrationRequestModel();
-        registrationRequest3.setUsername(netId3);
+        registrationRequest3.setUsername(username3);
         registrationRequest3.setEmail(email3);
         registrationRequest3.setPassword(password3);
 
         authenticationService.registerUser(registrationRequest3);
 
-        userService.updatePrivacy(new Username(netId3), true);
+        userService.updatePrivacy(new Username(username3), true);
 
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
@@ -266,6 +266,38 @@ public class UserLookupServiceTests {
 
     @Test
     public void testUserSearchByFavouriteBookNoResults2() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        List<AppUser> users = userRepository.findAll();
+        AppUser user1 = users.get(0);
+        AppUser user2 = users.get(1);
+
+        Book favBook = bookRepository.findAll().get(0);
+
+        user1.setFavouriteBook(favBook);
+        user2.setFavouriteBook(favBook);
+        userRepository.saveAll(List.of(user1, user2));
+
+        List<String> foundUsers = userLookupService.getUsersByFavouriteBook(favBook.getId())
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+
+        assertThat(foundUsers).containsExactlyInAnyOrder("user", "andrei");
+
+        Book newBook = new Book("newBook", List.of("auth1", "auth2"), List.of(Genre.CRIME), "desc", 255);
+        bookRepository.saveAndFlush(newBook);
+        newBook = bookRepository.findByTitle("newBook").get(0);
+
+        user2.setFavouriteBook(newBook);
+        userRepository.save(user2);
+        foundUsers = userLookupService.getUsersByFavouriteBook(favBook.getId())
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+
+        assertThat(foundUsers).containsExactlyInAnyOrder("user");
+    }
+
+    @Test
+    public void testUserSearchByFavouriteBookNoResults3() {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 

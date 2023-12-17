@@ -58,15 +58,16 @@ public class    UserLookupService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found!");
         }
 
-        boolean bookExists = users
-                .stream().anyMatch(user -> user.getFavouriteBook().getId().equals(bookId));
+        List<UserModel> userWithBookAsFavorite = users.stream()
+                .map(UserModel::new)
+                .filter(user -> user.getFavouriteBook().getId().equals(bookId))
+                .collect(Collectors.toList());
 
-        if (!bookExists) {
+        if (userWithBookAsFavorite.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users with this favourite book found!");
         }
 
-        return users.stream().map(UserModel::new)
-                .collect(Collectors.toList());
+        return userWithBookAsFavorite;
     }
 
     /**
