@@ -26,8 +26,8 @@ public class AuthenticationControllerTests {
     public void registrationValid() {
         RegistrationRequestModel request = new RegistrationRequestModel();
         request.setUsername("user");
-        request.setEmail("email");
-        request.setPassword("password");
+        request.setEmail("email@gmail.com");
+        request.setPassword("Password123!");
 
         assertEquals(authenticationController.register(request), ResponseEntity.ok().build());
     }
@@ -36,8 +36,8 @@ public class AuthenticationControllerTests {
     public void registrationRequestThrowsError() {
         RegistrationRequestModel request = new RegistrationRequestModel();
         request.setUsername("user");
-        request.setEmail("email");
-        request.setPassword("password");
+        request.setEmail("email@gmail.com");
+        request.setPassword("Password123!");
 
         doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, ""))
                 .when(authenticationService).registerUser(request);
@@ -51,7 +51,7 @@ public class AuthenticationControllerTests {
     public void authenticationRequestValid() {
         AuthenticationRequestModel request = new AuthenticationRequestModel();
         request.setUsername("username");
-        request.setPassword("pass");
+        request.setPassword("Password123!");
         AuthenticationResponseModel response = new AuthenticationResponseModel();
         response.setToken("token");
 
@@ -64,7 +64,7 @@ public class AuthenticationControllerTests {
     public void authenticationRequestThrowsError() {
         AuthenticationRequestModel request = new AuthenticationRequestModel();
         request.setUsername("usernameS");
-        request.setPassword("pass");
+        request.setPassword("Password123!");
 
         when(authenticationService.authenticateUser(request))
                 .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, ""));

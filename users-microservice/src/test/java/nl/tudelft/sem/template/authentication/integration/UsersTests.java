@@ -63,7 +63,7 @@ public class UsersTests {
         // Arrange
         final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
-        final Password testPassword = new Password("password123");
+        final Password testPassword = new Password("Password123!");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
@@ -91,9 +91,9 @@ public class UsersTests {
     public void register_withExistingUser_throwsException() throws Exception {
         // Arrange
         final Username testUser = new Username("SomeUser1");
-        final String email = "testEmail";
-        final Password newTestPassword = new Password("password456");
-        final HashedPassword existingTestPassword = new HashedPassword("password23");
+        final String email = "testEmail@gmail.com";
+        final Password newTestPassword = new Password("Password456!");
+        final HashedPassword existingTestPassword = new HashedPassword("Password23!");
 
         AppUser existingAppUser = new AppUser(testUser, email, existingTestPassword);
         userRepository.save(existingAppUser);
@@ -120,8 +120,8 @@ public class UsersTests {
     public void login_withValidUser_returnsToken() throws Exception {
         // Arrange
         final Username testUser = new Username("SomeUser2");
-        final String email = "testEmail";
-        final Password testPassword = new Password("password13");
+        final String email = "testEmail@gmail.com";
+        final Password testPassword = new Password("Password13!");
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(testPassword)).thenReturn(testHashedPassword);
 
@@ -167,7 +167,7 @@ public class UsersTests {
     public void login_withNonexistentUsername_returns401() throws Exception {
         // Arrange
         final String testUser = "SomeUser3";
-        final String testPassword = "password1235";
+        final String testPassword = "Password1235!";
 
         when(mockAuthenticationManager.authenticate(argThat(authentication ->
                 testUser.equals(authentication.getPrincipal())
@@ -193,9 +193,9 @@ public class UsersTests {
     public void login_withInvalidPassword_returns403() throws Exception {
         // Arrange
         final String testUser = "SomeUser4";
-        final String email = "testEmail";
-        final String wrongPassword = "password1234";
-        final String testPassword = "password12";
+        final String email = "testEmail@gmail.com";
+        final String wrongPassword = "Password1234!";
+        final String testPassword = "Password12!";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
         when(mockPasswordEncoder.hash(new Password(testPassword))).thenReturn(testHashedPassword);
 

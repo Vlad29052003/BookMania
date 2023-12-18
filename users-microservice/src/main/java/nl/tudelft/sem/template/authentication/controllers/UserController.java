@@ -2,11 +2,14 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
+import nl.tudelft.sem.template.authentication.domain.user.Password;
+import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/c/users")
 public class UserController {
     private final transient UserService userService;
+    private final transient PasswordHashingService passwordHashingService;
 
     /**
      * Instantiates a new UserController.
@@ -33,8 +37,9 @@ public class UserController {
      * @param userService       the registration service
      */
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordHashingService passwordHashingService) {
         this.userService = userService;
+        this.passwordHashingService = passwordHashingService;
     }
 
     /**
@@ -169,6 +174,60 @@ public class UserController {
                                             authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        return ResponseEntity.ok().build();
+    }
+    
+    /**
+     * Endpoint for updating the username.
+     *
+     * @param newUsername the new username
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/username")
+    public ResponseEntity<Void> updateUsername(@RequestBody String newUsername) {
+        try {
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            userService.updateUsername(username, newUsername);
+        } catch (UsernameAlreadyInUseException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating the email of a user.
+     *
+     * @param newEmail the new email
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/email")
+    public ResponseEntity<Void> updateEmail(@RequestBody String newEmail) {
+        try {
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            userService.updateEmail(username, newEmail);
+        } catch (EmailAlreadyInUseException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating the password of a user.
+     *
+     * @param newPassword the new password
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/password")
+    public ResponseEntity<Void> updatePassword(@RequestBody String newPassword) {
+        try {
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            Password newPass = new Password(newPassword);
+            userService.updatePassword(username, passwordHashingService.hash(newPass));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
         return ResponseEntity.ok().build();
     }
