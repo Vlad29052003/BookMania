@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -9,6 +10,7 @@ import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
+import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -157,6 +159,26 @@ public class UserController {
     }
 
     /**
+     * Patch request to ban / unban a user.
+     *
+     * @param banUserRequestModel username and future status of user that needs to be (un)banned.
+     * @return request status.
+     */
+    @PatchMapping("/isDeactivated")
+    public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel) {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                                                .get(0).getAuthority();
+        try {
+            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
+                                            banUserRequestModel.isBanned(),
+                                            authority);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        return ResponseEntity.ok().build();
+    }
+    
+    /**
      * Endpoint for updating the username.
      *
      * @param newUsername the new username
@@ -207,7 +229,6 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-
         return ResponseEntity.ok().build();
     }
 

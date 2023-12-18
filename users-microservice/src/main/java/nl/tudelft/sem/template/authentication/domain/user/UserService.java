@@ -6,9 +6,13 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * A DDD service for a user.
@@ -16,17 +20,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
     private final transient UserRepository userRepository;
+    private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
-
     public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
      * Instantiates a new UserService.
      *
-     * @param userRepository  the user repository
+     * @param userRepository the user repository.
+     * @param reportRepository the report repository.
+     * @param bookRepository the book repository.
      */
-    public UserService(UserRepository userRepository, BookRepository bookRepository) {
+    public UserService(UserRepository userRepository,
+                       ReportRepository reportRepository,
+                       BookRepository bookRepository) {
         this.userRepository = userRepository;
+        this.reportRepository = reportRepository;
         this.bookRepository = bookRepository;
     }
 
@@ -49,7 +58,7 @@ public class UserService {
      * Update the name of an existing user.
      *
      * @param username the username
-     * @param name the name of the user
+     * @param name     the name of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updateName(Username username, String name) throws UsernameNotFoundException {
@@ -68,7 +77,7 @@ public class UserService {
      * Update the bio of an existing user.
      *
      * @param username the username
-     * @param bio the bio of the user
+     * @param bio      the bio of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updateBio(Username username, String bio) throws UsernameNotFoundException {
@@ -87,7 +96,7 @@ public class UserService {
      * Update the profile picture of an existing user.
      *
      * @param username the username
-     * @param picture the profile photo of the user
+     * @param picture  the profile photo of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
     public void updatePicture(Username username, byte[] picture) throws UsernameNotFoundException {
@@ -124,7 +133,7 @@ public class UserService {
     /**
      * Update the list of favourite genres of an existing user.
      *
-     * @param username the username
+     * @param username        the username
      * @param favouriteGenres the list of favourite genres of the user
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -143,7 +152,7 @@ public class UserService {
     /**
      * Update the favourite book of an existing user.
      *
-     * @param username the username
+     * @param username        the username
      * @param favouriteBookId the id of the favourite book
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -162,6 +171,40 @@ public class UserService {
         Book book = optionalBook.get();
 
         user.setFavouriteBook(book);
+        userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * (Un)bans a user.
+     *
+     * @param username    username of the user that should be (un)banned.
+     * @param toBan (de-)activated status we wish the user to have after the request.
+     * @param authority jwt token.
+     */
+    @Transactional
+    public void updateBannedStatus(Username username, boolean toBan, String authority) {
+        if (!authority.equals(Authority.ADMIN.toString())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can ban / unban a user!");
+        }
+
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
+        if (optionalAppUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist!");
+        }
+
+        AppUser user = optionalAppUser.get();
+        if (user.isDeactivated() == toBan) {
+            String banned = toBan ? "banned" : "not banned";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is already " + banned + "!");
+        }
+
+        if (user.isDeactivated()) {
+            user.setDeactivated(false);
+            userRepository.saveAndFlush(user);
+            return;
+        }
+        user.setDeactivated(true);
+        reportRepository.deleteByUserId(user.getId().toString());
         userRepository.saveAndFlush(user);
     }
 

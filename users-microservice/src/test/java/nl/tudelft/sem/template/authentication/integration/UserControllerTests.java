@@ -23,6 +23,7 @@ import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
+import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -412,6 +413,8 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + token));
         resultActions.andExpect(status().isOk());
 
+        resultActions.andExpect(status().isOk());
+
         Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
         assertThat(userModel).isPresent();
@@ -419,6 +422,67 @@ public class UserControllerTests {
         assertThat(userModel.get().getFavouriteBook().getAuthors()).isEqualTo(newFavouriteBook.getAuthors());
         assertThat(userModel.get().getFavouriteBook().getGenres()).isEqualTo(newFavouriteBook.getGenres());
         assertThat(userModel.get().getFavouriteBook().getDescription()).isEqualTo(newFavouriteBook.getDescription());
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateBannedStatus() throws Exception {
+        final Username testAdmin = new Username("Admin");
+        final String emailAdmin = "admin@email.com";
+        final HashedPassword hashedPasswordAdmin = new HashedPassword("adminPass");
+        final AppUser admin = new AppUser(testAdmin, emailAdmin, hashedPasswordAdmin);
+        admin.setAuthority(Authority.ADMIN);
+        Collection<SimpleGrantedAuthority> rolesAdmin = new ArrayList<>();
+        rolesAdmin.add(new SimpleGrantedAuthority(Authority.ADMIN.toString()));
+        final String tokenAdmin = jwtTokenGenerator.generateToken(new User(testAdmin.toString(),
+                hashedPasswordAdmin.toString(), rolesAdmin));
+        userRepository.save(admin);
+
+        final Username testUser = new Username("User");
+        final String emailUser = "user@email.com";
+        final HashedPassword hashedPasswordUser = new HashedPassword("userPass");
+        final AppUser user = new AppUser(testUser, emailUser, hashedPasswordUser);
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> rolesUser = new ArrayList<>();
+        rolesUser.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String tokenUser = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                hashedPasswordUser.toString(), rolesUser));
+
+        BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
+        banUserRequestModel.setBanned(true);
+        banUserRequestModel.setUsername(testUser.toString());
+
+        mockMvc.perform(patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUserRequestModel))
+                        .header("Authorization", "Bearer " + tokenUser))
+                        .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUserRequestModel))
+                        .header("Authorization", "Bearer " + tokenAdmin))
+                        .andExpect(status().isNotFound());
+
+        userRepository.save(user);
+        mockMvc.perform(patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUserRequestModel))
+                        .header("Authorization", "Bearer " + tokenAdmin))
+                        .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUserRequestModel))
+                        .header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().isNotFound());
+
+        banUserRequestModel.setBanned(false);
+        mockMvc.perform(patch("/c/users/isDeactivated")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtil.serialize(banUserRequestModel))
+                        .header("Authorization", "Bearer " + tokenAdmin))
+                        .andExpect(status().isOk());
     }
 
     @Test
