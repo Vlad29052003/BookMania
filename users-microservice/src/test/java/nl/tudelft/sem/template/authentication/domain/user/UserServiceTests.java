@@ -134,6 +134,87 @@ public class UserServiceTests {
     }
 
     @Test
+    public void testUpdateUsername() throws UsernameAlreadyInUseException {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        String badUsername = "1User";
+        String newUsername = "NewUsername";
+        assertThatThrownBy(() -> userService.updateUsername(username, newUsername))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userService.updateUsername(username, badUsername))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Illegal username:"
+                        + " the username should start with a letter and not contain any special characters!");
+
+        userService.updateUsername(username, newUsername);
+        AppUser retrievedUser = userService.getUserByUsername(new Username(newUsername));
+        assertThat(retrievedUser.getUsername().toString()).isEqualTo(newUsername);
+
+        Username username1 = new Username("otherUsername");
+        String email1 = "other@email.com";
+        AppUser newUser = new AppUser(username1, email1, password);
+        userRepository.save(newUser);
+        assertThatThrownBy(() -> userService.updateUsername(username1, newUsername))
+                .isInstanceOf(UsernameAlreadyInUseException.class)
+                .hasMessage(newUsername + " username is already in use!");
+    }
+
+    @Test
+    public void testUpdateEmail() throws EmailAlreadyInUseException {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        String badEmail = "notAnEmail.com";
+        String newEmail = "goodExample@gmail.com";
+        assertThatThrownBy(() -> userService.updateEmail(username, newEmail))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userService.updateEmail(username, badEmail))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Illegal email address!");
+
+        userService.updateEmail(username, newEmail);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.getEmail()).isEqualTo(newEmail);
+
+        Username username1 = new Username("otherUsername");
+        String email1 = "other@email.com";
+        AppUser newUser = new AppUser(username1, email1, password);
+        userRepository.save(newUser);
+        assertThatThrownBy(() -> userService.updateEmail(username1, newEmail))
+                .isInstanceOf(EmailAlreadyInUseException.class)
+                .hasMessage(newEmail + " email is already in use!");
+    }
+
+    @Test
+    public void testUpdatePassword() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        HashedPassword newPassword = new HashedPassword("NewPass123!");
+        assertThatThrownBy(() -> userService.updatePassword(username, newPassword))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(UserService.NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+
+        userService.updatePassword(username, newPassword);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.getPassword()).isEqualTo(newPassword);
+    }
+
+    @Test
     @Transactional
     public void testUpdateFavouriteGenres() {
         Username username = new Username("username");

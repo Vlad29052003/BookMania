@@ -75,7 +75,7 @@ public class UserControllerTests {
         String response = resultActions.andReturn().getResponse().getContentAsString();
         UserModel userModel = new ObjectMapper().readValue(response, UserModel.class);
 
-        assertThat(userModel.getUsername()).isEqualTo(testUser.toString());
+        assertThat(userModel.getUsername()).isEqualTo(testUser);
         assertThat(userModel.getEmail()).isEqualTo(email);
         assertThat(userModel.getName()).isNull();
         assertThat(userModel.getBio()).isNull();
@@ -125,7 +125,7 @@ public class UserControllerTests {
 
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/name")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.TEXT_PLAIN)
                 .content(newName)
                 .header("Authorization", "Bearer " + token));
 
@@ -152,7 +152,7 @@ public class UserControllerTests {
 
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/bio")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.TEXT_PLAIN)
                         .content(newBio)
                         .header("Authorization", "Bearer " + token));
 
@@ -206,7 +206,7 @@ public class UserControllerTests {
 
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/location")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.TEXT_PLAIN)
                         .content(newLocation)
                         .header("Authorization", "Bearer " + token));
 
@@ -215,6 +215,138 @@ public class UserControllerTests {
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getLocation()).isEqualTo(newLocation);
+    }
+
+    @Test
+    public void testUpdateUsername() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        final String badUsername = "1User";
+        final String newUsername = "NewUsername";
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(user);
+
+        ResultActions resultActions = mockMvc.perform(
+                patch("/c/users/username")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(badUsername)
+                        .header("Authorization", "Bearer " + token));
+        resultActions.andExpect(status().isBadRequest());
+
+        resultActions = mockMvc.perform(
+                patch("/c/users/username")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(newUsername)
+                        .header("Authorization", "Bearer " + token));
+
+        resultActions.andExpect(status().isOk());
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
+        assertThat(userModel).isEmpty();
+
+        userModel = userRepository.findByUsername(new Username(newUsername));
+        assertThat(userModel).isPresent();
+        assertThat(userModel.get().getUsername().toString()).isEqualTo(newUsername);
+
+        final AppUser newUser = new AppUser(testUser, "other@email.com", testHashedPassword);
+        newUser.setAuthority(Authority.REGULAR_USER);
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String newToken = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(newUser);
+        resultActions = mockMvc.perform(
+                patch("/c/users/username")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(newUsername)
+                        .header("Authorization", "Bearer " + newToken));
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testUpdateEmail() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        final String badEmail = "notAnEmail.com";
+        final String newEmail = "good@gmail.com";
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(user);
+
+        ResultActions resultActions = mockMvc.perform(
+                patch("/c/users/email")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(badEmail)
+                        .header("Authorization", "Bearer " + token));
+        resultActions.andExpect(status().isBadRequest());
+
+        resultActions = mockMvc.perform(
+                patch("/c/users/email")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(newEmail)
+                        .header("Authorization", "Bearer " + token));
+
+        resultActions.andExpect(status().isOk());
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
+        assertThat(userModel).isPresent();
+        assertThat(userModel.get().getEmail()).isEqualTo(newEmail);
+
+        final AppUser newUser = new AppUser(new Username("otherUsername"), "other@email.com", testHashedPassword);
+        newUser.setAuthority(Authority.REGULAR_USER);
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String newToken = jwtTokenGenerator.generateToken(new User("otherUsername",
+                testHashedPassword.toString(), roles));
+        userRepository.save(newUser);
+        resultActions = mockMvc.perform(
+                patch("/c/users/email")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(newEmail)
+                        .header("Authorization", "Bearer " + newToken));
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testUpdatePassword() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        final String badPassword = "password";
+        final String newPassword = "NewPass123!";
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(user);
+        final HashedPassword initialPassword = userRepository.findByUsername(testUser).orElseThrow().getPassword();
+
+        ResultActions resultActions = mockMvc.perform(
+                patch("/c/users/password")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(badPassword)
+                        .header("Authorization", "Bearer " + token));
+        resultActions.andExpect(status().isBadRequest());
+
+        resultActions = mockMvc.perform(
+                patch("/c/users/password")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(newPassword)
+                        .header("Authorization", "Bearer " + token));
+
+        resultActions.andExpect(status().isOk());
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
+        assertThat(userModel).isPresent();
+        assertThat(userModel.get().getPassword()).isNotEqualTo(initialPassword);
     }
 
     @Test
@@ -264,7 +396,7 @@ public class UserControllerTests {
 
         ResultActions resultActions = mockMvc.perform(
                 patch("/c/users/favouriteBook")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.TEXT_PLAIN)
                         .content("1")
                         .header("Authorization", "Bearer " + token));
 
@@ -275,9 +407,10 @@ public class UserControllerTests {
 
         resultActions = mockMvc.perform(
                 patch("/c/users/favouriteBook")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.TEXT_PLAIN)
                         .content(bookId.toString())
                         .header("Authorization", "Bearer " + token));
+        resultActions.andExpect(status().isOk());
 
         Optional<AppUser> userModel = userRepository.findByUsername(testUser);
 
@@ -314,7 +447,7 @@ public class UserControllerTests {
 
     @Test
     @Transactional
-    public void testUpdateUser() throws Exception {
+    public void testUpdateUserPrivacy() throws Exception {
         final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
         final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
@@ -328,7 +461,7 @@ public class UserControllerTests {
         assertThat(user.isPrivate()).isFalse();
 
         mockMvc.perform(patch("/c/users/isPrivate")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.TEXT_PLAIN)
                         .content(String.valueOf(true))
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
