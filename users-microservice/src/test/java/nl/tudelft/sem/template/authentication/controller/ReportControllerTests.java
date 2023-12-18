@@ -60,17 +60,17 @@ public class ReportControllerTests {
      */
     @BeforeEach
     public void setUp() {
-        madeReport = new AppUser(new Username("user"), "user@regular", new HashedPassword("pass"));
+        madeReport = new AppUser(new Username("user"), "user@regular.com", new HashedPassword("pass"));
         madeReport.setAuthority(Authority.REGULAR_USER);
         Collection<SimpleGrantedAuthority> rolesUser = new ArrayList<>();
         rolesUser.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         userToken = jwtTokenGenerator.generateToken(new User(madeReport.getUsername().toString(),
                 madeReport.getPassword().toString(), rolesUser));
 
-        isReported = new AppUser(new Username("reported"), "oopsie@report", new HashedPassword("????"));
+        isReported = new AppUser(new Username("reported"), "oopsie@report.com", new HashedPassword("????"));
         isReported.setAuthority(Authority.REGULAR_USER);
 
-        admin = new AppUser(new Username("admin"), "admin@admin", new HashedPassword("pwd"));
+        admin = new AppUser(new Username("admin"), "admin@admin.com", new HashedPassword("pwd"));
         admin.setAuthority(Authority.ADMIN);
         Collection<SimpleGrantedAuthority> rolesAdmin = new ArrayList<>();
         rolesAdmin.add(new SimpleGrantedAuthority(Authority.ADMIN.toString()));

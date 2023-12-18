@@ -42,8 +42,8 @@ class ReportServiceTests {
 
     @BeforeEach
     public void setUp() {
-        madeReport = new AppUser(new Username("madeReport"), "made@report", new HashedPassword("pass"));
-        isReported = new AppUser(new Username("reported"), "is@reported", new HashedPassword("pwd"));
+        madeReport = new AppUser(new Username("madeReport"), "made@report.com", new HashedPassword("pass"));
+        isReported = new AppUser(new Username("reported"), "is@reported.com", new HashedPassword("pwd"));
     }
 
     @Test
