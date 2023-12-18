@@ -1,27 +1,33 @@
 package nl.tudelft.sem.template.authentication.application.user;
 
-//import com.github.tomakehurst.wiremock.WireMockServer;
 import nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-//import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
-/**
- * This event listener is automatically called when an user entity is saved
- * which has stored events of type: UserWasCreated.
- */
-@Component
-public class UserWasCreatedListener {
-
+//import static com.github.tomakehurst.wiremock.client.WireMock.post;
+//import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+//import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+//import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+//import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+//
+///**
+// * This event listener is automatically called when an user entity is saved
+// * which has stored events of type: UserWasCreated.
+// */
+//@Component
+//public class UserWasCreatedListener {
+//
 //    private static final HttpClient client = HttpClient.newHttpClient();
 //    private static final String bookshelvesUrl = "http://localhost:8081/a/user";
 //
-//    private WireMockServer wireMockServer = new WireMockServer(options().withPort(8081)));
+//    private WireMockServer wireMockServer = new WireMockServer(options().port(8081));
 //
 //    /**
 //     * On account creation call the endpoint of the bookshelves microservice to create an user.
@@ -47,5 +53,5 @@ public class UserWasCreatedListener {
 //        } catch (Exception e) {
 //            throw new RuntimeException(e);
 //        }
-//    }
+    }
 }
