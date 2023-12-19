@@ -3,7 +3,6 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
@@ -286,14 +285,16 @@ public class UserServiceTests {
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                                     () -> userService.updateBannedStatus(username, true, "ADMIN"));
-        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(e.getMessage()).isEqualTo("404 NOT_FOUND \"User does not exist!\"");
 
         AppUser user = new AppUser(username, email, hashedPassword);
         userRepository.save(user);
 
         e = assertThrows(ResponseStatusException.class,
                                     () -> userService.updateBannedStatus(username, true, "REGULAR_USER"));
-        assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(e.getMessage()).isEqualTo("401 UNAUTHORIZED \"Only admins can ban / unban a user!\"");
 
         Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
         while (report.getId().equals(user.getId())) {
@@ -308,11 +309,17 @@ public class UserServiceTests {
 
         e = assertThrows(ResponseStatusException.class,
                 () -> userService.updateBannedStatus(username, true, "ADMIN"));
-        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(e.getMessage()).isEqualTo("400 BAD_REQUEST \"User is already banned!\"");
 
         userService.updateBannedStatus(username, false, "ADMIN");
         assertThat(userRepository.findByUsername(username)).isPresent();
         assertThat(userRepository.findByUsername(username).get().isDeactivated()).isFalse();
+
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.updateBannedStatus(username, false, "ADMIN"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(e.getMessage()).isEqualTo("400 BAD_REQUEST \"User is already not banned!\"");
     }
 
     @Test
