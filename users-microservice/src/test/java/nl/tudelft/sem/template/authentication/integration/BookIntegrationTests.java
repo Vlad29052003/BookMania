@@ -1,7 +1,7 @@
 package nl.tudelft.sem.template.authentication.integration;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
+//import com.github.tomakehurst.wiremock.WireMockServer;
+//import com.github.tomakehurst.wiremock.client.WireMock;
 import nl.tudelft.sem.template.authentication.application.book.BookWasUpdatedListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasCreatedEvent;
@@ -25,15 +25,15 @@ public class BookIntegrationTests {
     @Autowired
     private transient BookWasUpdatedListener bookWasUpdatedListener;
 
-    static final WireMockServer bookshelfServer = new WireMockServer();
+    //static final WireMockServer bookshelfServer = new WireMockServer();
 
     /**
      * Set up for the testing environment before all tests.
      */
     @BeforeAll
     public static void beforeAll() {
-        WireMock.configureFor("http://localhost", 8081, "/a");
-        bookshelfServer.start();
+        //WireMock.configureFor("http://localhost", 8081, "/a");
+        //bookshelfServer.start();
     }
 
     @Test
@@ -48,7 +48,7 @@ public class BookIntegrationTests {
     @AfterAll
     public static void afterAll() {
 
-        bookshelfServer.stop();
+        //bookshelfServer.stop();
     }
 
     /**
@@ -57,6 +57,6 @@ public class BookIntegrationTests {
     @AfterEach
     public void afterEach() {
 
-        bookshelfServer.resetAll();
+        //bookshelfServer.resetAll();
     }
 }

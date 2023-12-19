@@ -61,7 +61,7 @@ dependencies {
 	testImplementation('org.assertj:assertj-core:3.23.1')
 
 	// Wire Mock
-	testImplementation "org.wiremock:wiremock:3.3.1"
+	//testImplementation "org.wiremock:wiremock:3.3.1"
 }
 
 test {
