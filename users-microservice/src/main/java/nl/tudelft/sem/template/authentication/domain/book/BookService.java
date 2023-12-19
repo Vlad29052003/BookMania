@@ -81,6 +81,8 @@ public class BookService {
                     createBookRequestModel.getGenres(),
                     createBookRequestModel.getDescription(),
                     createBookRequestModel.getNumPages());
+
+            newBook.recordBookWasCreated();
             bookRepository.saveAndFlush(newBook);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -115,6 +117,7 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
+            currentBook.recordBookWasEdited();
             bookRepository.saveAndFlush(currentBook);
         } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
 
@@ -145,6 +148,7 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
+            currentBook.recordBookWasEdited();
             bookRepository.saveAndFlush(currentBook);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -167,6 +171,8 @@ public class BookService {
         if (optBook.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
+
+        optBook.get().recordBookWasDeleted();
 
         userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
 

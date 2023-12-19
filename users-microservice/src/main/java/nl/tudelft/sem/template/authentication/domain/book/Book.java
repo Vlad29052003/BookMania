@@ -100,7 +100,6 @@ public class Book extends HasEvents {
         this.description = description;
         this.numPages = numPages;
         this.usersWithBookAsFavorite = new ArrayList<>();
-        this.recordThat(new BookWasCreatedEvent(this));
     }
 
     /**
@@ -121,5 +120,17 @@ public class Book extends HasEvents {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void recordBookWasCreated() {
+        this.recordThat(new BookWasCreatedEvent(this));
+    }
+
+    public void recordBookWasEdited() {
+        this.recordThat(new BookWasEditedEvent(this));
+    }
+
+    public void recordBookWasDeleted() {
+        this.recordThat(new BookWasDeletedEvent(this));
     }
 }
