@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +11,9 @@ import java.util.stream.Collectors;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
+import nl.tudelft.sem.template.authentication.domain.book.Book;
+import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
+import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -24,6 +28,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @ExtendWith(SpringExtension.class)
@@ -46,6 +52,9 @@ public class UserLookupServiceTests {
     private transient UserRepository userRepository;
 
     @Autowired
+    private transient BookRepository bookrepository;
+
+    @Autowired
     private transient AuthenticationManager authenticationManager;
 
     @Autowired
@@ -59,6 +68,14 @@ public class UserLookupServiceTests {
     private transient RegistrationRequestModel registrationRequest;
     private transient RegistrationRequestModel registrationRequest2;
 
+    private transient Book book;
+
+    private transient UUID bookId;
+
+    private transient AppUser testUser;
+
+    private transient AppUser testUser2;
+
 
     /**
      * Sets up the testing environment.
@@ -66,21 +83,22 @@ public class UserLookupServiceTests {
     @BeforeEach
     public void setUp() {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
-        when(passwordHashingService.hash(new Password("someOtherHash"))).thenReturn(new HashedPassword("someHash"));
+        when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
                 jwtService, userRepository, passwordHashingService);
 
-        String email = "email";
-        String netId = "user";
-        String password = "someHash";
+        String email = "email@gmail.com";
+        String username = "user";
+        String password = "someHash123!";
         UUID id = UUID.randomUUID();
 
-        AppUser appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
-        appUser.setId(id);
+        testUser = new AppUser(new Username(username), email, new HashedPassword(password));
+        testUser.setId(id);
+        testUser.setFavouriteBook(book);
 
         registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setUsername(netId);
+        registrationRequest.setUsername(username);
         registrationRequest.setEmail(email);
         registrationRequest.setPassword(password);
 
@@ -96,19 +114,26 @@ public class UserLookupServiceTests {
         tokenValidationResponse.setId(id);
 
 
-        String email2 = "email2";
-        String netId2 = "andrei";
-        String password2 = "someHash";
+        String email2 = "email2@gmail.com";
+        String username2 = "andrei";
+        String password2 = "someHash1!";
         UUID id2 = UUID.randomUUID();
 
-        AppUser appUser2 = new AppUser(new Username(netId2), email2, new HashedPassword(password2));
+        AppUser appUser2 = new AppUser(new Username(username2), email2, new HashedPassword(password2));
         appUser2.setId(id2);
+        testUser2 = new AppUser(new Username(username2), email2, new HashedPassword(password2));
+        testUser2.setId(id2);
 
         registrationRequest2 = new RegistrationRequestModel();
-        registrationRequest2.setUsername(netId2);
+        registrationRequest2.setUsername(username2);
         registrationRequest2.setEmail(email2);
         registrationRequest2.setPassword(password2);
 
+        book = new Book("title", List.of("authorName"), List.of(Genre.CRIME),
+                "description", 20);
+        bookId = UUID.randomUUID();
+        book.setId(bookId);
+        bookrepository.save(book);
     }
 
     /**
@@ -158,26 +183,94 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest2);
 
         String email3 = "private@user.com";
-        String netId3 = "privateuser";
-        String password3 = "pass";
+        String username3 = "privateuser";
+        String password3 = "Pass123!";
         UUID id3 = UUID.randomUUID();
 
-        AppUser appUser3 = new AppUser(new Username(netId3), email3, new HashedPassword(password3));
+        AppUser appUser3 = new AppUser(new Username(username3), email3, new HashedPassword(password3));
         appUser3.setId(id3);
 
         RegistrationRequestModel registrationRequest3 = new RegistrationRequestModel();
-        registrationRequest3.setUsername(netId3);
+        registrationRequest3.setUsername(username3);
         registrationRequest3.setEmail(email3);
         registrationRequest3.setPassword(password3);
 
         authenticationService.registerUser(registrationRequest3);
 
-        userService.updatePrivacy(new Username(netId3), true);
+        userService.updatePrivacy(new Username(username3), true);
 
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user", "andrei");
 
         assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    public void testUserSearchByFavouriteBook() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        Iterable<AppUser> users = userRepository.findAll();
+        AppUser user = users.iterator().next();
+
+        user.setFavouriteBook(book);
+
+        userRepository.save(user);
+
+        List<String> foundUsers = userLookupService.getUsersByFavouriteBook(bookId)
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+        List<String> expected = List.of("user");
+
+        assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    public void testUserSearchByFavouriteBook2() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        Iterable<AppUser> users = userRepository.findAll();
+        AppUser user = users.iterator().next();
+
+        user.setFavouriteBook(book);
+
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("No users with this favourite book found!");
+    }
+
+    @Test
+    public void testNoUsersFoundWhileSearch() {
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    @Transactional
+    public void testUserSearchByFavGenre() {
+        AppUser user = new AppUser(new Username("user"), "email@gmail.com", new HashedPassword("Password123!"));
+
+        user.setFavouriteGenres(List.of(Genre.CRIME));
+
+        userRepository.save(user);
+
+        List<String> foundUsers = userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME))
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+        List<String> expected = List.of("user");
+
+        assertThat(foundUsers).containsAll(expected);
+    }
+
+    @Test
+    @Transactional
+    public void testNoUsersFoundWhileSearchByGenre() {
+        AppUser user = new AppUser(new Username("user"), "email@gmail.com", new HashedPassword("Password123!"));
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class);
     }
 }

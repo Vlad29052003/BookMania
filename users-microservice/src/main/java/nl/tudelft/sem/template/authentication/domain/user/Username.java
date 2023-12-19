@@ -1,13 +1,15 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * A DDD value object representing a NetID in our domain.
  */
 @EqualsAndHashCode
+@Getter
 public class Username {
-    private final transient String usernameValue;
+    private final String usernameValue;
 
     /**
      * Username constructor.
