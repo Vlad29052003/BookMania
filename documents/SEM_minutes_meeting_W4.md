@@ -1,25 +1,16 @@
 # Minutes Meeting 05/12/23
 
 **Location:** Flux Hall A
-
 **Date:** 28/11/2023
-
 **Time:** 14:00-16:00
-
 **Group:** 18c
-
 **Meeting participants:**
 
 - Vlad Alexan
-
 - Vlad Graure
-
 - Simona Lupsa
-
 - Prisha Meswani
-
 - Andrei Stefan (minute-taker)
-
 - Charlene Bakker (chair)
 
 **Talking points**
