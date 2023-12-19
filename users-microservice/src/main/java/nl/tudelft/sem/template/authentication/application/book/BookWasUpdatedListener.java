@@ -17,8 +17,8 @@ import reactor.core.publisher.Mono;
 @Component
 public class BookWasUpdatedListener {
 
-    private final static String bookshelfUri = "http://localhost:8081/a";
-    private final static WebClient wc = WebClient.create(bookshelfUri);
+    private static final String bookshelfUri = "http://localhost:8081/a";
+    private static final WebClient wc = WebClient.create(bookshelfUri);
 
     /**
      * Event handler for creating books.
