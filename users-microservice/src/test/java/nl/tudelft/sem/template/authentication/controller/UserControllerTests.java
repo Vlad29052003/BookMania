@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.controller;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -13,10 +14,12 @@ import nl.tudelft.sem.template.authentication.controllers.UserController;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.AfterEach;
@@ -141,5 +144,31 @@ public class UserControllerTests {
         assertThat(userController.updatePrivacy("true"))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1)).updatePrivacy(username, true);
+    }
+
+    @Test
+    public void testUpdatePassword() {
+        String newPass = "newPass@123";
+        HashedPassword hashedPassword = new HashedPassword(newPass);
+        when(passwordHashingService.hash(any())).thenReturn(hashedPassword);
+        assertThat(userController.updatePassword(newPass))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).updatePassword(username, hashedPassword);
+    }
+
+    @Test
+    public void testUpdateUsername() throws UsernameAlreadyInUseException {
+        String newUsername = "newUsername";
+        assertThat(userController.updateUsername(newUsername))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).updateUsername(username, newUsername);
+    }
+
+    @Test
+    public void testUpdateEmail() throws EmailAlreadyInUseException {
+        String newEmail = "new@email.com";
+        assertThat(userController.updateEmail(newEmail))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).updateEmail(username, newEmail);
     }
 }
