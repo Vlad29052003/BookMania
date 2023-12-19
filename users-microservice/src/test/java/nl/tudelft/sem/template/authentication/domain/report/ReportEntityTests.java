@@ -40,4 +40,10 @@ public class ReportEntityTests {
         assertThat(firstReport.hashCode()).isEqualTo(firstReport.hashCode());
         assertThat(firstReport.hashCode()).isNotEqualTo(secondReport.hashCode());
     }
+
+    @Test
+    public void testToString() {
+        assertThat(firstReport.toString()).isNotEqualTo(secondReport.toString());
+        assertThat(firstReport.toString()).isEqualTo(firstReport.toString());
+    }
 }

@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.controller;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -11,10 +12,12 @@ import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.UserController;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +46,7 @@ public class UserControllerTests {
 
         Authentication authenticationMock = mock(Authentication.class);
         when(authenticationMock.getName()).thenReturn("user");
+        doReturn(List.of(Authority.REGULAR_USER)).when(authenticationMock).getAuthorities();
         SecurityContext securityContextMock = mock(SecurityContext.class);
         when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
         SecurityContextHolder.setContext(securityContextMock);
@@ -122,4 +126,20 @@ public class UserControllerTests {
         verify(userService, times(1)).delete(username);
     }
 
+    @Test
+    public void testUpdateBannedStatus() {
+        BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
+        banUserRequestModel.setUsername(username.toString());
+        banUserRequestModel.setBanned(true);
+        assertThat(userController.updateBannedStatus(banUserRequestModel))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).updateBannedStatus(username, true, Authority.REGULAR_USER.toString());
+    }
+
+    @Test
+    public void testUpdatePrivacy() {
+        assertThat(userController.updatePrivacy("true"))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).updatePrivacy(username, true);
+    }
 }
