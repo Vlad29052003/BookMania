@@ -12,6 +12,7 @@ import nl.tudelft.sem.template.authentication.controllers.UserController;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
+import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.UserModel;
@@ -26,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class UserControllerTests {
     private transient UserService userService;
     private transient UserController userController;
+    private transient PasswordHashingService passwordHashingService;
     private transient AppUser user;
     private transient UserModel userModel;
     private Username username;
@@ -36,7 +38,8 @@ public class UserControllerTests {
     @BeforeEach
     public void setUp() {
         this.userService = mock(UserService.class);
-        this.userController = new UserController(userService);
+        this.passwordHashingService = mock(PasswordHashingService.class);
+        this.userController = new UserController(userService, passwordHashingService);
 
         Authentication authenticationMock = mock(Authentication.class);
         when(authenticationMock.getName()).thenReturn("user");
@@ -44,7 +47,7 @@ public class UserControllerTests {
         when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
         SecurityContextHolder.setContext(securityContextMock);
 
-        this.user = new AppUser(new Username("user"), "email", new HashedPassword("hash"));
+        this.user = new AppUser(new Username("user"), "email@mail.com", new HashedPassword("hash"));
         when(userService.getUserByUsername(new Username("user"))).thenReturn(user);
 
         this.userModel = new UserModel(user);

@@ -84,29 +84,22 @@ public class UserLookupServiceTests {
     @BeforeEach
     public void setUp() {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
-        when(passwordHashingService.hash(new Password("someOtherHash"))).thenReturn(new HashedPassword("someHash"));
+        when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
                 jwtService, userRepository, passwordHashingService);
 
-        String email = "email";
+        String email = "email@gmail.com";
         String username = "user";
-        String password = "someHash";
+        String password = "someHash123!";
         UUID id = UUID.randomUUID();
 
-        AppUser appUser = new AppUser(new Username(username), email, new HashedPassword(password));
-        appUser.setId(id);
-
-        registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setUsername(username);
-        String userName = "user";
-
-        testUser = new AppUser(new Username(userName), email, new HashedPassword(password));
+        testUser = new AppUser(new Username(username), email, new HashedPassword(password));
         testUser.setId(id);
         testUser.setFavouriteBook(book);
 
         registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setUsername(userName);
+        registrationRequest.setUsername(username);
         registrationRequest.setEmail(email);
         registrationRequest.setPassword(password);
 
@@ -122,11 +115,13 @@ public class UserLookupServiceTests {
         tokenValidationResponse.setId(id);
 
 
-        String email2 = "email2";
+        String email2 = "email2@gmail.com";
         String username2 = "andrei";
-        String password2 = "someHash";
+        String password2 = "someHash1!";
         UUID id2 = UUID.randomUUID();
 
+        AppUser appUser2 = new AppUser(new Username(username2), email2, new HashedPassword(password2));
+        appUser2.setId(id2);
         testUser2 = new AppUser(new Username(username2), email2, new HashedPassword(password2));
         testUser2.setId(id2);
 
@@ -204,7 +199,7 @@ public class UserLookupServiceTests {
 
         String email3 = "private@user.com";
         String username3 = "privateUser";
-        String password3 = "pass";
+        String password3 = "Pass123!";
         UUID id3 = UUID.randomUUID();
 
         AppUser appUser3 = new AppUser(new Username(username3), email3, new HashedPassword(password3));
@@ -340,7 +335,7 @@ public class UserLookupServiceTests {
     @Test
     @Transactional
     public void testUserSearchByFavGenre() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
+        AppUser user = new AppUser(new Username("user"), "email@gmail.com", new HashedPassword("Password123!"));
 
         user.setFavouriteGenres(List.of(Genre.CRIME));
 
@@ -356,7 +351,7 @@ public class UserLookupServiceTests {
     @Test
     @Transactional
     public void testNoUsersFoundWhileSearchByGenre() {
-        AppUser user = new AppUser(new Username("user"), "email", new HashedPassword("password"));
+        AppUser user = new AppUser(new Username("user"), "email@gmail.com", new HashedPassword("Password123!"));
         userRepository.save(user);
 
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))

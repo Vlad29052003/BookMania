@@ -36,8 +36,8 @@ public class JwtUserDetailsServiceTests {
     public void loadUserByUsername_withValidUser_returnsCorrectUser() {
         // Arrange
         final Username testUser = new Username("SomeUser");
-        final String email = "testEmail";
-        final HashedPassword testHashedPassword = new HashedPassword("password123Hash");
+        final String email = "testEmail@gmail.com";
+        final HashedPassword testHashedPassword = new HashedPassword("password123Hash!");
 
         AppUser appUser = new AppUser(testUser, email, testHashedPassword);
         userRepository.save(appUser);
@@ -54,8 +54,8 @@ public class JwtUserDetailsServiceTests {
     public void loadUserByUsername_withNonexistentUser_throwsException() {
         // Arrange
         final Username testUser = new Username("AnotherUser");
-        final String email = "testEmail";
-        final String testPasswordHash = "password123Hash";
+        final String email = "testEmail@gmail.com";
+        final String testPasswordHash = "password123Hash!";
 
         AppUser appUser = new AppUser(testUser, email, new HashedPassword(testPasswordHash));
         userRepository.save(appUser);
@@ -71,7 +71,7 @@ public class JwtUserDetailsServiceTests {
     @Test
     public void loadUserByUsername_withDisabledUser_throwsException() {
         final Username testUser = new Username("SomeUser");
-        final String email = "testEmail";
+        final String email = "email@mail.com";
         final String testPasswordHash = "password123Hash";
 
         AppUser appUser = new AppUser(testUser, email, new HashedPassword(testPasswordHash));
