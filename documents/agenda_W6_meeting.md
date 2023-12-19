@@ -9,7 +9,7 @@
     * Prisha Meswani
     * Simona Lupşa
     * Vlad Alexan (Chair :chair:)
-    * Vlad Graure
+    * Vlad Graure (Minute taker)
 
 ## Talking points
 * [14:00] Opening by Chair.
