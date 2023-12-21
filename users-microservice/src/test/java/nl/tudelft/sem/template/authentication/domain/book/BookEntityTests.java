@@ -1,10 +1,10 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,30 +39,50 @@ public class BookEntityTests {
     @Test
     public void testEmptyConstructor() {
         Book test  = new Book();
-        assertNotEquals(test, null);
+        assertThat(test).isNotEqualTo(null);
     }
 
     @Test
     public void testConstructor() {
-        assertNotEquals(book1, null);
-        assertEquals("title1", book1.getTitle());
-        assertEquals(List.of("Author1"), book1.getAuthors());
-        assertEquals(List.of(Genre.DRAMA), book1.getGenres());
-        assertEquals("description", book1.getDescription());
-        assertEquals(155, book1.getNumPages());
-        assertEquals(new ArrayList<>(), book1.getUsersWithBookAsFavorite());
+        assertThat(book1).isNotEqualTo(null);
+        assertThat(book1.getTitle()).isEqualTo("title1");
+        assertThat(book1.getAuthors()).isEqualTo(List.of("Author1"));
+        assertThat(book1.getGenres()).isEqualTo(List.of(Genre.DRAMA));
+        assertThat(book1.getDescription()).isEqualTo("description");
+        assertThat(book1.getNumPages()).isEqualTo(155);
+        assertThat(book1.getUsersWithBookAsFavorite()).isEqualTo(new ArrayList<>());
+    }
+
+    @Test
+    public void testConstructor2() {
+        Book test = new Book("title", null, null, "desc", 255);
+        assertThat(test).isNotEqualTo(null);
+        assertThat(test.getTitle()).isEqualTo("title");
+        assertThat(test.getAuthors()).isEqualTo(new ArrayList<>());
+        assertThat(test.getGenres()).isEqualTo(new ArrayList<>());
+        assertThat(test.getDescription()).isEqualTo("desc");
+        assertThat(test.getNumPages()).isEqualTo(255);
+        assertThat(test.getUsersWithBookAsFavorite()).isEqualTo(new ArrayList<>());
     }
 
     @Test
     public void testEquals() {
-        assertEquals(book1, book1);
-        assertEquals(book1, book2);
-        assertNotEquals(book1, book3);
-        assertNotEquals(book1, null);
+        assertThat(book1).isEqualTo(book1);
+        assertThat(book1).isEqualTo(book2);
+        assertThat(book1).isNotEqualTo(book3);
+        assertThat(book1).isNotEqualTo(null);
+        assertThat(book1).isNotEqualTo(new ArrayList<>());
     }
 
     @Test
     public void testHash() {
-        assertEquals(book1.hashCode(), book2.hashCode());
+        assertThat(book1.hashCode()).isEqualTo(book2.hashCode());
+        assertThat(book1.hashCode()).isEqualTo(Objects.hash(book1.getId()));
+    }
+
+    @Test
+    public void testToString() {
+        assertThat(book1.toString()).isNotEqualTo(book3.toString());
+        assertThat(book1.toString()).isEqualTo(book1.toString());
     }
 }

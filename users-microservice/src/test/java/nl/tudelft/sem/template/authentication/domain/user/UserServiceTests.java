@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class UserServiceTests {
         HashedPassword password = new HashedPassword("pass123");
         assertThatThrownBy(() -> userService.getUserByUsername(username))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -67,7 +67,7 @@ public class UserServiceTests {
         String newName = "Name";
         assertThatThrownBy(() -> userService.updateName(username, newName))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -88,7 +88,7 @@ public class UserServiceTests {
         String newBio = "Bio";
         assertThatThrownBy(() -> userService.updateBio(username, newBio))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -109,7 +109,7 @@ public class UserServiceTests {
         byte[] newPicture = new byte[]{13, 24, 51, 24, 14};
         assertThatThrownBy(() -> userService.updatePicture(username, newPicture))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -130,7 +130,7 @@ public class UserServiceTests {
         String newLocation = "Location";
         assertThatThrownBy(() -> userService.updateLocation(username, newLocation))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -233,7 +233,7 @@ public class UserServiceTests {
         List<Genre> newFavouriteGenres = new ArrayList<>(List.of(Genre.CRIME, Genre.SCIENCE, Genre.ROMANCE));
         assertThatThrownBy(() -> userService.updateFavouriteGenres(username, newFavouriteGenres))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -253,7 +253,7 @@ public class UserServiceTests {
         HashedPassword password = new HashedPassword("pass123");
         assertThatThrownBy(() -> userService.updateFavouriteBook(username, UUID.randomUUID().toString()))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -285,14 +285,16 @@ public class UserServiceTests {
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                                     () -> userService.updateBannedStatus(username, true, "ADMIN"));
-        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(e.getMessage()).isEqualTo("404 NOT_FOUND \"User does not exist!\"");
 
         AppUser user = new AppUser(username, email, hashedPassword);
         userRepository.save(user);
 
         e = assertThrows(ResponseStatusException.class,
                                     () -> userService.updateBannedStatus(username, true, "REGULAR_USER"));
-        assertEquals(e.getStatus(), HttpStatus.UNAUTHORIZED);
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(e.getMessage()).isEqualTo("401 UNAUTHORIZED \"Only admins can ban / unban a user!\"");
 
         Report report = new Report(UUID.randomUUID(), ReportType.REVIEW, user.getId().toString(), "text");
         while (report.getId().equals(user.getId())) {
@@ -307,11 +309,17 @@ public class UserServiceTests {
 
         e = assertThrows(ResponseStatusException.class,
                 () -> userService.updateBannedStatus(username, true, "ADMIN"));
-        assertEquals(e.getStatus(), HttpStatus.NOT_FOUND);
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(e.getMessage()).isEqualTo("400 BAD_REQUEST \"User is already banned!\"");
 
         userService.updateBannedStatus(username, false, "ADMIN");
         assertThat(userRepository.findByUsername(username)).isPresent();
         assertThat(userRepository.findByUsername(username).get().isDeactivated()).isFalse();
+
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.updateBannedStatus(username, false, "ADMIN"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(e.getMessage()).isEqualTo("400 BAD_REQUEST \"User is already not banned!\"");
     }
 
     @Test
@@ -322,7 +330,7 @@ public class UserServiceTests {
         HashedPassword password = new HashedPassword("pass123");
         assertThatThrownBy(() -> userService.getUserByUsername(username))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -332,10 +340,19 @@ public class UserServiceTests {
 
         assertThatThrownBy(() -> userService.getUserByUsername(retrievedUser.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
     }
 
     @Test
+    @Transactional
+    public void testDeleteUserNotFound() {
+        assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser")))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(NO_SUCH_USER);
+    }
+
+    @Test
+    @Transactional
     public void testUpdatePrivacy() {
         Username username = new Username("username");
         String email = "test@email.com";
@@ -343,7 +360,7 @@ public class UserServiceTests {
         String newName = "Name";
         assertThatThrownBy(() -> userService.updateName(username, newName))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -354,5 +371,12 @@ public class UserServiceTests {
         userService.updatePrivacy(username, true);
         retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.isPrivate()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    public void testUpdatePrivacyInexistentUser() {
+        assertThatThrownBy(() -> userService.updatePrivacy(new Username("inexistentUsername"), true))
+                .isInstanceOf(UsernameNotFoundException.class).hasMessage(NO_SUCH_USER);
     }
 }

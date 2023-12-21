@@ -475,7 +475,7 @@ public class UserControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(banUserRequestModel))
                         .header("Authorization", "Bearer " + tokenAdmin))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         banUserRequestModel.setBanned(false);
         mockMvc.perform(patch("/c/users/isDeactivated")

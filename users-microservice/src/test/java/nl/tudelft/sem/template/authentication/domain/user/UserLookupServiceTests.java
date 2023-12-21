@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,7 +53,7 @@ public class UserLookupServiceTests {
     private transient UserRepository userRepository;
 
     @Autowired
-    private transient BookRepository bookrepository;
+    private transient BookRepository bookRepository;
 
     @Autowired
     private transient AuthenticationManager authenticationManager;
@@ -133,7 +134,7 @@ public class UserLookupServiceTests {
                 "description", 20);
         bookId = UUID.randomUUID();
         book.setId(bookId);
-        bookrepository.save(book);
+        bookRepository.save(book);
     }
 
     /**
@@ -146,14 +147,11 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
-
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("user")
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
-        List<String> expected = List.of("user");
 
-
-        assertThat(foundUsers).containsAll(expected);
+        assertThat(foundUsers).containsExactlyInAnyOrder("user");
     }
 
 
@@ -167,13 +165,30 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
-
         // Assert
         List<String> foundUsers = userLookupService.getUsersByName("")
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
-        List<String> expected = List.of("user", "andrei");
 
-        assertThat(foundUsers).containsAll(expected);
+        assertThat(foundUsers).containsExactlyInAnyOrder("user", "andrei");
+    }
+
+    @Test
+    public void userSearchByName_worksCorrectly_deactivatedUser() {
+
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        AppUser deactivated = userRepository.findByUsername(new Username("user")).get();
+        deactivated.setDeactivated(true);
+        userRepository.saveAndFlush(deactivated);
+
+        // Assert
+        List<String> foundUsers = userLookupService.getUsersByName("user")
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+        List<String> expected = new ArrayList<>();
+
+
+        assertThat(foundUsers).isEqualTo(expected);
     }
 
     @Test
@@ -183,7 +198,7 @@ public class UserLookupServiceTests {
         authenticationService.registerUser(registrationRequest2);
 
         String email3 = "private@user.com";
-        String username3 = "privateuser";
+        String username3 = "privateUser";
         String password3 = "Pass123!";
         UUID id3 = UUID.randomUUID();
 
@@ -207,6 +222,7 @@ public class UserLookupServiceTests {
     }
 
     @Test
+    @Transactional
     public void testUserSearchByFavouriteBook() {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
@@ -214,11 +230,12 @@ public class UserLookupServiceTests {
         Iterable<AppUser> users = userRepository.findAll();
         AppUser user = users.iterator().next();
 
-        user.setFavouriteBook(book);
+        Book favBook = bookRepository.findAll().get(0);
 
+        user.setFavouriteBook(favBook);
         userRepository.save(user);
 
-        List<String> foundUsers = userLookupService.getUsersByFavouriteBook(bookId)
+        List<String> foundUsers = userLookupService.getUsersByFavouriteBook(favBook.getId())
                 .stream().map(UserModel::getUsername).collect(Collectors.toList());
         List<String> expected = List.of("user");
 
@@ -226,15 +243,15 @@ public class UserLookupServiceTests {
     }
 
     @Test
-    public void testUserSearchByFavouriteBook2() {
+    public void testUserSearchByFavouriteBookNoResults1() {
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
         Iterable<AppUser> users = userRepository.findAll();
         AppUser user = users.iterator().next();
 
-        user.setFavouriteBook(book);
-
+        Book favBook = bookRepository.findAll().get(0);
+        user.setFavouriteBook(favBook);
         userRepository.save(user);
 
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
@@ -243,9 +260,76 @@ public class UserLookupServiceTests {
     }
 
     @Test
+    public void testUserSearchByFavouriteBookNoResults2() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        List<AppUser> users = userRepository.findAll();
+        AppUser user1 = users.get(0);
+        AppUser user2 = users.get(1);
+
+        Book favBook = bookRepository.findAll().get(0);
+
+        user1.setFavouriteBook(favBook);
+        user2.setFavouriteBook(favBook);
+        userRepository.saveAll(List.of(user1, user2));
+
+        List<String> foundUsers = userLookupService.getUsersByFavouriteBook(favBook.getId())
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+
+        assertThat(foundUsers).containsExactlyInAnyOrder("user", "andrei");
+
+        Book newBook = new Book("newBook", List.of("auth1", "auth2"), List.of(Genre.CRIME), "desc", 255);
+        bookRepository.saveAndFlush(newBook);
+        newBook = bookRepository.findByTitle("newBook").get(0);
+
+        user2.setFavouriteBook(newBook);
+        userRepository.save(user2);
+        foundUsers = userLookupService.getUsersByFavouriteBook(favBook.getId())
+                .stream().map(UserModel::getUsername).collect(Collectors.toList());
+
+        assertThat(foundUsers).containsExactlyInAnyOrder("user");
+    }
+
+    @Test
+    public void testUserSearchByFavouriteBookNoResults3() {
+        authenticationService.registerUser(registrationRequest);
+        authenticationService.registerUser(registrationRequest2);
+
+        Iterable<AppUser> users = userRepository.findAll();
+        AppUser user = users.iterator().next();
+
+        Book favBook = bookRepository.findAll().get(0);
+        user.setFavouriteBook(favBook);
+        user.setDeactivated(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(favBook.getId()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setDeactivated(false);
+        user.setPrivate(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(favBook.getId()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setPrivate(false);
+        user.setFavouriteBook(null);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(favBook.getId()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+    }
+
+    @Test
     public void testNoUsersFoundWhileSearch() {
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteBook(UUID.randomUUID()))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
     }
 
     @Test
@@ -271,6 +355,44 @@ public class UserLookupServiceTests {
         userRepository.save(user);
 
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setDeactivated(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setDeactivated(false);
+        user.setPrivate(true);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setPrivate(false);
+        user.setFavouriteGenres(null);
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setFavouriteGenres(new ArrayList<>());
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
+
+        user.setFavouriteGenres(new ArrayList<>(List.of(Genre.ROMANCE, Genre.BIOGRAPHY)));
+        userRepository.save(user);
+
+        assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"No users found!\"");
     }
 }

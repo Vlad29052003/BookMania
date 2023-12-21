@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -36,6 +37,7 @@ import org.hibernate.annotations.Type;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
+@ToString
 public class AppUser extends HasEvents {
     /**
      * Identifier for the application user.

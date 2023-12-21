@@ -195,7 +195,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         if (user.isDeactivated() == toBan) {
             String banned = toBan ? "banned" : "not banned";
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is already " + banned + "!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already " + banned + "!");
         }
 
         if (user.isDeactivated()) {

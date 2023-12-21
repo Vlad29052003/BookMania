@@ -1,7 +1,5 @@
 package nl.tudelft.sem.template.authentication.config;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.tudelft.sem.template.authentication.authentication.JwtAuthenticationEntryPoint;
 import nl.tudelft.sem.template.authentication.authentication.JwtAuthenticationFilter;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
@@ -24,15 +22,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    @Getter
-    @Setter(onMethod = @__({@Autowired})) // add autowired annotation on setter
-    private transient UserDetailsService userDetailsService;
+    private final transient UserDetailsService userDetailsService;
     private final transient JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final transient JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Instantiates the class.
+     *
+     * @param userDetailsService          is the user details service
+     * @param jwtAuthenticationEntryPoint is the authentication entry point
+     * @param jwtAuthenticationFilter     is the authentication filter
+     */
     @Autowired
-    public WebSecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+    public WebSecurityConfig(UserDetailsService userDetailsService,
+                             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
                              JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.userDetailsService = userDetailsService;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }

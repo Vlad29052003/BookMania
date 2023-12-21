@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.authentication.domain.report;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,13 +29,21 @@ public class ReportEntityTests {
 
     @Test
     public void equalsTest() {
-        assertEquals(firstReport, firstReport);
-        assertNotEquals(firstReport, secondReport);
+        assertThat(firstReport).isNotEqualTo(null);
+        assertThat(firstReport).isNotEqualTo(new ArrayList<>());
+        assertThat(firstReport).isEqualTo(firstReport);
+        assertThat(firstReport).isNotEqualTo(secondReport);
     }
 
     @Test
     public void hashTest() {
-        assertEquals(firstReport.hashCode(), firstReport.hashCode());
-        assertNotEquals(firstReport.hashCode(), secondReport.hashCode());
+        assertThat(firstReport.hashCode()).isEqualTo(firstReport.hashCode());
+        assertThat(firstReport.hashCode()).isNotEqualTo(secondReport.hashCode());
+    }
+
+    @Test
+    public void testToString() {
+        assertThat(firstReport.toString()).isNotEqualTo(secondReport.toString());
+        assertThat(firstReport.toString()).isEqualTo(firstReport.toString());
     }
 }

@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.authentication.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +40,9 @@ public class UserSearchControllerTests {
     public void getUsersExceptionTest() {
         when(userLookupService.getUsersByName("name")).thenThrow(new RuntimeException());
 
-        assertThrows(ResponseStatusException.class, () -> userSearchController.getUser("name"));
+        assertThatThrownBy(() -> userSearchController.getUser("name"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("400 BAD_REQUEST");
     }
 
     @Test
@@ -59,7 +60,7 @@ public class UserSearchControllerTests {
 
         var res = userSearchController.getUsersByFavouriteBook(bookId).getBody();
         Iterable<UserModel> exp = List.of(userModel);
-        assertEquals(exp, res);
+        assertThat(exp).isEqualTo(res);
     }
 
     @Test
@@ -69,8 +70,8 @@ public class UserSearchControllerTests {
                 "No users found!");
         when(userLookupService.getUsersByFavouriteBook(bookId)).thenThrow(exception);
 
-        assertEquals(new ResponseEntity<>(exception.getMessage(), exception.getStatus()),
-                userSearchController.getUsersByFavouriteBook(bookId));
+        assertThat(userSearchController.getUsersByFavouriteBook(bookId))
+                .isEqualTo(new ResponseEntity<>(exception.getMessage(), exception.getStatus()));
     }
 
     @Test
@@ -84,7 +85,8 @@ public class UserSearchControllerTests {
 
         var res = userSearchController.getUsersByFavouriteGenres(List.of(Genre.CRIME)).getBody();
         Iterable<UserModel> exp = List.of(userModel);
-        assertEquals(exp, res);
+
+        assertThat(exp).isEqualTo(res);
     }
 
     @Test
@@ -93,7 +95,7 @@ public class UserSearchControllerTests {
                 "No users found!");
         when(userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME))).thenThrow(exception);
 
-        assertEquals(new ResponseEntity<>(exception.getMessage(), exception.getStatus()),
-                userSearchController.getUsersByFavouriteGenres(List.of(Genre.CRIME)));
+        assertThat(userSearchController.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
+                .isEqualTo(new ResponseEntity<>(exception.getMessage(), exception.getStatus()));
     }
 }
