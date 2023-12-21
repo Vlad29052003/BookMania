@@ -15,6 +15,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
+import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class UserServiceTests {
     private transient BookRepository bookRepository;
 
     @Autowired
-    private transient  ReportRepository reportRepository;
+    private transient ReportRepository reportRepository;
 
     @Test
     public void testGetUserByNetId() {
@@ -284,7 +285,7 @@ public class UserServiceTests {
         HashedPassword hashedPassword = new HashedPassword("pass");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-                                    () -> userService.updateBannedStatus(username, true, "ADMIN"));
+                () -> userService.updateBannedStatus(username, true, "ADMIN"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(e.getMessage()).isEqualTo("404 NOT_FOUND \"User does not exist!\"");
 
@@ -292,7 +293,7 @@ public class UserServiceTests {
         userRepository.save(user);
 
         e = assertThrows(ResponseStatusException.class,
-                                    () -> userService.updateBannedStatus(username, true, "REGULAR_USER"));
+                () -> userService.updateBannedStatus(username, true, "REGULAR_USER"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(e.getMessage()).isEqualTo("401 UNAUTHORIZED \"Only admins can ban / unban a user!\"");
 
@@ -371,6 +372,25 @@ public class UserServiceTests {
         userService.updatePrivacy(username, true);
         retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.isPrivate()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    public void testGetUserDetails() {
+        assertThatThrownBy(() -> userService.getUserDetails(UUID.randomUUID()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+        user = userRepository.findAll().get(0);
+
+        UserModel expected = new UserModel(user);
+
+        assertThat(userService.getUserDetails(user.getId())).isEqualTo(expected);
     }
 
     @Test

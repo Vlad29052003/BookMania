@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -21,6 +22,7 @@ import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.DirtiesContext;
@@ -36,8 +37,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -119,21 +118,26 @@ public class JwtIntegrationTests {
     }
 
     @Test
+    @Transactional
     public void validateValidJwtToken() throws Exception {
         userRepository.save(appUser);
         UUID id = userRepository.findAll().get(0).getId();
-        TokenValidationResponse model = new TokenValidationResponse();
+
         TokenValidationResponse expected = new TokenValidationResponse();
         expected.setId(id);
+        expected.setAuthority(Authority.REGULAR_USER);
 
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
-                .header("Authorization", "Bearer " + jwtToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.serialize(model)));
+                .header("Authorization", "Bearer " + jwtToken));
+
+        TokenValidationResponse response = JsonUtil
+                .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
+                        TokenValidationResponse.class);
 
         resultActions.andExpect(status().isOk());
 
-        assertThat(model).isEqualTo(expected);
+        assertThat(response.getId()).isEqualTo(expected.getId());
+        assertThat(response.getAuthority()).isEqualTo(expected.getAuthority());
     }
 
     @Test
@@ -182,6 +186,32 @@ public class JwtIntegrationTests {
 
         resultActions.andExpect(status().isUnauthorized())
                 .andExpect(content().string(("Unauthorized")));
+    }
+
+    @Test
+    @Transactional
+    public void unauthenticatedRequest() throws Exception {
+        userRepository.save(appUser);
+        AppUser found = userRepository.findAll().get(0);
+        UUID id = found.getId();
+
+        UserModel expected = new UserModel(found);
+
+        ResultActions resultActions = mockMvc.perform(get("/c/unauthenticated/" + id));
+
+        UserModel response = JsonUtil
+                .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
+                        UserModel.class);
+
+        resultActions.andExpect(status().isOk());
+        assertThat(response).isEqualTo(expected);
+    }
+
+    @Test
+    public void unauthenticatedRequestNoUsers() throws Exception {
+        ResultActions resultActions = mockMvc.perform(get("/c/unauthenticated/" + UUID.randomUUID()));
+
+        resultActions.andExpect(status().isNotFound());
     }
 
     private void injectSecret(String secret) throws NoSuchFieldException, IllegalAccessException {

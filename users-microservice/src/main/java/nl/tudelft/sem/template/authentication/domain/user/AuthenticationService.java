@@ -110,7 +110,7 @@ public class AuthenticationService {
         if (appUserOptional.isEmpty()) {
             throw new IllegalArgumentException();
         }
-        return new TokenValidationResponse(appUserOptional.get().getId());
+        return new TokenValidationResponse(appUserOptional.get().getId(), appUserOptional.get().getAuthority());
     }
 
     /**

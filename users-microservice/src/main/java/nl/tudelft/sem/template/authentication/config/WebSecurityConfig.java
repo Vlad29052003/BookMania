@@ -73,7 +73,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/c/register", "/c/authenticate").permitAll()
-                .antMatchers("/h2-console/**").permitAll()
+                .antMatchers("/h2-console/**", "/c/unauthenticated/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
