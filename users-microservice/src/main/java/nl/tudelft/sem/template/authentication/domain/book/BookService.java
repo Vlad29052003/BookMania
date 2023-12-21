@@ -40,7 +40,7 @@ public class BookService {
     /**
      * Gets a book from the overall collection.
      *
-     * @param bookId      the id of the book to get
+     * @param bookId the id of the book to get
      * @return the book, if found
      */
     public Book getBook(String bookId) {
@@ -62,6 +62,10 @@ public class BookService {
             if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
                 Optional<AppUser> authorOptional = userRepository
                         .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
+                if (authorOptional.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                            "Only the authors of the book may add it to the system!");
+                }
                 AppUser currentAuthor = authorOptional.get();
                 if (!createBookRequestModel.getAuthors().contains(currentAuthor.getName())) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -71,7 +75,7 @@ public class BookService {
 
             List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
             boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
-                    .containsAll(createBookRequestModel.getAuthors()));
+                    .equals(new HashSet<>(createBookRequestModel.getAuthors())));
             if (invalid) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
             }
@@ -93,9 +97,12 @@ public class BookService {
      * Updates a book in the system.
      *
      * @param updatedBook contains the new information for the book
-     * @param bearerToken            is the jwt token of the user that made the request
+     * @param bearerToken is the jwt token of the user that made the request
      */
     public void updateBook(Book updatedBook, String bearerToken) {
+        if (updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The authors and genres cannot be null!");
+        }
         if (getAuthority(bearerToken).equals(Authority.ADMIN)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
@@ -105,13 +112,8 @@ public class BookService {
             Book currentBook = optBook.get();
 
             currentBook.setTitle(updatedBook.getTitle());
-
-            if (updatedBook.getAuthors() != null) {
-                currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            }
-            if (updatedBook.getGenres() != null) {
-                currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            }
+            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
@@ -135,13 +137,8 @@ public class BookService {
             }
 
             currentBook.setTitle(updatedBook.getTitle());
-
-            if (updatedBook.getAuthors() != null) {
-                currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            }
-            if (updatedBook.getGenres() != null) {
-                currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            }
+            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 

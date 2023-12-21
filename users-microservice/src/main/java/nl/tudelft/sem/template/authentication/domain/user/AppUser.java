@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -18,11 +19,11 @@ import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -32,14 +33,15 @@ import org.hibernate.annotations.Type;
 /**
  * A DDD entity representing an application user in our domain.
  */
+@Getter
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
+@ToString
 public class AppUser extends HasEvents {
     /**
      * Identifier for the application user.
      */
-    @Getter
     @Setter
     @Id
     @Column(name = "id", nullable = false)
@@ -47,42 +49,37 @@ public class AppUser extends HasEvents {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Type(type = "uuid-char")
     private UUID id;
-    @Getter
+
+    @Setter
     @Column(name = "username", nullable = false, unique = true)
     @Convert(converter = UsernameAttributeConverter.class)
     private Username username;
 
-    @Getter
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Getter
+    @Setter
     @Column(name = "password_hash", nullable = false)
     @Convert(converter = HashedPasswordAttributeConverter.class)
     private HashedPassword password;
 
-    @Getter
     @Setter
     @Column(name = "name")
     private String name;
 
-    @Getter
     @Setter
     @Column(name = "bio")
     private String bio;
 
-    @Getter
     @Setter
     @Lob
     @Column(name = "picture")
     private byte[] picture;
 
-    @Getter
     @Setter
     @Column(name = "location")
     private String location;
 
-    @Getter
     @Setter
     @ElementCollection(targetClass = Genre.class)
     @CollectionTable(name = "user_favourite_genres", joinColumns = @JoinColumn(name = "user_id"))
@@ -90,13 +87,11 @@ public class AppUser extends HasEvents {
     @Column(name = "genre", nullable = false)
     private List<Genre> favouriteGenres;
 
-    @Getter
     @Setter
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book favouriteBook;
 
-    @Getter
     @Setter
     @ManyToMany
     @JoinTable(
@@ -105,26 +100,24 @@ public class AppUser extends HasEvents {
             inverseJoinColumns = @JoinColumn(name = "followed_id"))
     private List<AppUser> follows;
 
-    @Getter
     @Setter
     @ManyToMany(mappedBy = "follows")
     private List<AppUser> followedBy;
 
-    @Getter
     @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "authority")
     private Authority authority;
 
-    @Getter
     @Setter
     @Column(name = "deactivated")
     private boolean isDeactivated;
 
-    @Getter
     @Setter
     @Column(name = "private")
     private boolean isPrivate;
+
+    private static final Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     /**
      * Create new application user.
@@ -134,7 +127,7 @@ public class AppUser extends HasEvents {
      */
     public AppUser(Username username, String email, HashedPassword password) {
         this.username = username;
-        this.email = email;
+        setEmailAddress(email);
         this.password = password;
         this.favouriteGenres = new ArrayList<>();
         this.follows = new ArrayList<>();
@@ -142,6 +135,24 @@ public class AppUser extends HasEvents {
         this.authority = Authority.REGULAR_USER;
         this.isPrivate = false;
         this.recordThat(new UserWasCreatedEvent(username));
+    }
+
+    /**
+     * Email setter.
+     */
+    public void setEmail(String newEmail) {
+        setEmailAddress(newEmail);
+    }
+
+    /**
+     * Email setter helper.
+     */
+    private void setEmailAddress(String newEmail) {
+        if (pattern.matcher(newEmail).matches()) {
+            this.email = newEmail;
+        } else {
+            throw new IllegalArgumentException("Illegal email address!");
+        }
     }
 
     /**
@@ -161,6 +172,6 @@ public class AppUser extends HasEvents {
 
     @Override
     public int hashCode() {
-        return Objects.hash(username);
+        return Objects.hash(id);
     }
 }

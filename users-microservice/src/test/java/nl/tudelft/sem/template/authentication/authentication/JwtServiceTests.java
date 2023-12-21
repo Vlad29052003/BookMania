@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,7 +12,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.User;
@@ -39,10 +43,10 @@ public class JwtServiceTests {
         jwtTokenGenerator = new JwtTokenGenerator(timeProvider1);
 
         timeProvider2 = mock(TimeProvider.class);
-        jwtService = new JwtService(timeProvider2);
+        jwtService = new JwtService();
 
         this.injectSecret(secret);
-        user = new User("vlad", "someHash", new ArrayList<>());
+        user = new User("vlad", "someHash", List.of(Authority.AUTHOR));
     }
 
     @Test
@@ -60,7 +64,7 @@ public class JwtServiceTests {
         when(timeProvider2.getCurrentTime()).thenReturn(mockedTime2);
         String token = jwtTokenGenerator.generateToken(user);
 
-        assertFalse(jwtService.isTokenExpired(token));
+        assertThat(jwtService.extractAuthorization(token)).isEqualTo(Authority.AUTHOR);
     }
 
     @Test
@@ -69,9 +73,8 @@ public class JwtServiceTests {
         when(timeProvider2.getCurrentTime()).thenReturn(mockedTime1);
         String token = jwtTokenGenerator.generateToken(user);
 
-        assertThrows(ExpiredJwtException.class, () -> {
-            jwtService.isTokenExpired(token);
-        });
+        assertThatThrownBy(() -> jwtService.extractUsername(token))
+                .isInstanceOf(ExpiredJwtException.class);
     }
 
     private void injectSecret(String secret) throws NoSuchFieldException, IllegalAccessException {

@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.models;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -11,6 +12,7 @@ import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class UserModel {
     private String username;
     private String email;

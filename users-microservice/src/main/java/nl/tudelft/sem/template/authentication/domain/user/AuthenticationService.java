@@ -117,16 +117,14 @@ public class AuthenticationService {
      * Register a new user.
      *
      * @param username The NetID of the user
-     * @param email The email of the user
+     * @param email    The email of the user
      * @param password The password of the user
      * @throws Exception if the user already exists
      */
     public AppUser registrationHelper(Username username, String email, Password password) throws Exception {
-
         if (checkUsernameIsUnique(username)) {
             // Hash password
             HashedPassword hashedPassword = passwordHashingService.hash(password);
-
             // Create new account
             AppUser user = new AppUser(username, email, hashedPassword);
             userRepository.save(user);

@@ -1,8 +1,10 @@
 openapi: 3.0.0
 info:
   title: BookMania User microservice - OpenAPI
-  version: 1.0.0
+  version: 1.1.0
   description: API for managing Users, Books, Reports, Connections and Statistics.
+servers:
+  - url: 'http://localhost:8081/c/'
 
 tags:
   - name: Authentication
@@ -19,6 +21,8 @@ tags:
     description: API endpoints for managing connections
   - name: Search
     description: API endpoints for managing search based on username, favourite genres or favourite book
+  - name: Unauthenticated
+    description: API endpoints for interaction with other microservices(that do not require authentication)
 
 
 paths:
@@ -27,9 +31,7 @@ paths:
       tags:
         - Authentication
       summary: Register a new user
-      description: Register a new user with email, username, and password.
-      security:
-        - bearerAuth: []
+      description: Register a new user with email, username, and password. The username may one contain alphanumerical characters. Both the username and the email must be unique in the system.
       requestBody:
         content:
           application/json:
@@ -37,7 +39,7 @@ paths:
               $ref: '#/components/schemas/RegisterUserRequest'
       responses:
         '200':
-          description: OK
+          description: OK if the registration succeeds.
         '400':
           description: Bad Request
           content:
@@ -51,9 +53,7 @@ paths:
       tags:
         - Authentication
       summary: Authenticate a user
-      description: Authenticate a user with netId and password.
-      security:
-        - bearerAuth: []
+      description: Authenticate a user with username and password. The JWT token will be returned if the authentication is successful.
       requestBody:
         content:
           application/json:
@@ -61,7 +61,11 @@ paths:
               $ref: '#/components/schemas/AuthenticationRequestModel'
       responses:
         '200':
-          description: OK
+          description: OK if the authentication succeeds. It will return the JWT token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTToken'
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
@@ -83,7 +87,7 @@ paths:
       tags:
         - Users
       summary: Retrieve the profile information of a user
-      description: Get the most important (and non-sensitive) profile information of a user based on the username
+      description: Get the most important (and non-sensitive) profile information of a user based on the JWT token provided in the headers. This is meant to be used only by the user who owns the profile (requires JWT), this is why it returns whether or not it is private and similar other things. This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
@@ -92,9 +96,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserModel'
+                $ref: '#/components/schemas/UserProfile'
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
     
@@ -102,16 +106,16 @@ paths:
       tags:
         - Users
       summary: A user can delete their own account
-      description: Delete a user account by username.
+      description: Delete a user account based on the JWT token provided. This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: OK
+          description: OK if the account was successfully deleted.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '500':
@@ -122,7 +126,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser name
-      description: Update the name of a user. Users cannot update other user's profile.
+      description: Update the name of a user. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -134,11 +138,11 @@ paths:
               example: New Name
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -147,7 +151,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser bio
-      description: Update the bio of a user. Users cannot update other user's profile.
+      description: Update the bio of a user. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -159,11 +163,11 @@ paths:
               example: New Bio
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
   
@@ -172,7 +176,7 @@ paths:
       tags:
         - Users
       summary: Retrieve a user's profile picture
-      description: Get the profile picture of a user based on the username
+      description: Get the profile picture of a user. The user is found using the JWT token. This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
@@ -184,7 +188,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
     
@@ -192,7 +196,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser profile picture
-      description: Update the photo of a user. Users cannot update other user's profile.
+      description: Update the photo of a user. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -204,11 +208,11 @@ paths:
               format: binary
       responses:
         '200':
-          description: OK
+          description: OK is the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '415':
           description: Unsupported Media Type
         '500':
@@ -219,7 +223,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser location
-      description: Update the location of a user. Users cannot update other user's profile.
+      description: Update the location of a user. The user is found based on the JWT token provided. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -231,11 +235,11 @@ paths:
               example: New Location
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -244,7 +248,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser list of favourite genres
-      description: Update the favourite genres of a user. Users cannot update other user's profile.
+      description: Update the favourite genres of a user. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -257,11 +261,11 @@ paths:
                 $ref: "#/components/schemas/Genre"
       responses:
         '200':
-          description: OK
+          description: OK is the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '415':
           description: Unsupported Media Type
         '500':
@@ -272,7 +276,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser favourite book
-      description: Update the favourite book of a user. Users cannot update other user's profile.
+      description: Update the favourite book of a user. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -282,13 +286,14 @@ paths:
             schema:
               type: string
               format: uuid
+              description: The id of the book.
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Book not found
         '500':
@@ -299,7 +304,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser username
-      description: Update the username of a user. Users cannot update other user's profile.
+      description: Update the username of a user. The username must be unique and must only contain alphanumerical characters. The user is found based on the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -311,11 +316,11 @@ paths:
               example: New Username
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
-          description: Bad Request if the required parameters are not present.
+          description: Bad Request if the required parameters are not present
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid or if the username does not adhere to the uniqueness and alphanumerical constraints
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -324,7 +329,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser email
-      description: Update the email of a user. Users cannot update other user's profile.
+      description: Update the email of a user. The email must be unique in the system. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -336,11 +341,11 @@ paths:
               example: new@email.com
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid or if the email does not adhere to the uniqueness constraint
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -349,7 +354,7 @@ paths:
       tags:
         - Users
       summary: Update AppUser password
-      description: Update the password of a user. Users cannot update other user's profile.
+      description: Update the password of a user. The user is found using the JWT token. Users cannot update other user's profile. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -361,11 +366,11 @@ paths:
               example: New Password
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
   
@@ -374,7 +379,7 @@ paths:
       tags:
         - Users
       summary: Update privacy info
-      description: Update privacy information of a user. Requires authorized user role.
+      description: Update privacy information of a user. The user is found using the JWT token. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -387,11 +392,11 @@ paths:
               example: false
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '415':
@@ -404,7 +409,7 @@ paths:
       tags:
         - Users
       summary: An admin changes the authority of a user
-      description: An admin changes the authority of a user into an admin or an author.
+      description: An admin changes the authority of a user, based on the information found in the RequestRoleChange object, into an admin or an author. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -415,11 +420,11 @@ paths:
               $ref: '#/components/schemas/RequestRoleChange'
       responses:
         '200':
-          description: OK
+          description: OK if the change was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid or the user is not an admin
+          description: Unauthorized if the JWT token is invalid or the user is not an admin.
         '415':
           description: Unsupported Media Type
         '500':
@@ -430,7 +435,7 @@ paths:
       tags:
         - Users
       summary: Get the requests for role change (only by admin)
-      description: Retrieve a list of user role change requests.
+      description: Retrieve a list of user role change requests. This endpoint requires authentication and the user to be an admin.
       security:
         - bearerAuth: []
       responses:
@@ -443,7 +448,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RequestRoleChange'
         '401':
-          description: Unauthorized if the jwt token is invalid or the user is not an admin
+          description: Unauthorized if the JWT token is invalid or the user is not an admin
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -451,7 +456,7 @@ paths:
       tags:
         - Users
       summary: A user requests a role change
-      description: A user requests a role change into an admin or an author.
+      description: A user requests a role change into an admin or an author. The information is provided in the body. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -466,7 +471,7 @@ paths:
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '415':
           description: Unsupported Media Type
         '500':
@@ -477,7 +482,7 @@ paths:
       tags:
         - Users
       summary: Ban or unban user
-      description: Deactivate or activate the account of a reported user. Requires admin role.
+      description: Deactivate or activate the account of a reported user. Requires admin role.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -488,11 +493,11 @@ paths:
               $ref: '#/components/schemas/BanUserRequest'
       responses:
         '200':
-          description: OK
+          description: OK if the user was successfully banned.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '415':
@@ -505,7 +510,7 @@ paths:
       tags:
         - Users
       summary: Activate or deactivate 2-factor authentication
-      description: Activate or deactivate 2-factor authentication for the user.
+      description: Activate or deactivate 2-factor authentication for the user. The user is found using the JWT token.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -518,11 +523,11 @@ paths:
               example: true
       responses:
         '200':
-          description: OK
+          description: OK if it was successfully changed.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '415':
@@ -535,7 +540,7 @@ paths:
       tags:
         - Reports
       summary: Get a list of reports (only for admins)
-      description: Retrieve a list of Report objects. The endpoint is only accessible to admins.
+      description: Retrieve a list of Report objects. The endpoint is only accessible to admins.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
@@ -550,7 +555,7 @@ paths:
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt is not valid or if the jwt does not correspond to an admin.
+          description: Unauthorized if the JWT is not valid or if the JWT does not correspond to an admin.
         '500':
           description: Internal Server Error if an unexpected error occurs.
     
@@ -558,7 +563,7 @@ paths:
       tags:
         - Reports
       summary: Report an AppUser
-      description: Report an AppUser with the specified username.
+      description: Report an AppUser with the specified username.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -568,11 +573,11 @@ paths:
               $ref: '#/components/schemas/Report'
       responses:
         '200':
-          description: OK
+          description: OK if the operation was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '415':
@@ -585,7 +590,7 @@ paths:
       tags:
         - Reports
       summary: Remove a user report
-      description: Remove a specific report for a user. Requires admin role.
+      description: Remove a specific report for a user. Requires admin role.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -599,11 +604,11 @@ paths:
             example: 550e8400-e29b-41d4-a716-446655440000
       responses:
         '200':
-          description: OK
+          description: OK if the deletion was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt is invalid or the jwt does not correspond to an admin.
+          description: Unauthorized if the JWT is invalid or the JWT does not correspond to an admin.
         '404':
           description: If the reportId is not found.
         '500':
@@ -613,8 +618,8 @@ paths:
     get:
       tags:
         - Statistics
-      summary: Get login statistics for a user
-      description: Retrieve login statistics for a user.
+      summary: Get login statistics for a user (number of times they accessed /authenticate)
+      description: Retrieve login statistics for a user. This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -646,8 +651,8 @@ paths:
     get:
       tags:
         - Statistics
-      summary: Get popular genres (for statistics)
-      description: Retrieve the 3 most popular genres and statistics about them.
+      summary: Get popular genres (based on users' favorite genres)
+      description: Retrieve the 3 most popular genres and statistics about them.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
@@ -677,7 +682,7 @@ paths:
       tags:
         - Statistics
       summary: Get the 3 most popular books (based on favorite book)
-      description: Retrieve popular books based on favorite book selections.
+      description: Retrieve popular books based on favorite book selections.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
@@ -700,8 +705,8 @@ paths:
     get:
       tags:
         - Authentication
-      summary: Validate JWT token and return authorities
-      description: Validate a JWT token and return the corresponding authorities.
+      summary: Validate JWT token and return user id and the authority
+      description: Validate a JWT token and return the corresponding userId (uuid format) and the authority. The JWT token is provided in the headers, as usual. This endpoint requires authentication.
       security:
         - bearerAuth: []
       responses:
@@ -714,7 +719,7 @@ paths:
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -723,7 +728,7 @@ paths:
       tags:
         - Search
       summary: Search for a user based on username
-      description: Search for a user based on username
+      description: Search for a user based on username.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -740,11 +745,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppUser'
+                $ref: '#/components/schemas/UserModel'
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '500':
@@ -754,7 +759,7 @@ paths:
       tags:
         - Users
       summary: An admin can delete another user's account
-      description: Delete a user account by username.
+      description: Delete a user account by username. This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -767,11 +772,11 @@ paths:
             example: ExampleUsername
       responses:
         '200':
-          description: OK
+          description: OK if it was successfully deleted.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '500':
@@ -782,7 +787,7 @@ paths:
       tags:
         - Search
       summary: Search for users based on favorite book
-      description: Search for users based on their favourite book
+      description: Search for users based on their favourite book. This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -801,11 +806,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AppUser'
+                  $ref: '#/components/schemas/UserModel'
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
 
@@ -814,7 +819,7 @@ paths:
       tags:
         - Search
       summary: Search for users based on favorite genres
-      description: Search for a user based on a list of favourite genres
+      description: Search for a user based on a list of favourite genres. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -832,11 +837,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AppUser'
+                  $ref: '#/components/schemas/UserModel'
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '500':
           description: Internal Server Error if an unexpected error occurs.
   
@@ -845,7 +850,7 @@ paths:
       tags:
         - Books
       summary: Create a new book (only the admins and the authors - if they wrote the book)
-      description: Create a new book with title, author, genre(s), description and number of pages.
+      description: Create a new book with title, author, genre(s), description and number of pages. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -855,11 +860,11 @@ paths:
               $ref: '#/components/schemas/CreateBookRequestModel'
       responses:
         '200':
-          description: OK
+          description: OK if it was successful
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '409':
           description: Conflict if the book is already in the DB
           content:
@@ -874,7 +879,7 @@ paths:
       tags:
         - Books
       summary: Update Book
-      description: Update book details. Requires the user to be an admin or the author of the book.
+      description: Update book details. Requires admin role or the authenticated user is the author of the book. This endpoint requires authentication.
       security:
         - bearerAuth: []
       requestBody:
@@ -885,11 +890,11 @@ paths:
               $ref: '#/components/schemas/Book'
       responses:
         '200':
-          description: OK
+          description: OK if the update was successful.
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '415':
           description: Unsupported Media Type
         '500':
@@ -900,7 +905,7 @@ paths:
       tags:
         - Books
       summary: Retrieve a book by its id
-      description: Find a book by its id
+      description: Return a book by its id. This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -915,10 +920,14 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not found
         '500':
@@ -928,7 +937,7 @@ paths:
       tags:
         - Books
       summary: Delete a book
-      description: Delete a book by bookId. Requires admin role or the authenticated user is the author of the book.
+      description: Delete a book by bookId. Requires admin role or the authenticated user is the author of the book. This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -946,7 +955,7 @@ paths:
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '500':
@@ -957,7 +966,7 @@ paths:
       tags:
         - Connections
       summary: Follow a user
-      description: Follow a user with the specified username.
+      description: Follow a user with the specified username.  This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -974,7 +983,7 @@ paths:
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
         '404':
           description: Not Found
         '500':
@@ -984,7 +993,7 @@ paths:
       tags:
         - Connections
       summary: Unfollow a user
-      description: Unfollow a user with the specified username.
+      description: Unfollow a user with the specified username. This endpoint requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -1001,7 +1010,102 @@ paths:
         '400':
           description: Bad Request if the required parameters are not present.
         '401':
-          description: Unauthorized if the jwt token is invalid
+          description: Unauthorized if the JWT token is invalid
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error if an unexpected error occurs.
+
+  /connections/followers/{username}:
+    get:
+      tags:
+        - Connections
+      summary: Get a list of users that follow a specific user
+      description: Get a list of all users that follow the user with the specified username. This endpoint requires authentication.
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username of the user to get followers
+          schema:
+            type: string
+            example: ExampleUsername
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserModel'
+        '400':
+          description: Bad Request if the required parameters are not present.
+        '401':
+          description: Unauthorized if the JWT token is invalid
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error if an unexpected error occurs.
+
+  /connections/follows/{username}:
+    get:
+      tags:
+        - Connections
+      summary: Get a list of users that are followed by a specific user
+      description: Get a list of all users that are followed by the user with the specified username. This endpoint requires authentication.
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username of the user to get followers
+          schema:
+            type: string
+            example: ExampleUsername
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserModel'
+        '400':
+          description: Bad Request if the required parameters are not present.
+        '401':
+          description: Unauthorized if the JWT token is invalid
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error if an unexpected error occurs.
+
+  /unauthenticated/{userId}:
+    get:
+      tags:
+        - Unauthenticated
+      summary: Retrieve the profile information of a user
+      description: Get the most important (and non-sensitive) profile information of a user based on the userId provided in the path.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The userId of the targeted user
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
         '404':
           description: Not Found
         '500':
@@ -1020,6 +1124,59 @@ components:
           type: string
           description: The username of the targeted user
           example: ExampleUsername
+    
+    UserProfile:
+      type: object
+      properties:
+        username:
+          type: string
+          description: The username
+          example: johndoe
+        email:
+          type: string
+          format: email
+          description: The email address of the user
+          example: johndoe@example.com
+        name:
+          type: string
+          description: The full name of the user
+          example: John Doe
+        bio:
+          type: string
+          description: A brief biographical description of the user
+          example: I'm an avid reader and enjoy exploring different genres of literature.
+        location:
+          type: string
+          description: The user's location
+          example: New York, NY
+        favouriteGenres:
+          type: array
+          items:
+            $ref: "#/components/schemas/Genre"
+          description: The user's favorite genres of literature
+          example: [
+            BIOGRAPHY,
+            HISTORY,
+            FANTASY
+          ]
+        favouriteBook:
+          $ref: '#/components/schemas/Book'
+        authority:
+          $ref: "#/components/schemas/Authority"
+        isDeactivated:
+          type: boolean
+          description: Whether the account is banned or not.
+          example: false
+        isPrivate:
+          type:
+            boolean
+          description: Whether the account is private or not.
+          example: true
+        is2faEnabled:
+          type:
+            boolean
+          description: Whether the two factor authentication is enabled or not.
+          example: false
 
     UserModel:
       type: object
@@ -1057,21 +1214,6 @@ components:
           ]
         favouriteBook:
           $ref: '#/components/schemas/Book'
-        isDeactivated:
-          type: boolean
-          description: Whether the account is banned or not.
-          example: false
-        isPrivate:
-          type:
-            boolean
-          description: Whether the account is private or not.
-          example: true
-        is2faEnabled:
-          type:
-            boolean
-          description: Whether the two factor authentication is enabled or not.
-          example: false
-          
 
     RegisterUserRequest:
       type: object
@@ -1134,72 +1276,6 @@ components:
           description: The number of pages in the book.
           example: 123
 
-    AppUser:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The id of the user
-          example: 550e8400-e29b-41d4-a716-446655440000
-        username:
-          $ref: "#/components/schemas/Username"
-        email:
-          type: string
-          description: The email of the user
-          example: example@email.com
-        password:
-          $ref: "#/components/schemas/HashedPassword"
-        name:
-          type: string
-          description: The name of the user
-          example: John Doe
-        bio:
-          type: string
-          description: The bio of the user
-          example: This is a short bio.
-        picture:
-          type: string
-          format: binary
-          description: The profile picture of the user stored as a byte array
-        location:
-          type: string
-          description: The location of the user
-          example: Delft, Netherlands
-        favouriteGenres:
-          type: array
-          items:
-            $ref: "#/components/schemas/Genre"
-          description: The list of favourite genres of the user
-          example: [
-            HISTORY,
-            CRIME,
-            SCIENCE
-          ]
-        favouriteBook:
-          $ref: "#/components/schemas/Book"
-        follows:
-          type: array
-          items:
-            $ref: "#/components/schemas/AppUser"
-          description: A list of other users followed by the current user
-        authority:
-          $ref: "#/components/schemas/Authority"
-        isDeactivated:
-          type: boolean
-          description: Whether the account is banned or not.
-          example: false
-        isPrivate:
-          type:
-            boolean
-          description: Whether the account is private or not.
-          example: true
-        is2faEnabled:
-          type:
-            boolean
-          description: Whether the two factor authentication is enabled or not.
-          example: false
-
     Book:
       type: object
       properties:
@@ -1239,33 +1315,20 @@ components:
           type: integer
           description: The number of pages in the book
           example: 275
-    
-    HashedPassword:
-      type: object
-      properties:
-        hash:
-          type: string
-          example: HashedPass
-
-    Username:
-      type: object
-      properties:
-        usernameValue:
-          type: string
-          example: ExampleUsername
 
     RequestRoleChange:
       type: object
       properties:
-        username:
+        id:
           type: string
-          description: The username of the user making the request.
-          example: ExampleUsername
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+          description: The id of the user that requested a role change.
         newRole:
           $ref: "#/components/schemas/Authority"
         ssn:
           type: string
-          description: The Social Security Number of the user.
+          description: The Social Security Number of the user, which confirms their identity.
           example: 123-45-6789
 
     ValidationTokenResponse:
@@ -1275,6 +1338,8 @@ components:
           type: string
           format: uuid
           example: 550e8400-e29b-41d4-a716-446655440000
+        authority:
+          $ref: "#/components/schemas/Authority"
 
     Report:
       type: object
@@ -1283,6 +1348,7 @@ components:
           type: string
           format: uuid
           example: 550e8400-e29b-41d4-a716-446655440000
+          description: This is the id which is given by the Review Microservice, which points to their entity.
         type:
           type: string
           enum: 
@@ -1325,6 +1391,13 @@ components:
         - ADMIN
       description: The role of a user.
       example: ADMIN
+
+    JWTToken:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcwMTYyMjc1OSwiaWF0IjoxNzAxNTM2MzU5LCJhdXRob3JpdGllcyI6WyJBRE1JTiJdfQ.dLR52lm04tZLld-zeFigKSAsO__ixbw45edGQVxlnSTz4PXDAqUXQaBbw6SAXOkPWEJuSsp7D_u0K34HvLi7HQ
   
   securitySchemes:
     bearerAuth:
