@@ -1,13 +1,12 @@
 package nl.tudelft.sem.template.authentication.integration;
 
-//import com.github.tomakehurst.wiremock.WireMockServer;
-//import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import nl.tudelft.sem.template.authentication.application.book.BookWasUpdatedListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasCreatedEvent;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -28,15 +29,20 @@ public class BookIntegrationTests {
     @Autowired
     private transient BookWasUpdatedListener bookWasUpdatedListener;
 
-    //static final WireMockServer bookshelfServer = new WireMockServer();
+    private WireMockServer bookshelfServer;
 
     /**
      * Set up for the testing environment before all tests.
      */
-    @BeforeAll
-    public static void beforeAll() {
-        //WireMock.configureFor("http://localhost", 8081, "/a");
-        //bookshelfServer.start();
+    @BeforeEach
+    public void setup() {
+        bookshelfServer = new WireMockServer();
+        bookshelfServer.start();
+        WireMock.configureFor("http://localhost", 8081, "/a");
+        stubFor(post(urlEqualTo("/catalog")).willReturn(aResponse().withStatus(200)));
+        stubFor(put(urlEqualTo("/catalog")).willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo("/catalog")).willReturn(aResponse().withStatus(200)));
+
     }
 
     @Test
@@ -44,22 +50,11 @@ public class BookIntegrationTests {
 
     }
 
-
-    /**
-     * Set up for the testing environment after all tests.
-     */
-    @AfterAll
-    public static void afterAll() {
-
-        //bookshelfServer.stop();
-    }
-
     /**
      * Set up for the testing environment after each tests.
      */
     @AfterEach
     public void afterEach() {
-
-        //bookshelfServer.resetAll();
+        bookshelfServer.stop();
     }
 }

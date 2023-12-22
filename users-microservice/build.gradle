@@ -60,8 +60,9 @@ dependencies {
 	testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
 	testImplementation('org.assertj:assertj-core:3.23.1')
 
-	// Wire Mock
-	//testImplementation "org.wiremock:wiremock:3.3.1"
+	// https://mvnrepository.com/artifact/org.wiremock/wiremock-standalone
+	testImplementation 'org.wiremock:wiremock-standalone:3.2.0'
+
 }
 
 test {
