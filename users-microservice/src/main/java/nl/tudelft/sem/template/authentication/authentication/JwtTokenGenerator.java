@@ -46,18 +46,4 @@ public class JwtTokenGenerator {
                 .setExpiration(new Date(timeProvider.getCurrentTime().toEpochMilli() + JWT_TOKEN_VALIDITY))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
     }
-
-    /**
-     * Deserialize a Jwt token.
-     *
-     * @param token The serialized token.
-     * @return the username which was used to create the token
-     */
-    public String getUsername(String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
 }

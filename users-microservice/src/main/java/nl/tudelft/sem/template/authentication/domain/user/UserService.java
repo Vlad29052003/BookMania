@@ -7,6 +7,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
+import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,9 +28,9 @@ public class UserService {
     /**
      * Instantiates a new UserService.
      *
-     * @param userRepository the user repository.
+     * @param userRepository   the user repository.
      * @param reportRepository the report repository.
-     * @param bookRepository the book repository.
+     * @param bookRepository   the book repository.
      */
     public UserService(UserRepository userRepository,
                        ReportRepository reportRepository,
@@ -177,8 +178,8 @@ public class UserService {
     /**
      * (Un)bans a user.
      *
-     * @param username    username of the user that should be (un)banned.
-     * @param toBan (de-)activated status we wish the user to have after the request.
+     * @param username  username of the user that should be (un)banned.
+     * @param toBan     (de-)activated status we wish the user to have after the request.
      * @param authority jwt token.
      */
     @Transactional
@@ -195,7 +196,7 @@ public class UserService {
         AppUser user = optionalAppUser.get();
         if (user.isDeactivated() == toBan) {
             String banned = toBan ? "banned" : "not banned";
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is already " + banned + "!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already " + banned + "!");
         }
 
         if (user.isDeactivated()) {
@@ -211,7 +212,7 @@ public class UserService {
     /**
      * Update the username of an existing user.
      *
-     * @param username the username
+     * @param username    the username
      * @param newUsername the new username
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -259,7 +260,7 @@ public class UserService {
     /**
      * Update the password of an existing user.
      *
-     * @param username the username
+     * @param username    the username
      * @param newPassword the new password
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -294,7 +295,7 @@ public class UserService {
     /**
      * Updates the privacy settings of a user.
      *
-     * @param username the username
+     * @param username  the username
      * @param isPrivate new privacy setting
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
@@ -308,5 +309,21 @@ public class UserService {
         user.setPrivate(isPrivate);
 
         userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * Gets the user details for a specific user.
+     *
+     * @param userId is the user to get the details for.
+     * @return a UserModel object with the details.
+     */
+    public UserModel getUserDetails(UUID userId) {
+        Optional<AppUser> optionalAppUser = userRepository.findById(userId);
+        if (optionalAppUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
+        }
+
+        AppUser user = optionalAppUser.get();
+        return new UserModel(user);
     }
 }

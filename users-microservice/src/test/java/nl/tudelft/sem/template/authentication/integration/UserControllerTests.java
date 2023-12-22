@@ -34,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -42,6 +43,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:application-test.properties")
 public class UserControllerTests {
     @Autowired
     private MockMvc mockMvc;
@@ -475,7 +477,7 @@ public class UserControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(banUserRequestModel))
                         .header("Authorization", "Bearer " + tokenAdmin))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         banUserRequestModel.setBanned(false);
         mockMvc.perform(patch("/c/users/isDeactivated")

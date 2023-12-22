@@ -1,11 +1,11 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,40 +40,56 @@ public class UserEntityTests {
     @Test
     public void testEmptyConstructor() {
         AppUser test  = new AppUser();
-        assertNotEquals(test, null);
+        assertThat(test).isNotEqualTo(null);
     }
 
     @Test
     public void testConstructor() {
-        assertNotEquals(user1, null);
-        assertEquals(new Username("user1"), user1.getUsername());
-        assertEquals("email1@gmail.com", user1.getEmail());
-        assertEquals(new HashedPassword("hash"), user1.getPassword());
-        assertEquals(new ArrayList<>(), user1.getFavouriteGenres());
-        assertEquals(new ArrayList<>(), user1.getFollows());
-        assertEquals(new ArrayList<>(), user1.getFollowedBy());
-        assertEquals(Authority.REGULAR_USER, user1.getAuthority());
-        assertFalse(user1.isDeactivated());
+        assertThat(user1).isNotEqualTo(null);
+        assertThat(user1.getUsername()).isEqualTo(new Username("user1"));
+        assertThat(user1.getEmail()).isEqualTo("email1@gmail.com");
+        assertThat(user1.getPassword()).isEqualTo(new HashedPassword("hash"));
+        assertThat(user1.getFavouriteGenres()).isEqualTo(new ArrayList<>());
+        assertThat(user1.getFollows()).isEqualTo(new ArrayList<>());
+        assertThat(user1.getFollowedBy()).isEqualTo(new ArrayList<>());
+        assertThat(user1.getAuthority()).isEqualTo(Authority.REGULAR_USER);
+        assertThat(user1.isDeactivated()).isFalse();
     }
 
     @Test
     public void testSetEmail() {
-        assertEquals("email1@gmail.com", user1.getEmail());
-        assertThrows(IllegalArgumentException.class, () -> user1.setEmail("badEmail.com"));
+        assertThat(user1.getEmail()).isEqualTo("email1@gmail.com");
+        assertThatThrownBy(() -> user1.setEmail("badEmail.com")).isInstanceOf(IllegalArgumentException.class);
         user1.setEmail("example@email.com");
-        assertEquals("example@email.com", user1.getEmail());
+        assertThat(user1.getEmail()).isEqualTo("example@email.com");
     }
 
     @Test
     public void testEquals() {
-        assertEquals(user1, user1);
-        assertEquals(user1, user2);
-        assertNotEquals(user1, user3);
-        assertNotEquals(user1, null);
+        assertThat(user1).isEqualTo(user1);
+        assertThat(user1).isEqualTo(user2);
+        assertThat(user1).isNotEqualTo(user3);
+        assertThat(user1).isNotEqualTo(null);
+        assertThat(user1).isNotEqualTo(new ArrayList<>());
+    }
+
+    @Test
+    public void testSetter() {
+        user1.setFollowedBy(List.of(user2));
+        user1.setFollows(List.of(user3));
+        assertThat(user1.getFollows()).isEqualTo(List.of(user3));
+        assertThat(user1.getFollowedBy()).isEqualTo(List.of(user2));
     }
 
     @Test
     public void testHash() {
-        assertEquals(user1.hashCode(), user2.hashCode());
+        assertThat(user1.hashCode()).isEqualTo(user2.hashCode());
+        assertThat(user1.hashCode()).isEqualTo(Objects.hash(user1.getId()));
+    }
+
+    @Test
+    public void testToString() {
+        assertThat(user1.toString()).isNotEqualTo(user2.toString());
+        assertThat(user1.toString()).isEqualTo(user1.toString());
     }
 }

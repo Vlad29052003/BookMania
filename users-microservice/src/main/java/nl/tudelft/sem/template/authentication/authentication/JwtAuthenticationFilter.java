@@ -47,25 +47,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String jwtToken = authHeader.split(" ")[1];
             final String username = jwtService.extractUsername(jwtToken);
 
-            if (username != null) {
-                if (!jwtService.isTokenExpired(jwtToken)) {
-                    final AppUser user = userService.getUserByUsername(new Username(username));
-                    if (user.isDeactivated()) {
-                        throw new UsernameNotFoundException("User is deactivated");
-                    }
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    username,
-                                    null,
-                                    List.of(user.getAuthority())
-                            );
-                    authenticationToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                }
-                filterChain.doFilter(request, response);
+            if (username == null) {
+                throw new NullPointerException();
             }
+            //automatically checks whether the token is expired in the parseClaims()
+            final AppUser user = userService.getUserByUsername(new Username(username));
+            if (user.isDeactivated()) {
+                throw new UsernameNotFoundException("User is deactivated");
+            }
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            null,
+                            List.of(user.getAuthority())
+                    );
+            authenticationToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+            filterChain.doFilter(request, response);
+
         } catch (ExpiredJwtException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("JWT token has expired");

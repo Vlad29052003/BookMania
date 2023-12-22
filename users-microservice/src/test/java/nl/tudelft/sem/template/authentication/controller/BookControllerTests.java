@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.authentication.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -45,41 +45,45 @@ public class BookControllerTests {
     @Test
     public void testGet() {
         when(bookService.getBook(bookId.toString())).thenReturn(book);
-        assertEquals(bookController.getBook(bookId.toString()), ResponseEntity.ok(book));
+        assertThat(bookController.getBook(bookId.toString()))
+                .isEqualTo(ResponseEntity.ok(book));
 
         when(bookService.getBook(bookId.toString()))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"));
-        assertEquals(bookController.getBook(bookId.toString()).getStatusCodeValue(), 404);
+        assertThat(bookController.getBook(bookId.toString()).getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
     public void testCreate() {
-        assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 200);
+        assertThat(bookController.addBook(createBookRequest, token))
+                .isEqualTo(ResponseEntity.ok().build());
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .addBook(any(), any());
 
-        assertEquals(bookController.addBook(createBookRequest, token).getStatusCodeValue(), 404);
+        assertThat(bookController.addBook(createBookRequest, token).getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
     public void testUpdate() {
-        assertEquals(bookController.updateBook(updatedBook, token).getStatusCodeValue(), 200);
+        assertThat(bookController.updateBook(updatedBook, token))
+                .isEqualTo(ResponseEntity.ok().build());
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .updateBook(any(), any());
-        assertEquals(bookController.updateBook(updatedBook, token).getStatusCodeValue(), 404);
+        assertThat(bookController.updateBook(updatedBook, token).getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
     public void testDelete() {
-        assertEquals(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue(), 200);
+        assertThat(bookController.deleteBook(bookId.toString(), token))
+                .isEqualTo(ResponseEntity.ok().build());
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(bookService)
                 .deleteBook(any(), any());
-        assertEquals(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue(), 404);
+        assertThat(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue()).isEqualTo(404);
     }
 }
