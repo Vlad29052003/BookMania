@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import nl.tudelft.sem.template.authentication.chainOfResponsibility.FilterClient;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
@@ -22,16 +23,18 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/c/books")
 public class BookController {
     private final transient BookService bookService;
+    private final transient FilterClient filterClient;
 
     @Autowired
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, FilterClient filterClient) {
         this.bookService = bookService;
+        this.filterClient = filterClient;
     }
 
     /**
      * Gets a book from the overall collection.
      *
-     * @param bookId      the id of the book to get
+     * @param bookId the id of the book to get
      * @return the status of the operation
      */
     @GetMapping("/{bookId}")
@@ -54,7 +57,10 @@ public class BookController {
     public ResponseEntity<?> addBook(@RequestBody CreateBookRequestModel createBookRequestModel,
                                      @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            bookService.addBook(createBookRequestModel, bearerToken);
+            filterClient.setAddBookStrategy();
+            Book newBook = new Book(createBookRequestModel);
+            filterClient.handle(newBook, bearerToken.substring(7));
+
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
@@ -66,14 +72,15 @@ public class BookController {
      * Updates a book in the system.
      *
      * @param updatedBook contains the new information for the book
-     * @param bearerToken            is the jwt token of the user that made the request
+     * @param bearerToken is the jwt token of the user that made the request
      * @return the status of the operation
      */
     @PutMapping("")
     public ResponseEntity<?> updateBook(@RequestBody Book updatedBook,
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            bookService.updateBook(updatedBook, bearerToken);
+            filterClient.setEditAddBookStrategy();
+            filterClient.handle(updatedBook, bearerToken.substring(7));
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

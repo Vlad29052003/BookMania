@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.hibernate.annotations.Type;
 
 /**
@@ -94,6 +95,14 @@ public class Book {
         this.description = description;
         this.numPages = numPages;
         this.usersWithBookAsFavorite = new ArrayList<>();
+    }
+
+    public Book(CreateBookRequestModel createBookRequestModel) {
+        this.title = createBookRequestModel.getTitle();
+        this.authors = new ArrayList<>(createBookRequestModel.getAuthors());
+        this.genres = new ArrayList<>(createBookRequestModel.getGenres());
+        this.description = createBookRequestModel.getDescription();
+        this.numPages = createBookRequestModel.getNumPages();
     }
 
     /**

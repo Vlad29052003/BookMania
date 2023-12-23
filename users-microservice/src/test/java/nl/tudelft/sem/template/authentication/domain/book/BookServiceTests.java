@@ -60,7 +60,7 @@ public class BookServiceTests {
         bookId = bookRepository.findByTitle("title").get(0).getId();
 
         this.book2 = new Book("title2", List.of("Author2"),
-                List.of(Genre.CRIME), "testDscription", 550);
+                List.of(Genre.CRIME), "testDescription", 550);
         bookRepository.saveAndFlush(book2);
         book2Id = bookRepository.findByTitle("title2").get(0).getId();
 

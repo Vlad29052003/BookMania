@@ -51,45 +51,15 @@ public class BookService {
         return optBook.get();
     }
 
-    /**
-     * Adds a book to the database.
-     *
-     * @param createBookRequestModel contains the book information
-     * @param bearerToken            is the jwt token of the user who made the request
-     */
-    public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
-        if (getAuthority(bearerToken).equals(Authority.ADMIN) || getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-            if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-                Optional<AppUser> authorOptional = userRepository
-                        .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
-                if (authorOptional.isEmpty()) {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                            "Only the authors of the book may add it to the system!");
-                }
-                AppUser currentAuthor = authorOptional.get();
-                if (!createBookRequestModel.getAuthors().contains(currentAuthor.getName())) {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                            "Only the authors of the book may add it to the system!");
-                }
-            }
-
-            List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
-            boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
-                    .equals(new HashSet<>(createBookRequestModel.getAuthors())));
-            if (invalid) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
-            }
-
-            Book newBook = new Book(createBookRequestModel.getTitle(),
-                    createBookRequestModel.getAuthors(),
-                    createBookRequestModel.getGenres(),
-                    createBookRequestModel.getDescription(),
-                    createBookRequestModel.getNumPages());
-            bookRepository.saveAndFlush(newBook);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Only admins or authors may add books to the system!");
+    public void addBook(Book newBook) {
+        List<Book> books = bookRepository.findByTitle(newBook.getTitle());
+        boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
+                .equals(new HashSet<>(newBook.getAuthors())));
+        if (invalid) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
         }
+
+        bookRepository.saveAndFlush(newBook);
     }
 
 
@@ -97,56 +67,26 @@ public class BookService {
      * Updates a book in the system.
      *
      * @param updatedBook contains the new information for the book
-     * @param bearerToken is the jwt token of the user that made the request
      */
-    public void updateBook(Book updatedBook, String bearerToken) {
+    public void updateBook(Book updatedBook) {
         if (updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The authors and genres cannot be null!");
         }
-        if (getAuthority(bearerToken).equals(Authority.ADMIN)) {
+        Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
 
-            Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
-            if (optBook.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
-            }
-            Book currentBook = optBook.get();
-
-            currentBook.setTitle(updatedBook.getTitle());
-            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            currentBook.setDescription(updatedBook.getDescription());
-            currentBook.setNumPages(updatedBook.getNumPages());
-
-            bookRepository.saveAndFlush(currentBook);
-        } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-
-            Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
-
-            if (optBook.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
-            }
-
-            Book currentBook = optBook.get();
-
-            Optional<AppUser> authorOptional = userRepository
-                    .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
-            AppUser currentAuthor = authorOptional.get();
-
-            if (!currentBook.getAuthors().contains(currentAuthor.getName())) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the authors of the book may edit it!");
-            }
-
-            currentBook.setTitle(updatedBook.getTitle());
-            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            currentBook.setDescription(updatedBook.getDescription());
-            currentBook.setNumPages(updatedBook.getNumPages());
-
-            bookRepository.saveAndFlush(currentBook);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Only admins or authors may update books in the system!");
+        if (optBook.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
         }
+
+        Book currentBook = optBook.get();
+
+        currentBook.setTitle(updatedBook.getTitle());
+        currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+        currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
+        currentBook.setDescription(updatedBook.getDescription());
+        currentBook.setNumPages(updatedBook.getNumPages());
+
+        bookRepository.saveAndFlush(currentBook);
     }
 
     /**
