@@ -51,6 +51,11 @@ public class BookService {
         return optBook.get();
     }
 
+    /**
+     * Adds a book to the database.
+     *
+     * @param newBook is the book to be added.
+     */
     public void addBook(Book newBook) {
         List<Book> books = bookRepository.findByTitle(newBook.getTitle());
         boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())

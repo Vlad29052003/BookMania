@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.chainOfResponsibility;
+package nl.tudelft.sem.template.authentication.filters;
 
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -9,6 +9,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class CheckAuthorityHandler extends AbstractHandler {
     private final transient JwtService jwtService;
 
+    /**
+     * Creates a new CheckAuthorityHandler object.
+     *
+     * @param jwtService is the JwtService.
+     */
     public CheckAuthorityHandler(JwtService jwtService) {
         super();
         this.jwtService = jwtService;

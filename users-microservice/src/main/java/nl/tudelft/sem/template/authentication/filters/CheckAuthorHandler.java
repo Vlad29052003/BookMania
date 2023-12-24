@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.chainOfResponsibility;
+package nl.tudelft.sem.template.authentication.filters;
 
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -13,6 +13,12 @@ public class CheckAuthorHandler extends AbstractHandler {
     private final transient JwtService jwtService;
     private final transient UserRepository userRepository;
 
+    /**
+     * Creates a new AbstractHandler object.
+     *
+     * @param jwtService is the JwtService.
+     * @param userRepository is the UserRepository.
+     */
     public CheckAuthorHandler(JwtService jwtService, UserRepository userRepository) {
         super();
         this.jwtService = jwtService;
@@ -22,7 +28,8 @@ public class CheckAuthorHandler extends AbstractHandler {
     @Override
     public void filter(Book book, String bearerToken) {
         AppUser appUser = userRepository.findByUsername(new Username(jwtService.extractUsername(bearerToken))).get();
-        boolean isAuthorOfBook = appUser.getAuthority().equals(Authority.ADMIN) || book.getAuthors().contains(appUser.getName());
+        boolean isAuthorOfBook = appUser.getAuthority().equals(Authority.ADMIN)
+                || book.getAuthors().contains(appUser.getName());
         if (!isAuthorOfBook) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, super.getStrategy().getNotAuthorErrorMessage());
         } else {

@@ -2,9 +2,9 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import nl.tudelft.sem.template.authentication.chainOfResponsibility.FilterClient;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
+import nl.tudelft.sem.template.authentication.filters.FilterClient;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -97,6 +97,11 @@ public class Book {
         this.usersWithBookAsFavorite = new ArrayList<>();
     }
 
+    /**
+     * Creates a book object.
+     *
+     * @param createBookRequestModel is given a create book request.
+     */
     public Book(CreateBookRequestModel createBookRequestModel) {
         this.title = createBookRequestModel.getTitle();
         this.authors = new ArrayList<>(createBookRequestModel.getAuthors());

@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.chainOfResponsibility.FilterClient;
 import nl.tudelft.sem.template.authentication.controllers.BookController;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.filters.FilterClient;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

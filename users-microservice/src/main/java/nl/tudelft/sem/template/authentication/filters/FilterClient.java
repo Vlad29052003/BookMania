@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.chainOfResponsibility;
+package nl.tudelft.sem.template.authentication.filters;
 
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -21,6 +21,13 @@ public class FilterClient {
     private final transient AddBookStrategy addBookStrategy;
     private final transient EditBookStrategy editBookStrategy;
 
+    /**
+     * Creates a new FilterClient object.
+     *
+     * @param jwtService is the JwtService.
+     * @param userRepository is the UserRepository.
+     * @param bookService is the BookService.
+     */
     @Autowired
     public FilterClient(JwtService jwtService, UserRepository userRepository, BookService bookService) {
         this.jwtService = jwtService;
@@ -41,12 +48,18 @@ public class FilterClient {
         checkUserExistenceHandler.filter(book, bearerToken);
     }
 
+    /**
+     * Changes the strategy to addBookStrategy for all filters.
+     */
     public void setAddBookStrategy() {
         this.checkUserExistenceHandler.setStrategy(addBookStrategy);
         this.checkAuthorityHandler.setStrategy(addBookStrategy);
         this.checkAuthorHandler.setStrategy(addBookStrategy);
     }
 
+    /**
+     * Changes the strategy to editBookStrategy for all filters.
+     */
     public void setEditAddBookStrategy() {
         this.checkUserExistenceHandler.setStrategy(editBookStrategy);
         this.checkAuthorityHandler.setStrategy(editBookStrategy);

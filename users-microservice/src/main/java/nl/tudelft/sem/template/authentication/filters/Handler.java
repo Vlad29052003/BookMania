@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.chainOfResponsibility;
+package nl.tudelft.sem.template.authentication.filters;
 
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.strategy.Strategy;

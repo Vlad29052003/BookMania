@@ -1,8 +1,17 @@
-package nl.tudelft.sem.template.authentication.chainOfResponsibilityTests;
+package nl.tudelft.sem.template.authentication.filters;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.chainOfResponsibility.CheckAuthorHandler;
-import nl.tudelft.sem.template.authentication.chainOfResponsibility.Handler;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -14,16 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class CheckAuthorHandlerTests {
     private transient JwtService jwtService;
@@ -36,6 +35,9 @@ public class CheckAuthorHandlerTests {
     private transient Book book;
     private transient String token;
 
+    /**
+     * Sets up the testing environment.
+     */
     @BeforeEach
     public void setUp() {
         this.jwtService = mock(JwtService.class);
