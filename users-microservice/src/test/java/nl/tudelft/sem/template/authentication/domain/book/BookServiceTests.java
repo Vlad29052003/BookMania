@@ -3,7 +3,6 @@ package nl.tudelft.sem.template.authentication.domain.book;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -13,7 +12,6 @@ import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
-import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,9 +41,7 @@ public class BookServiceTests {
     private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
-
     private transient Book book2;
-
     private transient UUID book2Id;
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
@@ -126,15 +122,11 @@ public class BookServiceTests {
     @Test
     @Transactional
     public void testAddBook() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("title new");
-        bookRequestModel.setAuthors(List.of("Author2", "Author3"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("description");
-        bookRequestModel.setNumPages(876);
+        Book addBook = new Book("title new", List.of("Author2", "Author3"),
+                List.of(Genre.SCIENCE), "description", 876);
         Book newBook = new Book("title new", List.of("Author2", "Author3"),
                 List.of(Genre.SCIENCE), "description", 876);
-        bookService.addBook(bookRequestModel, tokenAdmin);
+        bookService.addBook(addBook);
         Book addedBook = bookRepository.findByTitle("title new").get(0);
 
         assertThat(newBook.getTitle()).isEqualTo(addedBook.getTitle());
@@ -142,95 +134,10 @@ public class BookServiceTests {
         assertThat(newBook.getGenres()).isEqualTo(addedBook.getGenres());
         assertThat(newBook.getDescription()).isEqualTo(addedBook.getDescription());
         assertThat(newBook.getNumPages()).isEqualTo(addedBook.getNumPages());
-    }
 
-    @Test
-    @Transactional
-    public void testAddBookAsAuthor() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("titleBook");
-        bookRequestModel.setAuthors(List.of("authorName"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("descriptionBook");
-        bookRequestModel.setNumPages(550);
-
-        Book newBook = new Book("titleBook", List.of("authorName"), List.of(Genre.SCIENCE),
-                "descriptionBook", 550);
-        bookService.addBook(bookRequestModel, tokenAuthor);
-        Book addedBook = bookRepository.findByTitle("titleBook").get(0);
-
-        assertThat(newBook.getTitle()).isEqualTo(addedBook.getTitle());
-        assertThat(newBook.getAuthors()).isEqualTo(addedBook.getAuthors());
-        assertThat(newBook.getGenres()).isEqualTo(addedBook.getGenres());
-        assertThat(newBook.getDescription()).isEqualTo(addedBook.getDescription());
-        assertThat(newBook.getNumPages()).isEqualTo(addedBook.getNumPages());
-    }
-
-    @Test
-    @Transactional
-    public void testAddBookAlreadyExisting() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("title");
-        bookRequestModel.setAuthors(List.of("Author1", "authorName"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("desc");
-        bookRequestModel.setNumPages(876);
-
-        assertThatThrownBy(() -> bookService.addBook(bookRequestModel, tokenAdmin))
+        assertThatThrownBy(() -> bookService.addBook(addBook))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("409 CONFLICT \"The book is already in the system!\"");
-    }
-
-    @Test
-    @Transactional
-    public void testAddBookAlmostAlreadyExisting() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("title");
-        bookRequestModel.setAuthors(List.of("Author1"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("desc");
-        bookRequestModel.setNumPages(876);
-
-        bookService.addBook(bookRequestModel, tokenAdmin);
-
-        Book added = (Book) bookRepository.findByTitle("title")
-                .stream().filter(b -> b.getAuthors().contains("Author1") && b.getAuthors().size() == 1).toArray()[0];
-        assertThat(added.getTitle()).isEqualTo(bookRequestModel.getTitle());
-        assertThat(new ArrayList<>(added.getAuthors())).isEqualTo(bookRequestModel.getAuthors());
-        assertThat(new ArrayList<>(added.getGenres())).isEqualTo(bookRequestModel.getGenres());
-        assertThat(added.getDescription()).isEqualTo(bookRequestModel.getDescription());
-        assertThat(added.getNumPages()).isEqualTo(bookRequestModel.getNumPages());
-    }
-
-    @Test
-    @Transactional
-    public void testAddBookNotAdmin() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("title");
-        bookRequestModel.setAuthors(List.of("Author1"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("desc");
-        bookRequestModel.setNumPages(876);
-
-        assertThatThrownBy(() -> bookService.addBook(bookRequestModel, tokenNonAdmin))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("401 UNAUTHORIZED \"Only admins or authors may add books to the system!\"");
-    }
-
-    @Test
-    @Transactional
-    public void testUpdateBookNotAdmin() {
-        Book updatedBook = new Book();
-        updatedBook.setId(bookId);
-        updatedBook.setTitle("title");
-        updatedBook.setAuthors(List.of("Author1"));
-        updatedBook.setGenres(List.of(Genre.SCIENCE));
-        updatedBook.setDescription("desc");
-        updatedBook.setNumPages(876);
-
-        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenNonAdmin))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("401 UNAUTHORIZED \"Only admins or authors may update books in the system!\"");
     }
 
     @Test
@@ -249,28 +156,7 @@ public class BookServiceTests {
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
-        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenAdmin))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("404 NOT_FOUND \"This book does not exist!\"");
-    }
-
-    @Test
-    @Transactional
-    public void testUpdateBookNotExistingAsAuthor() {
-        UUID randomUuid = UUID.randomUUID();
-        while (randomUuid.equals(bookId)) {
-            randomUuid = UUID.randomUUID();
-        }
-        UUID finalRandomUuid = randomUuid;
-        Book updatedBook = new Book();
-        updatedBook.setId(finalRandomUuid);
-        updatedBook.setTitle("title");
-        updatedBook.setAuthors(List.of("Author1"));
-        updatedBook.setGenres(List.of(Genre.HORROR));
-        updatedBook.setDescription("desc");
-        updatedBook.setNumPages(550);
-
-        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenAuthor))
+        assertThatThrownBy(() -> bookService.updateBook(updatedBook))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"The book does not exist!\"");
     }
@@ -285,7 +171,7 @@ public class BookServiceTests {
         updatedBook.setGenres(List.of(Genre.SCIENCE));
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
-        bookService.updateBook(updatedBook, tokenAdmin);
+        bookService.updateBook(updatedBook);
         Book updatedBookTest = bookRepository.findByTitle("title new").get(0);
 
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
@@ -307,7 +193,7 @@ public class BookServiceTests {
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
-        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenAdmin))
+        assertThatThrownBy(() -> bookService.updateBook(updatedBook))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("400 BAD_REQUEST \"The authors and genres cannot be null!\"");
     }
@@ -323,7 +209,7 @@ public class BookServiceTests {
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
-        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenAdmin))
+        assertThatThrownBy(() -> bookService.updateBook(updatedBook))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("400 BAD_REQUEST \"The authors and genres cannot be null!\"");
     }
@@ -338,7 +224,7 @@ public class BookServiceTests {
         updatedBook.setGenres(List.of(Genre.SCIENCE, Genre.ROMANCE, Genre.HORROR));
         updatedBook.setDescription("desc desc");
         updatedBook.setNumPages(5501);
-        bookService.updateBook(updatedBook, tokenAuthor);
+        bookService.updateBook(updatedBook);
         Book updatedBookTest = bookRepository.findByTitle("new title").get(0);
 
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
@@ -347,21 +233,6 @@ public class BookServiceTests {
         assertThat(updatedBookTest.getGenres().containsAll(updatedBook.getGenres())).isTrue();
         assertThat(updatedBookTest.getDescription()).isEqualTo(updatedBook.getDescription());
         assertThat(updatedBookTest.getNumPages()).isEqualTo(updatedBook.getNumPages());
-    }
-
-    @Test
-    @Transactional
-    public void testUpdateBookAsNotAuthorOfTheBook() {
-        Book updatedBook = new Book();
-        updatedBook.setId(book2Id);
-        updatedBook.setTitle("newTitle");
-        updatedBook.setAuthors(List.of("Author2"));
-        updatedBook.setGenres(List.of(Genre.SCIENCE));
-        updatedBook.setDescription("desc");
-        updatedBook.setNumPages(550);
-        assertThatThrownBy(() -> bookService.updateBook(updatedBook, tokenAuthor))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("401 UNAUTHORIZED \"Only the authors of the book may edit it!\"");
     }
 
     @Test
@@ -399,37 +270,5 @@ public class BookServiceTests {
         assertThatThrownBy(() -> bookService.deleteBook(finalRandomUuid.toString(), tokenAdmin))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"This book does not exist!\"");
-    }
-
-    @Test
-    @Transactional
-    public void authorNotPresentInTheDbAnymore() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("title new");
-        bookRequestModel.setAuthors(List.of("Author2", "Author3"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("description");
-        bookRequestModel.setNumPages(876);
-        AppUser author = userRepository.findByUsername(new Username("authorTest")).get();
-        userRepository.deleteById(author.getId());
-
-        assertThatThrownBy(() -> bookService.addBook(bookRequestModel, tokenAuthor))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("401 UNAUTHORIZED \"Only the authors of the book may add it to the system!\"");
-    }
-
-    @Test
-    @Transactional
-    public void authorNotPresentInAuthors() {
-        CreateBookRequestModel bookRequestModel = new CreateBookRequestModel();
-        bookRequestModel.setTitle("title new");
-        bookRequestModel.setAuthors(List.of("Author2", "Author3"));
-        bookRequestModel.setGenres(List.of(Genre.SCIENCE));
-        bookRequestModel.setDescription("description");
-        bookRequestModel.setNumPages(876);
-
-        assertThatThrownBy(() -> bookService.addBook(bookRequestModel, tokenAuthor))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("401 UNAUTHORIZED \"Only the authors of the book may add it to the system!\"");
     }
 }

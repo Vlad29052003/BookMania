@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.chainOfResponsibility.FilterClient;
 import nl.tudelft.sem.template.authentication.controllers.BookController;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 public class BookControllerTests {
     private transient BookService bookService;
+    private transient FilterClient filterClient;
     private transient BookController bookController;
     private transient Book book;
     private transient UUID bookId;
@@ -34,12 +36,18 @@ public class BookControllerTests {
     @BeforeEach
     public void setUp() {
         this.bookService = mock(BookService.class);
-        this.bookController = new BookController(bookService);
+        this.filterClient = mock(FilterClient.class);
+        this.bookController = new BookController(bookService, filterClient);
         this.book = new Book("title", List.of("author"), List.of(Genre.CRIME), "description", 155);
         this.bookId = UUID.randomUUID();
         createBookRequest = new CreateBookRequestModel();
+        createBookRequest.setTitle("title");
+        createBookRequest.setAuthors(List.of("Author"));
+        createBookRequest.setGenres(List.of(Genre.ROMANCE));
+        createBookRequest.setDescription("des");
+        createBookRequest.setNumPages(255);
         updatedBook = new Book();
-        this.token = "token";
+        this.token = "Bearer token";
     }
 
     @Test
@@ -59,8 +67,8 @@ public class BookControllerTests {
                 .isEqualTo(ResponseEntity.ok().build());
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
-                .when(bookService)
-                .addBook(any(), any());
+                .when(filterClient)
+                .handle(any(), any());
 
         assertThat(bookController.addBook(createBookRequest, token).getStatusCodeValue()).isEqualTo(404);
     }
@@ -71,8 +79,8 @@ public class BookControllerTests {
                 .isEqualTo(ResponseEntity.ok().build());
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
-                .when(bookService)
-                .updateBook(any(), any());
+                .when(filterClient)
+                .handle(any(), any());
         assertThat(bookController.updateBook(updatedBook, token).getStatusCodeValue()).isEqualTo(404);
     }
 

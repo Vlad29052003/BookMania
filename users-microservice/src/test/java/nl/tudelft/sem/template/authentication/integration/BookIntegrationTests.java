@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -170,7 +171,22 @@ public class BookIntegrationTests {
         UUID random = UUID.randomUUID();
         ResultActions resultActions = mockMvc.perform(get("/c/books/" + random)
                 .header("Authorization", tokenUser));
-        resultActions.andExpect(status().isNotFound());
+        resultActions.andExpect(status().isNotFound())
+                .andExpect(content().string("404 NOT_FOUND \"The book does not exist!\""));
+    }
+
+    @Test
+    public void testCreateBookUserNonExistent() throws Exception {
+        userRepository.deleteAll();
+
+        ResultActions resultActions = mockMvc.perform(post("/c/books/")
+                .header("Authorization", tokenUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book1Request)));
+
+        //only admins or authors of the book may add them
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string("User does not exist!"));
     }
 
     @Test
@@ -189,7 +205,8 @@ public class BookIntegrationTests {
                 .content(JsonUtil.serialize(book1Request)));
 
         //only admins or authors of the book may add them
-        resultActions2.andExpect(status().isUnauthorized());
+        resultActions2.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only the authors of the book may add it to the system!\""));
 
         ResultActions resultActions3 = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAuthor)
@@ -198,6 +215,15 @@ public class BookIntegrationTests {
 
         //authors of the book may add them
         resultActions3.andExpect(status().isOk());
+
+        ResultActions resultActions3conflict = mockMvc.perform(post("/c/books/")
+                .header("Authorization", tokenAuthor)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book3Request)));
+
+        //authors of the book may add them
+        resultActions3conflict.andExpect(status().isConflict())
+                .andExpect(content().string("409 CONFLICT \"The book is already in the system!\""));
 
         ResultActions resultActions4 = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAdmin)
@@ -277,7 +303,8 @@ public class BookIntegrationTests {
 
         ResultActions deleteBook1 = mockMvc.perform(delete("/c/books/" + id3)
                 .header("Authorization", tokenAuthor));
-        deleteBook1.andExpect(status().isUnauthorized());
+        deleteBook1.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only admins may delete books from the system!\""));
 
         ResultActions deleteBook2 = mockMvc.perform(delete("/c/books/" + id3)
                 .header("Authorization", tokenAdmin));
@@ -316,7 +343,29 @@ public class BookIntegrationTests {
         assertThat(bookRepository.findAll().isEmpty()).isTrue();
         AppUser updatedUser = userRepository.findByUsername(new Username("user")).get();
         assertThat(updatedUser.getFavouriteBook()).isNull();
+    }
 
+    @Test
+    @Transactional
+    public void testUpdateErrors() throws Exception {
+        ResultActions addBook1 = mockMvc.perform(put("/c/books/")
+                .header("Authorization", tokenAuthor)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book3Request)));
+
+        ResultActions updateBook1 = mockMvc.perform(put("/c/books/")
+                .header("Authorization", tokenUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book2)));
+        updateBook1.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only admins or authors may update books in the system!\""));
+
+        ResultActions updateBook2 = mockMvc.perform(put("/c/books/")
+                .header("Authorization", tokenAuthor)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book2)));
+        updateBook2.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only the authors of the book may edit it!\""));
 
     }
 }
