@@ -92,4 +92,9 @@ public class UserEntityTests {
         assertThat(user1.toString()).isNotEqualTo(user2.toString());
         assertThat(user1.toString()).isEqualTo(user1.toString());
     }
+
+    @Test
+    public void testEventCreated() {
+        assertThat(user1.getDomainEventsSize()).isEqualTo(1);
+    }
 }

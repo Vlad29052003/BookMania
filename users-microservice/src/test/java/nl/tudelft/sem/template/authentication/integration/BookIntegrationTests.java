@@ -191,57 +191,67 @@ public class BookIntegrationTests {
 
     @Test
     public void testCreate() throws Exception {
-        ResultActions resultActions = mockMvc.perform(post("/c/books/")
+        ResultActions regularUserAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenUser)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book1Request)));
 
         //only admins or authors of the book may add them
-        resultActions.andExpect(status().isUnauthorized());
+        regularUserAddsBook.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only admins or authors may add books to the system!\""));
 
-        ResultActions resultActions2 = mockMvc.perform(post("/c/books/")
+        ResultActions notAuthorOfBookAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAuthor)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book1Request)));
 
         //only admins or authors of the book may add them
-        resultActions2.andExpect(status().isUnauthorized())
+        notAuthorOfBookAddsBook.andExpect(status().isUnauthorized())
                 .andExpect(content().string("401 UNAUTHORIZED \"Only the authors of the book may add it to the system!\""));
 
-        ResultActions resultActions3 = mockMvc.perform(post("/c/books/")
+        ResultActions authorOfBookAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAuthor)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book3Request)));
 
         //authors of the book may add them
-        resultActions3.andExpect(status().isOk());
+        authorOfBookAddsBook.andExpect(status().isOk());
 
-        ResultActions resultActions3conflict = mockMvc.perform(post("/c/books/")
+        ResultActions bookAlreadyInSystem = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAuthor)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book3Request)));
 
         //authors of the book may add them
-        resultActions3conflict.andExpect(status().isConflict())
+        bookAlreadyInSystem.andExpect(status().isConflict())
                 .andExpect(content().string("409 CONFLICT \"The book is already in the system!\""));
 
-        ResultActions resultActions4 = mockMvc.perform(post("/c/books/")
+        ResultActions adminAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAdmin)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book1Request)));
 
         //admins may add books
-        resultActions4.andExpect(status().isOk());
+        adminAddsBook.andExpect(status().isOk());
 
         List<Book> books = bookRepository.findAll();
         assertThat(books.size()).isEqualTo(2);
         UUID id1 = books.get(1).getId();
 
-        ResultActions resultActions5 = mockMvc.perform(get("/c/books/" + id1)
+        book1Request.setAuthors(List.of("newAuthor1", "newAuthor2"));
+        ResultActions adminAddsBook2 = mockMvc.perform(post("/c/books/")
+                .header("Authorization", tokenAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book1Request)));
+
+        //admins may add books
+        adminAddsBook2.andExpect(status().isOk());
+
+        ResultActions getBook = mockMvc.perform(get("/c/books/" + id1)
                 .header("Authorization", tokenUser));
 
 
-        MvcResult getResult = resultActions5.andExpect(status().isOk()).andReturn();
+        MvcResult getResult = getBook.andExpect(status().isOk()).andReturn();
         Book bookResponse = JsonUtil.deserialize(getResult.getResponse().getContentAsString(),
                 Book.class);
 
@@ -251,6 +261,11 @@ public class BookIntegrationTests {
         assertThat(bookResponse.getGenres()).isEqualTo(book1.getGenres());
         assertThat(bookResponse.getDescription()).isEqualTo(book1.getDescription());
         assertThat(bookResponse.getNumPages()).isEqualTo(book1.getNumPages());
+    }
+
+    @Test
+    public void testAddErrors() {
+
     }
 
     @Test

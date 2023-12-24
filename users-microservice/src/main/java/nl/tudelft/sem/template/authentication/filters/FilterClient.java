@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.filters;
 
+import lombok.Getter;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
@@ -14,8 +15,11 @@ public class FilterClient {
     private final transient JwtService jwtService;
     private final transient UserRepository userRepository;
     private final transient BookService bookService;
+    @Getter
     private final transient CheckUserExistenceHandler checkUserExistenceHandler;
+    @Getter
     private final transient CheckAuthorityHandler checkAuthorityHandler;
+    @Getter
     private final transient CheckAuthorHandler checkAuthorHandler;
 
     private final transient AddBookStrategy addBookStrategy;
@@ -60,7 +64,7 @@ public class FilterClient {
     /**
      * Changes the strategy to editBookStrategy for all filters.
      */
-    public void setEditAddBookStrategy() {
+    public void setEditBookStrategy() {
         this.checkUserExistenceHandler.setStrategy(editBookStrategy);
         this.checkAuthorityHandler.setStrategy(editBookStrategy);
         this.checkAuthorHandler.setStrategy(editBookStrategy);

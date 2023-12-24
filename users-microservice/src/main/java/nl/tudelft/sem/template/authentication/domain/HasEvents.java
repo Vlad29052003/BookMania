@@ -27,4 +27,9 @@ public abstract class HasEvents {
     protected void clearEvents() {
         this.domainEvents.clear();
     }
+
+    // New method for testing purposes
+    public int getDomainEventsSize() {
+        return domainEvents.size();
+    }
 }

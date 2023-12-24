@@ -79,7 +79,7 @@ public class BookController {
     public ResponseEntity<?> updateBook(@RequestBody Book updatedBook,
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            filterClient.setEditAddBookStrategy();
+            filterClient.setEditBookStrategy();
             filterClient.handle(updatedBook, bearerToken.substring(7));
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
