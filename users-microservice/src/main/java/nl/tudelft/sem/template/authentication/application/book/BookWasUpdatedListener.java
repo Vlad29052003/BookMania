@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.application.book;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasCreatedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasDeletedEvent;
@@ -20,8 +21,9 @@ import java.net.http.HttpResponse;
 @Component
 public class BookWasUpdatedListener {
 
-    private static final String bookshelfUri = "http://localhost:8081/a/catalog";
-    private static final HttpClient client = HttpClient.newHttpClient();
+    private final String bookshelfUri = "http://localhost:8081/a/catalog";
+    private final HttpClient client = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     /**
      * Event handler for creating books.
@@ -34,12 +36,10 @@ public class BookWasUpdatedListener {
         // Handler code here
         Book book = event.getBook();
 
-
-
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(bookshelfUri))
-                    .PUT(HttpRequest.BodyPublishers.noBody())
+                    .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
             client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -61,18 +61,18 @@ public class BookWasUpdatedListener {
     public void onBookWasDeleted(BookWasDeletedEvent event) {
         Book book = event.getBook();
 
-        System.out.println("Book (" + book.getTitle() + ") was deleted.");
-
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(bookshelfUri + "?bookId=" + book.getId()))
-                    .PUT(HttpRequest.BodyPublishers.noBody())
+                    .uri(URI.create(bookshelfUri + "?bookId=" + book.getId().toString()))
+                    .DELETE()
                     .build();
 
             client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("Book (" + book.getTitle() + ") was deleted.");
     }
 
     /**
@@ -88,7 +88,7 @@ public class BookWasUpdatedListener {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(bookshelfUri))
-                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
             client.send(request, HttpResponse.BodyHandlers.ofString());
