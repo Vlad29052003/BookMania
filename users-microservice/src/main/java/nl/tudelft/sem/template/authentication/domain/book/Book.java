@@ -125,7 +125,7 @@ public class Book extends HasEvents {
         this.recordThat(new BookWasEditedEvent(this));
     }
 
-    public void recordBookWasDeleted() {
-        this.recordThat(new BookWasDeletedEvent(this));
+    public void recordBookWasDeleted(UUID userId) {
+        this.recordThat(new BookWasDeletedEvent(this, userId));
     }
 }

@@ -11,6 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
+import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -169,7 +170,15 @@ public class BookService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
 
-        optBook.get().recordBookWasDeleted();
+        Optional<AppUser> appUserOptional = userRepository
+                .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
+        if (appUserOptional.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        optBook.get().recordBookWasDeleted(
+                new TokenValidationResponse(appUserOptional.get().getId(),
+                        appUserOptional.get().getAuthority()).getId());
 
         userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
 

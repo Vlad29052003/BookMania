@@ -22,6 +22,7 @@ import java.net.http.HttpResponse;
 public class BookWasUpdatedListener {
 
     private final String bookshelfUri = "http://localhost:8081/a/catalog";
+    private final String reviewUri = "http://localhost:8081/b/book";
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -62,12 +63,19 @@ public class BookWasUpdatedListener {
         Book book = event.getBook();
 
         try {
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest requestBookshelf = HttpRequest.newBuilder()
                     .uri(URI.create(bookshelfUri + "?bookId=" + book.getId().toString()))
                     .DELETE()
                     .build();
 
-            client.send(request, HttpResponse.BodyHandlers.ofString());
+            client.send(requestBookshelf, HttpResponse.BodyHandlers.ofString());
+
+            HttpRequest requestReview = HttpRequest.newBuilder()
+                    .uri(URI.create(reviewUri + "/" + book.getId().toString() + "/" + event.getUserId().toString()))
+                    .DELETE()
+                    .build();
+
+            client.send(requestReview, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
