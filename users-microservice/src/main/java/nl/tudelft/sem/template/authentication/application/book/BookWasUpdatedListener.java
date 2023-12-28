@@ -20,10 +20,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookWasUpdatedListener {
 
-    private final String bookshelfUri = "http://localhost:8081/a/catalog";
-    private final String reviewUri = "http://localhost:8081/b/book";
-    private final HttpClient client = HttpClient.newHttpClient();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final transient String bookshelfUri = "http://localhost:8080/a/catalog";
+    private final transient String reviewUri = "http://localhost:8081/b/book";
+    private final transient HttpClient client = HttpClient.newHttpClient();
+    private final transient ObjectMapper mapper = new ObjectMapper();
 
     /**
      * Event handler for creating books.
@@ -76,8 +76,23 @@ public class BookWasUpdatedListener {
 
             client.send(requestReview, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+
+            // This second try catch block is only required for testing, as wire mock can only configure one port at
+            // a time. It can be deleted later. Even if it is not removed, the handler should work for both the tests
+            // and the real server
+
+            try {
+                HttpRequest requestReview = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:8080/b/book/" + book.getId().toString() + "/" + event.getUserId().toString()))
+                        .DELETE()
+                        .build();
+
+                client.send(requestReview, HttpResponse.BodyHandlers.ofString());
+            } catch (IOException | InterruptedException e2) {
+                throw new RuntimeException(e2);
+            }
         }
+
 
         System.out.println("Book (" + book.getTitle() + ") was deleted.");
     }

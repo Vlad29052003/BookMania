@@ -1,5 +1,9 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -8,6 +12,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,13 +30,14 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -64,6 +72,30 @@ public class BookIntegrationTests {
     private transient Book book3;
     private transient CreateBookRequestModel book1Request;
     private transient CreateBookRequestModel book3Request;
+    private static final String bookshelfPath = "/a/catalog";
+    private static final String reviewPath = "/b/book";
+    private static WireMockServer mockServer;
+
+    /**
+     * Initialises mock servers for book listeners.
+     */
+    @BeforeAll
+    public static void init() {
+        mockServer = new WireMockServer(
+                new WireMockConfiguration().port(8080)
+        );
+        mockServer.start();
+
+        configureFor("localhost", 8080);
+        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(reviewPath + "/"))
+                .willReturn(aResponse().withStatus(200)));
+    }
 
     /**
      * Sets up the testing environment.
@@ -317,5 +349,13 @@ public class BookIntegrationTests {
         assertThat(bookRepository.findAll().isEmpty()).isTrue();
         AppUser updatedUser = userRepository.findByUsername(new Username("user")).get();
         assertThat(updatedUser.getFavouriteBook()).isNull();
+    }
+
+    /**
+     * Set up for the testing environment after all tests.
+     */
+    @AfterAll
+    public static void afterEach() {
+        mockServer.stop();
     }
 }

@@ -1,8 +1,15 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +22,8 @@ import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,13 +52,35 @@ public class BookServiceTests {
     private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
-
     private transient Book book2;
-
     private transient UUID book2Id;
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
     private transient String tokenAuthor;
+    private static final String bookshelfPath = "/a/catalog";
+    private static final String reviewPath = "/b/book";
+    private static WireMockServer mockServer;
+
+    /**
+     * Initializes wire mock server.
+     */
+    @BeforeAll
+    public static void init() {
+        mockServer = new WireMockServer(
+                new WireMockConfiguration().port(8080)
+        );
+        mockServer.start();
+
+        configureFor("localhost", 8080);
+        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(reviewPath + "/"))
+                .willReturn(aResponse().withStatus(200)));
+    }
 
     /**
      * Sets up the testing environment.
@@ -431,5 +462,13 @@ public class BookServiceTests {
         assertThatThrownBy(() -> bookService.addBook(bookRequestModel, tokenAuthor))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("401 UNAUTHORIZED \"Only the authors of the book may add it to the system!\"");
+    }
+
+    /**
+     * Set up for the testing environment after all tests.
+     */
+    @AfterAll
+    public static void afterEach() {
+        mockServer.stop();
     }
 }

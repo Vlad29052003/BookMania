@@ -1,24 +1,5 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import nl.tudelft.sem.template.authentication.application.book.BookWasUpdatedListener;
-import nl.tudelft.sem.template.authentication.domain.user.*;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
@@ -36,6 +17,29 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import nl.tudelft.sem.template.authentication.application.book.BookWasUpdatedListener;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
+import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -52,7 +56,7 @@ public class BookWasUpdatedListenerTests {
     @Autowired
     private transient UserRepository userRepository;
 
-    private static WireMockServer bookshelfServer;
+    private static WireMockServer mockServer;
 
     private static ByteArrayOutputStream outputStreamCaptor;
 
@@ -62,14 +66,12 @@ public class BookWasUpdatedListenerTests {
     @BeforeAll
     static void init() {
 
-        bookshelfServer = new WireMockServer(
-                new WireMockConfiguration().port(8081)
+        mockServer = new WireMockServer(
+                new WireMockConfiguration().port(8080)
         );
-        bookshelfServer.start();
-        WireMock.configureFor("localhost", 8081);
+        mockServer.start();
 
-        stubFor(post(urlEqualTo(bookshelfPath)).willReturn(aResponse().withStatus(200)));
-
+        WireMock.configureFor("localhost", 8080);
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
@@ -101,6 +103,9 @@ public class BookWasUpdatedListenerTests {
     public void testPost() {
         Book book = new Book("title", null, null, "", 1);
         bookRepository.saveAndFlush(book);
+
+        stubFor(post(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
 
         bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book));
 
@@ -223,10 +228,10 @@ public class BookWasUpdatedListenerTests {
     }
 
     /**
-     * Set up for the testing environment after each test.
+     * Set up for the testing environment after all tests.
      */
     @AfterAll
     public static void afterEach() {
-        bookshelfServer.stop();
+        mockServer.stop();
     }
 }
