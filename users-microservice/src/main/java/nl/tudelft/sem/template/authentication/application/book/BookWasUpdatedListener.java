@@ -1,18 +1,17 @@
 package nl.tudelft.sem.template.authentication.application.book;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasCreatedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasDeletedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasEditedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 /**
  * This event listener is automatically called when a domain entity is saved
