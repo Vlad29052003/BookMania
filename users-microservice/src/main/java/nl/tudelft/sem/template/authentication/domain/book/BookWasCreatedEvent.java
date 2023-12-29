@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import java.util.Objects;
 import lombok.Getter;
 
 
@@ -13,5 +14,22 @@ public class BookWasCreatedEvent {
 
     public BookWasCreatedEvent(Book book) {
         this.book = book;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BookWasCreatedEvent that = (BookWasCreatedEvent) o;
+        return Objects.equals(book, that.book);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(book);
     }
 }

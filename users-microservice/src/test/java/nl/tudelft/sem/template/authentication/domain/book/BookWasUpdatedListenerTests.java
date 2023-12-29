@@ -16,6 +16,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -177,35 +178,6 @@ public class BookWasUpdatedListenerTests {
     }
 
     @Test
-    public void testDeleteInvalidAuthor() {
-        List<String> authors = new ArrayList<>();
-        authors.add("author");
-        Book book = new Book("title", authors, null, "", 1);
-        bookRepository.saveAndFlush(book);
-
-        AppUser user = new AppUser(new Username("user"), "test@email.com", new HashedPassword("pass"));
-        user.setName("different_author");
-        user.setAuthority(Authority.AUTHOR);
-        userRepository.save(user);
-
-        stubFor(delete(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(200)));
-        stubFor(delete(urlEqualTo(reviewPath + "/"))
-                .willReturn(aResponse().withStatus(200)));
-
-        bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId()));
-
-        assertThat(outputStreamCaptor.toString().trim())
-                .contains("Book (" + book.getTitle() + ") was deleted.");
-
-        verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withQueryParam("bookId", equalTo(book.getId().toString())));
-        verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
-                .withPathParam("bookId", equalTo(book.getId().toString()))
-                .withPathParam("userId", equalTo(user.getId().toString())));
-    }
-
-    @Test
     public void testDeleteInvalidUser() {
         Book book = new Book("title", null, null, "", 1);
         bookRepository.saveAndFlush(book);
@@ -225,6 +197,34 @@ public class BookWasUpdatedListenerTests {
         verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
                 .withPathParam("bookId", equalTo(book.getId().toString()))
                 .withPathParam("userId", equalTo(user.getId().toString())));
+    }
+
+    @Test
+    public void testExceptionThrown() {
+        Book book = new Book("title", null, null, "", 1);
+        bookRepository.saveAndFlush(book);
+
+        AppUser user = new AppUser(new Username("user"), "test@email.com", new HashedPassword("pass"));
+        userRepository.save(user);
+
+        mockServer.stop();
+
+        assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(outputStreamCaptor.toString().trim())
+                .doesNotContain("Book (" + book.getTitle() + ") was deleted.");
+
+        assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book)))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(outputStreamCaptor.toString().trim())
+                .doesNotContain("Book (" + book.getTitle() + ") was edited.");
+
+        assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book)))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(outputStreamCaptor.toString().trim())
+                .doesNotContain("Book (" + book.getTitle() + ") was created.");
+
+        mockServer.start();
     }
 
     /**

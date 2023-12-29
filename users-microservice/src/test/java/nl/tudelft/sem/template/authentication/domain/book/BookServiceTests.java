@@ -465,7 +465,7 @@ public class BookServiceTests {
     }
 
     /**
-     * Set up for the testing environment after all tests.
+     * Clean up for the testing environment after all tests.
      */
     @AfterAll
     public static void afterEach() {
