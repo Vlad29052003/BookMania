@@ -1,9 +1,8 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -32,14 +31,12 @@ class BookEventsTest {
         BookWasCreatedEvent bookWasCreatedEvent2 = new BookWasCreatedEvent(book2);
 
         assertNotEquals(bookWasCreatedEvent, bookWasCreatedEvent2);
-        assertNotEquals(null, bookWasCreatedEvent2);
-        assertNotEquals(bookWasCreatedEvent2, new Object());
-
-        assertEquals(book, bookWasCreatedEvent.getBook());
-        assertEquals(book, book);
-        assertTrue(book.equals(book));
+        assertThat(bookWasCreatedEvent).isNotEqualTo(new Object());
+        assertThat(bookWasCreatedEvent).isNotEqualTo(null);
 
         assertEquals(Objects.hash(book), bookWasCreatedEvent.hashCode());
+
+        assertThat(bookWasCreatedEvent).isEqualTo(bookWasCreatedEvent);
     }
 
     @Test
@@ -59,12 +56,10 @@ class BookEventsTest {
         BookWasEditedEvent bookEvent2 = new BookWasEditedEvent(book2);
 
         assertNotEquals(bookEvent, bookEvent2);
-        assertFalse(bookEvent.equals(null));
-        assertNotEquals(bookEvent, new Object());
+        assertThat(bookEvent).isNotEqualTo(new Object());
+        assertThat(bookEvent).isNotEqualTo(null);
 
-        assertEquals(book, bookEvent.getBook());
-        assertEquals(book, book);
-        assertTrue(book.equals(book));
+        assertThat(bookEvent).isEqualTo(bookEvent);
 
         assertEquals(Objects.hash(book), bookEvent.hashCode());
     }
@@ -92,13 +87,10 @@ class BookEventsTest {
         BookWasDeletedEvent bookEvent2 = new BookWasDeletedEvent(book, id2);
 
         assertNotEquals(bookEvent, bookEvent2);
-        assertNotEquals(null, bookEvent2);
-        assertNotEquals(bookEvent2, new Object());
+        assertThat(bookEvent).isNotEqualTo(new Object());
+        assertThat(bookEvent).isNotEqualTo(null);
 
-        assertEquals(book, bookEvent.getBook());
-        assertEquals(id, bookEvent.getUserId());
-        assertEquals(book, book);
-        assertTrue(book.equals(book));
+        assertThat(bookEvent).isEqualTo(bookEvent);
 
         assertEquals(Objects.hash(book, id), bookEvent.hashCode());
     }

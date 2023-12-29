@@ -10,6 +10,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +24,7 @@ import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +64,8 @@ public class BookServiceTests {
     private static final String reviewPath = "/b/book";
     private static WireMockServer mockServer;
 
+    private static ByteArrayOutputStream outputStreamCaptor;
+
     /**
      * Initializes wire mock server.
      */
@@ -80,6 +85,9 @@ public class BookServiceTests {
                 .willReturn(aResponse().withStatus(200)));
         stubFor(WireMock.delete(urlEqualTo(reviewPath))
                 .willReturn(aResponse().withStatus(200)));
+
+        outputStreamCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStreamCaptor));
     }
 
     /**
@@ -163,11 +171,15 @@ public class BookServiceTests {
         bookRequestModel.setGenres(List.of(Genre.SCIENCE));
         bookRequestModel.setDescription("description");
         bookRequestModel.setNumPages(876);
+        outputStreamCaptor.reset();
+        bookService.addBook(bookRequestModel, tokenAdmin);
+
+        Book addedBook = bookRepository.findByTitle("title new").get(0);
+        Assertions.assertThat(outputStreamCaptor.toString().trim())
+                .contains("Book (id: " + addedBook.getId() + ", title: " + addedBook.getTitle() + ") was created.");
+
         Book newBook = new Book("title new", List.of("Author2", "Author3"),
                 List.of(Genre.SCIENCE), "description", 876);
-        bookService.addBook(bookRequestModel, tokenAdmin);
-        Book addedBook = bookRepository.findByTitle("title new").get(0);
-
         assertThat(newBook.getTitle()).isEqualTo(addedBook.getTitle());
         assertThat(newBook.getAuthors()).isEqualTo(addedBook.getAuthors());
         assertThat(newBook.getGenres()).isEqualTo(addedBook.getGenres());
@@ -316,8 +328,12 @@ public class BookServiceTests {
         updatedBook.setGenres(List.of(Genre.SCIENCE));
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
+
+        outputStreamCaptor.reset();
         bookService.updateBook(updatedBook, tokenAdmin);
         Book updatedBookTest = bookRepository.findByTitle("title new").get(0);
+        Assertions.assertThat(outputStreamCaptor.toString().trim())
+                .contains("Book (id: " + updatedBook.getId() + ", title: " + updatedBook.getTitle() + ") was edited.");
 
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
         assertThat(updatedBookTest.getTitle()).isEqualTo(updatedBook.getTitle());

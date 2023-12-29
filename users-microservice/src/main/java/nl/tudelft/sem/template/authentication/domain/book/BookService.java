@@ -176,9 +176,9 @@ public class BookService {
             throw new IllegalArgumentException();
         }
 
-        optBook.get().recordBookWasDeleted(
-                new TokenValidationResponse(appUserOptional.get().getId(),
-                        appUserOptional.get().getAuthority()).getId());
+        Book book = optBook.get();
+
+        book.recordBookWasDeleted(appUserOptional.get().getId());
 
         userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
 
