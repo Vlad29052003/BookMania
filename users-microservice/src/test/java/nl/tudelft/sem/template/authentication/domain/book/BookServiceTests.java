@@ -74,11 +74,11 @@ public class BookServiceTests {
         configureFor("localhost", 8080);
         stubFor(WireMock.put(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+        stubFor(WireMock.post(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
         stubFor(WireMock.delete(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.delete(urlEqualTo(reviewPath + "/"))
+        stubFor(WireMock.delete(urlEqualTo(reviewPath))
                 .willReturn(aResponse().withStatus(200)));
     }
 

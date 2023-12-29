@@ -11,7 +11,9 @@ import nl.tudelft.sem.template.authentication.domain.book.BookWasCreatedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasDeletedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasEditedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * This event listener is automatically called when a domain entity is saved
@@ -30,6 +32,7 @@ public class BookWasUpdatedListener {
      *
      * @param event The event to react to
      * @throws RuntimeException in the case that the request is not sent correctly
+     * @throws ResponseStatusException if the request is not received as expected
      */
     @EventListener
     public void onBookWasCreated(BookWasCreatedEvent event) {
@@ -42,12 +45,15 @@ public class BookWasUpdatedListener {
                     .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
-            client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        System.out.println("Book (" + book.getTitle() + ") was created.");
+        System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
     }
 
@@ -56,6 +62,7 @@ public class BookWasUpdatedListener {
      *
      * @param event The event to react to
      * @throws RuntimeException in the case that the request is not sent correctly
+     * @throws ResponseStatusException if the request is not received as expected
      */
     @EventListener
     public void onBookWasDeleted(BookWasDeletedEvent event) {
@@ -63,18 +70,24 @@ public class BookWasUpdatedListener {
 
         try {
             HttpRequest requestBookshelf = HttpRequest.newBuilder()
-                    .uri(URI.create(bookshelfUri + "?bookId=" + book.getId().toString()))
+                    .uri(URI.create(bookshelfUri + "?bookId=" + book.getId()))
                     .DELETE()
                     .build();
 
-            client.send(requestBookshelf, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<?> response = client.send(requestBookshelf, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            }
 
             HttpRequest requestReview = HttpRequest.newBuilder()
                     .uri(URI.create(reviewUri + "/" + book.getId().toString() + "/" + event.getUserId().toString()))
                     .DELETE()
                     .build();
 
-            client.send(requestReview, HttpResponse.BodyHandlers.ofString());
+            response = client.send(requestReview, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            }
         } catch (IOException | InterruptedException e) {
 
             // This second try catch block is only required for testing, as wire mock can only configure one port at
@@ -87,14 +100,17 @@ public class BookWasUpdatedListener {
                         .DELETE()
                         .build();
 
-                client.send(requestReview, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<?> response = client.send(requestReview, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() != 200) {
+                    throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+                }
             } catch (IOException | InterruptedException e2) {
                 throw new RuntimeException(e2);
             }
         }
 
 
-        System.out.println("Book (" + book.getTitle() + ") was deleted.");
+        System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
     }
 
     /**
@@ -102,6 +118,7 @@ public class BookWasUpdatedListener {
      *
      * @param event The event to react to
      * @throws RuntimeException in the case that the request is not sent correctly
+     * @throws ResponseStatusException if the request is not received as expected
      */
     @EventListener
     public void onBookWasEdited(BookWasEditedEvent event) {
@@ -113,11 +130,14 @@ public class BookWasUpdatedListener {
                     .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
-            client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        System.out.println("Book (" + book.getTitle() + ") was edited.");
+        System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
     }
 }

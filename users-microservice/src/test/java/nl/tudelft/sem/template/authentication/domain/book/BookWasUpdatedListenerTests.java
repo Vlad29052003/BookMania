@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
@@ -17,14 +16,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 import nl.tudelft.sem.template.authentication.application.book.BookWasUpdatedListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -86,10 +84,37 @@ public class BookWasUpdatedListenerTests {
         stubFor(put(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
 
+        outputStreamCaptor.reset();
+
         bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book));
 
         assertThat(outputStreamCaptor.toString().trim())
-                .contains("Book (" + book.getTitle() + ") was created.");
+                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
+
+        verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
+                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
+                .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
+                .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
+    }
+
+    @Test
+    public void testPutException() {
+        Book book = new Book("title", null, null, "", 1);
+        bookRepository.saveAndFlush(book);
+
+        stubFor(put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(404)));
+
+        outputStreamCaptor.reset();
+
+        assertThrows(RuntimeException.class, () ->
+            bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book)));
+
+        assertThat(outputStreamCaptor.toString().trim())
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
         verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
                 .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
@@ -108,10 +133,37 @@ public class BookWasUpdatedListenerTests {
         stubFor(post(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
 
+        outputStreamCaptor.reset();
+
         bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book));
 
         assertThat(outputStreamCaptor.toString().trim())
-                .contains("Book (" + book.getTitle() + ") was edited.");
+                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
+
+        verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
+                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
+                .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
+                .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
+    }
+
+    @Test
+    public void testPostException() {
+        Book book = new Book("title", null, null, "", 1);
+        bookRepository.saveAndFlush(book);
+
+        stubFor(post(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(404)));
+
+        outputStreamCaptor.reset();
+
+        assertThrows(RuntimeException.class, () ->
+            bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book)));
+
+        assertThat(outputStreamCaptor.toString().trim())
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
 
         verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
                 .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
@@ -131,44 +183,17 @@ public class BookWasUpdatedListenerTests {
         user.setAuthority(Authority.ADMIN);
         userRepository.save(user);
 
-        stubFor(delete(urlEqualTo(bookshelfPath))
+        stubFor(delete(urlEqualTo(bookshelfPath + "?bookId=" + book.getId().toString()))
                 .willReturn(aResponse().withStatus(200)));
-        stubFor(delete(urlEqualTo(reviewPath + "/"))
+        stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + user.getId()))
                 .willReturn(aResponse().withStatus(200)));
+
+        outputStreamCaptor.reset();
 
         bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId()));
 
         assertThat(outputStreamCaptor.toString().trim())
-                .contains("Book (" + book.getTitle() + ") was deleted.");
-
-        verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withQueryParam("bookId", equalTo(book.getId().toString())));
-        verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
-                .withPathParam("bookId", equalTo(book.getId().toString()))
-                .withPathParam("userId", equalTo(user.getId().toString())));
-    }
-
-    @Test
-    public void testDeleteValidAuthor() {
-        List<String> authors = new ArrayList<>();
-        authors.add("author");
-        Book book = new Book("title", authors, null, "", 1);
-        bookRepository.saveAndFlush(book);
-
-        AppUser user = new AppUser(new Username("author"), "test@email.com", new HashedPassword("pass"));
-        user.setName("author");
-        user.setAuthority(Authority.AUTHOR);
-        userRepository.save(user);
-
-        stubFor(delete(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(200)));
-        stubFor(delete(urlEqualTo(reviewPath + "/"))
-                .willReturn(aResponse().withStatus(200)));
-
-        bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId()));
-
-        assertThat(outputStreamCaptor.toString().trim())
-                .contains("Book (" + book.getTitle() + ") was deleted.");
+                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
 
         verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
                 .withQueryParam("bookId", equalTo(book.getId().toString())));
@@ -188,12 +213,38 @@ public class BookWasUpdatedListenerTests {
 
         stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + user.getId()))
                 .willReturn(aResponse().withStatus(401)));
+        stubFor(delete(urlEqualTo(bookshelfPath + "?bookId=" + book.getId()))
+                .willReturn(aResponse().withStatus(200)));
 
-        bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId()));
+        outputStreamCaptor.reset();
+
+        assertThrows(RuntimeException.class, () ->
+                bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())));
 
         assertThat(outputStreamCaptor.toString().trim())
-                .contains("Book (" + book.getTitle() + ") was deleted.");
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
 
+        verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
+                .withQueryParam("bookId", equalTo(book.getId().toString())));
+        verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
+                .withPathParam("bookId", equalTo(book.getId().toString()))
+                .withPathParam("userId", equalTo(user.getId().toString())));
+
+        stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + user.getId()))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(bookshelfPath + "?bookId=" + book.getId()))
+                .willReturn(aResponse().withStatus(404)));
+
+        outputStreamCaptor.reset();
+
+        assertThrows(RuntimeException.class, () ->
+                bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())));
+
+        assertThat(outputStreamCaptor.toString().trim())
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
+
+        verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
+                .withQueryParam("bookId", equalTo(book.getId().toString())));
         verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
                 .withPathParam("bookId", equalTo(book.getId().toString()))
                 .withPathParam("userId", equalTo(user.getId().toString())));
@@ -209,20 +260,23 @@ public class BookWasUpdatedListenerTests {
 
         mockServer.stop();
 
+        outputStreamCaptor.reset();
         assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())))
                 .isInstanceOf(RuntimeException.class);
         assertThat(outputStreamCaptor.toString().trim())
-                .doesNotContain("Book (" + book.getTitle() + ") was deleted.");
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
 
+        outputStreamCaptor.reset();
         assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book)))
                 .isInstanceOf(RuntimeException.class);
         assertThat(outputStreamCaptor.toString().trim())
-                .doesNotContain("Book (" + book.getTitle() + ") was edited.");
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
 
+        outputStreamCaptor.reset();
         assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book)))
                 .isInstanceOf(RuntimeException.class);
         assertThat(outputStreamCaptor.toString().trim())
-                .doesNotContain("Book (" + book.getTitle() + ") was created.");
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
         mockServer.start();
     }
