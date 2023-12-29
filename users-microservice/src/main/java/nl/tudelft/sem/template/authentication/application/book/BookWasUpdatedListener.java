@@ -46,7 +46,7 @@ public class BookWasUpdatedListener {
                     .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
+            if (response.statusCode() != HttpStatus.OK.value()) {
                 throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
@@ -75,7 +75,7 @@ public class BookWasUpdatedListener {
                     .build();
 
             HttpResponse<?> response = client.send(requestBookshelf, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
+            if (response.statusCode() != HttpStatus.OK.value()) {
                 throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
 
@@ -85,7 +85,7 @@ public class BookWasUpdatedListener {
                     .build();
 
             response = client.send(requestReview, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
+            if (response.statusCode() != HttpStatus.OK.value()) {
                 throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
@@ -101,7 +101,7 @@ public class BookWasUpdatedListener {
                         .build();
 
                 HttpResponse<?> response = client.send(requestReview, HttpResponse.BodyHandlers.ofString());
-                if (response.statusCode() != 200) {
+                if (response.statusCode() != HttpStatus.OK.value()) {
                     throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
                 }
             } catch (IOException | InterruptedException e2) {
@@ -131,7 +131,7 @@ public class BookWasUpdatedListener {
                     .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
+            if (response.statusCode() != HttpStatus.OK.value()) {
                 throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {

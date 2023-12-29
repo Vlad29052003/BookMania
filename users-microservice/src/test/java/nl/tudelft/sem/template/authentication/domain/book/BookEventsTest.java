@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.book;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -24,16 +25,19 @@ class BookEventsTest {
         Book book2 = new Book("title2", null, null, "", 3);
         book2.setId(UUID.randomUUID());
 
-        while (book.getId().equals(book2.getId())) { book2.setId(UUID.randomUUID()); }
+        while (book.getId().equals(book2.getId())) {
+            book2.setId(UUID.randomUUID());
+        }
 
         BookWasCreatedEvent bookWasCreatedEvent2 = new BookWasCreatedEvent(book2);
 
         assertNotEquals(bookWasCreatedEvent, bookWasCreatedEvent2);
         assertNotEquals(null, bookWasCreatedEvent2);
-        assertNotEquals(new Object(), bookWasCreatedEvent2);
+        assertNotEquals(bookWasCreatedEvent2, new Object());
 
         assertEquals(book, bookWasCreatedEvent.getBook());
         assertEquals(book, book);
+        assertTrue(book.equals(book));
 
         assertEquals(Objects.hash(book), bookWasCreatedEvent.hashCode());
     }
@@ -48,7 +52,9 @@ class BookEventsTest {
         Book book2 = new Book("title2", null, null, "", 21);
         book2.setId(UUID.randomUUID());
 
-        while (book.getId().equals(book2.getId())) { book2.setId(UUID.randomUUID()); }
+        while (book.getId().equals(book2.getId())) {
+            book2.setId(UUID.randomUUID());
+        }
 
         BookWasEditedEvent bookEvent2 = new BookWasEditedEvent(book2);
 
@@ -58,6 +64,7 @@ class BookEventsTest {
 
         assertEquals(book, bookEvent.getBook());
         assertEquals(book, book);
+        assertTrue(book.equals(book));
 
         assertEquals(Objects.hash(book), bookEvent.hashCode());
     }
@@ -72,8 +79,13 @@ class BookEventsTest {
         book2.setId(UUID.randomUUID());
         UUID id2 = UUID.randomUUID();
 
-        while (id2.equals(id)) { id2 = UUID.randomUUID(); }
-        while (book.getId().equals(book2.getId())) { book2.setId(UUID.randomUUID()); }
+        while (id2.equals(id)) {
+            id2 = UUID.randomUUID();
+        }
+
+        while (book.getId().equals(book2.getId())) {
+            book2.setId(UUID.randomUUID());
+        }
 
         BookWasDeletedEvent bookEvent = new BookWasDeletedEvent(book, id);
 
@@ -81,11 +93,12 @@ class BookEventsTest {
 
         assertNotEquals(bookEvent, bookEvent2);
         assertNotEquals(null, bookEvent2);
-        assertNotEquals(new Object(), bookEvent2);
+        assertNotEquals(bookEvent2, new Object());
 
         assertEquals(book, bookEvent.getBook());
         assertEquals(id, bookEvent.getUserId());
         assertEquals(book, book);
+        assertTrue(book.equals(book));
 
         assertEquals(Objects.hash(book, id), bookEvent.hashCode());
     }
