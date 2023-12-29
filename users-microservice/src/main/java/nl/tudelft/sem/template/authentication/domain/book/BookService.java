@@ -5,12 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.domain.user.Username;
-import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,20 +16,17 @@ import org.springframework.web.server.ResponseStatusException;
 public class BookService {
     private final transient BookRepository bookRepository;
     private final transient UserRepository userRepository;
-    private final transient JwtService jwtService;
 
     /**
      * Creates a BookService service.
      *
      * @param bookRepository is the book repository
      * @param userRepository is the user repository
-     * @param jwtService     is the jwt service
      */
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository, JwtService jwtService) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.jwtService = jwtService;
     }
 
     /**
@@ -98,24 +90,16 @@ public class BookService {
      * Deletes a book from the overall collection.
      *
      * @param bookId      is the id of the book to be deleted.
-     * @param bearerToken is the jwt token of the user that made the request
      */
     @Transactional
-    public void deleteBook(String bookId, String bearerToken) {
-        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may delete books from the system!");
-        }
-        var optBook = bookRepository.findById(UUID.fromString(bookId));
+    public void deleteBook(UUID bookId) {
+        var optBook = bookRepository.findById(bookId);
         if (optBook.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
 
-        userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
+        userRepository.removeBookFromUsersFavorites(bookId);
 
-        bookRepository.deleteById(UUID.fromString(bookId));
-    }
-
-    private Authority getAuthority(String bearerToken) {
-        return jwtService.extractAuthorization(bearerToken.substring(7));
+        bookRepository.deleteById(bookId);
     }
 }

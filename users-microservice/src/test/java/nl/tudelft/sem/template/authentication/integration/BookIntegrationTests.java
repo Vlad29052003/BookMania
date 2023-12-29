@@ -53,15 +53,11 @@ public class BookIntegrationTests {
     private transient UserRepository userRepository;
     @Autowired
     private transient BookRepository bookRepository;
-    private transient Username adminUsername;
-    private transient Username authorUsername;
-    private transient Username userUsername;
     private transient String tokenAdmin;
     private transient String tokenAuthor;
     private transient String tokenUser;
     private transient Book book1;
     private transient Book book2;
-    private transient Book book3;
     private transient CreateBookRequestModel book1Request;
     private transient CreateBookRequestModel book3Request;
 
@@ -72,10 +68,7 @@ public class BookIntegrationTests {
      */
     @BeforeEach
     public void setUp() throws Exception {
-        adminUsername = new Username("admin");
-        authorUsername = new Username("author");
-        userUsername = new Username("user");
-
+        Username adminUsername = new Username("admin");
         String adminEmail = "admin@email.com";
         String password = "Pass@123";
         RegistrationRequestModel adminRegistrationRequest = new RegistrationRequestModel();
@@ -86,6 +79,7 @@ public class BookIntegrationTests {
         adminAuthenticationRequest.setUsername(adminUsername.toString());
         adminAuthenticationRequest.setPassword(password);
 
+        Username authorUsername = new Username("author");
         String authorEmail = "author@email.com";
         RegistrationRequestModel authorRegistrationRequest = new RegistrationRequestModel();
         authorRegistrationRequest.setUsername(authorUsername.toString());
@@ -95,6 +89,7 @@ public class BookIntegrationTests {
         authorAuthenticationRequest.setUsername(authorUsername.toString());
         authorAuthenticationRequest.setPassword(password);
 
+        Username userUsername = new Username("user");
         String userEmail = "user@email.com";
         RegistrationRequestModel userRegistrationRequest = new RegistrationRequestModel();
         userRegistrationRequest.setUsername(userUsername.toString());
@@ -159,7 +154,7 @@ public class BookIntegrationTests {
                 List.of(Genre.CRIME, Genre.DRAMA), "description1", 246);
         this.book2 = new Book("book2", List.of("Author6"),
                 List.of(Genre.SCIENCE), "description2", 87);
-        this.book3 = new Book("book2", List.of("author"),
+        Book book3 = new Book("book2", List.of("author"),
                 List.of(Genre.POETRY, Genre.ROMANCE, Genre.BIOGRAPHY), "description3", 784);
 
         this.book1Request = new CreateBookRequestModel(book1);

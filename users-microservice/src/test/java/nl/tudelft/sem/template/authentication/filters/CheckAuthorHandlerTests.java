@@ -18,30 +18,28 @@ import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
-import nl.tudelft.sem.template.authentication.strategy.Strategy;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
+import nl.tudelft.sem.template.authentication.strategies.Strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 public class CheckAuthorHandlerTests {
-    private transient JwtService jwtService;
-    private transient UserRepository userRepository;
     private transient CheckAuthorHandler checkAuthorHandler;
     private transient Handler next;
     private transient Strategy strategy;
     private transient AppUser user;
-    private transient Username username;
     private transient Book book;
-    private transient String token;
+    private transient FilterBookRequestModel filterBookRequestModel;
 
     /**
      * Sets up the testing environment.
      */
     @BeforeEach
     public void setUp() {
-        this.jwtService = mock(JwtService.class);
-        this.userRepository = mock(UserRepository.class);
+        JwtService jwtService = mock(JwtService.class);
+        UserRepository userRepository = mock(UserRepository.class);
         this.next = mock(Handler.class);
         this.strategy = mock(Strategy.class);
         this.checkAuthorHandler = new CheckAuthorHandler(jwtService, userRepository);
@@ -49,7 +47,7 @@ public class CheckAuthorHandlerTests {
         checkAuthorHandler.setStrategy(strategy);
         when(strategy.getUnauthorizedErrorMessage()).thenReturn("testMessage");
 
-        this.username = new Username("user");
+        Username username = new Username("user");
         this.user = new AppUser(username, "email@email.com", new HashedPassword("hash"));
         this.user.setName("author");
 
@@ -57,8 +55,7 @@ public class CheckAuthorHandlerTests {
         this.book.setAuthors(List.of("author1", "author"));
         this.book.setId(UUID.randomUUID());
 
-        this.token = "token";
-
+        this.filterBookRequestModel = new FilterBookRequestModel(book, "bearer token");
 
         when(jwtService.extractUsername(any())).thenReturn(username.toString());
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
@@ -69,19 +66,19 @@ public class CheckAuthorHandlerTests {
     public void testAdmin() {
         user.setAuthority(Authority.ADMIN);
         book.setAuthors(List.of("a"));
-        checkAuthorHandler.filter(book, token);
+        checkAuthorHandler.filter(filterBookRequestModel);
 
         verify(strategy, times(1)).passToService(book);
-        verify(next, times(0)).filter(book, token);
+        verify(next, times(0)).filter(filterBookRequestModel);
     }
 
     @Test
     public void testAuthor() {
         user.setAuthority(Authority.AUTHOR);
-        checkAuthorHandler.filter(book, token);
+        checkAuthorHandler.filter(filterBookRequestModel);
 
         verify(strategy, times(1)).passToService(book);
-        verify(next, times(0)).filter(book, token);
+        verify(next, times(0)).filter(filterBookRequestModel);
     }
 
     @Test
@@ -89,7 +86,7 @@ public class CheckAuthorHandlerTests {
         user.setAuthority(Authority.AUTHOR);
         book.setAuthors(List.of("other author"));
 
-        assertThatThrownBy(() -> checkAuthorHandler.filter(book, token))
+        assertThatThrownBy(() -> checkAuthorHandler.filter(filterBookRequestModel))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("401 UNAUTHORIZED")
                 .satisfies(ex -> {
@@ -98,6 +95,6 @@ public class CheckAuthorHandlerTests {
                 });
 
         verify(strategy, times(0)).passToService(book);
-        verify(next, times(0)).filter(any(), any());
+        verify(next, times(0)).filter(any());
     }
 }

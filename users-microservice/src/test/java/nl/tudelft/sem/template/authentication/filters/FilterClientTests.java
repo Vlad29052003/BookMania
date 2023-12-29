@@ -2,8 +2,8 @@ package nl.tudelft.sem.template.authentication.filters;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import nl.tudelft.sem.template.authentication.strategy.AddBookStrategy;
-import nl.tudelft.sem.template.authentication.strategy.EditBookStrategy;
+import nl.tudelft.sem.template.authentication.strategies.AddBookStrategy;
+import nl.tudelft.sem.template.authentication.strategies.EditBookStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

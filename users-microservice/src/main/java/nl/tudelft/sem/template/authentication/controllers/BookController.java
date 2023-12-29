@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.filters.FilterClient;
@@ -59,7 +60,7 @@ public class BookController {
         try {
             filterClient.setAddBookStrategy();
             Book newBook = new Book(createBookRequestModel);
-            filterClient.handle(newBook, bearerToken.substring(7));
+            filterClient.handle(newBook, bearerToken);
 
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
@@ -80,7 +81,7 @@ public class BookController {
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
             filterClient.setEditBookStrategy();
-            filterClient.handle(updatedBook, bearerToken.substring(7));
+            filterClient.handle(updatedBook, bearerToken);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
@@ -99,7 +100,10 @@ public class BookController {
     public ResponseEntity<?> deleteBook(@PathVariable String bookId,
                                         @RequestHeader(name = AUTHORIZATION) String bearerToken) {
         try {
-            bookService.deleteBook(bookId, bearerToken);
+            filterClient.setDeleteBookStrategy();
+            Book deletedBook = new Book();
+            deletedBook.setId(UUID.fromString(bookId));
+            filterClient.handle(deletedBook, bearerToken);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

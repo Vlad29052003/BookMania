@@ -90,8 +90,8 @@ public class BookControllerTests {
                 .isEqualTo(ResponseEntity.ok().build());
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
-                .when(bookService)
-                .deleteBook(any(), any());
+                .when(filterClient)
+                .handle(any(), any());
         assertThat(bookController.deleteBook(bookId.toString(), token).getStatusCodeValue()).isEqualTo(404);
     }
 }

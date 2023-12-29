@@ -5,16 +5,15 @@ import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.strategy.AddBookStrategy;
-import nl.tudelft.sem.template.authentication.strategy.EditBookStrategy;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
+import nl.tudelft.sem.template.authentication.strategies.AddBookStrategy;
+import nl.tudelft.sem.template.authentication.strategies.DeleteBookStrategy;
+import nl.tudelft.sem.template.authentication.strategies.EditBookStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FilterClient {
-    private final transient JwtService jwtService;
-    private final transient UserRepository userRepository;
-    private final transient BookService bookService;
     @Getter
     private final transient CheckUserExistenceHandler checkUserExistenceHandler;
     @Getter
@@ -24,6 +23,7 @@ public class FilterClient {
 
     private final transient AddBookStrategy addBookStrategy;
     private final transient EditBookStrategy editBookStrategy;
+    private final transient DeleteBookStrategy deleteBookStrategy;
 
     /**
      * Creates a new FilterClient object.
@@ -34,9 +34,6 @@ public class FilterClient {
      */
     @Autowired
     public FilterClient(JwtService jwtService, UserRepository userRepository, BookService bookService) {
-        this.jwtService = jwtService;
-        this.userRepository = userRepository;
-        this.bookService = bookService;
 
         this.checkUserExistenceHandler = new CheckUserExistenceHandler(jwtService, userRepository);
         this.checkAuthorityHandler = new CheckAuthorityHandler(jwtService);
@@ -46,10 +43,12 @@ public class FilterClient {
 
         this.addBookStrategy = new AddBookStrategy(bookService);
         this.editBookStrategy = new EditBookStrategy(bookService);
+        this.deleteBookStrategy = new DeleteBookStrategy(bookService);
     }
 
     public void handle(Book book, String bearerToken) {
-        checkUserExistenceHandler.filter(book, bearerToken);
+        FilterBookRequestModel filterBookRequestModel = new FilterBookRequestModel(book, bearerToken);
+        checkUserExistenceHandler.filter(filterBookRequestModel);
     }
 
     /**
@@ -68,5 +67,14 @@ public class FilterClient {
         this.checkUserExistenceHandler.setStrategy(editBookStrategy);
         this.checkAuthorityHandler.setStrategy(editBookStrategy);
         this.checkAuthorHandler.setStrategy(editBookStrategy);
+    }
+
+    /**
+     * Changes the strategy to editBookStrategy for all filters.
+     */
+    public void setDeleteBookStrategy() {
+        this.checkUserExistenceHandler.setStrategy(deleteBookStrategy);
+        this.checkAuthorityHandler.setStrategy(deleteBookStrategy);
+        this.checkAuthorHandler.setStrategy(deleteBookStrategy);
     }
 }

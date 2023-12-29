@@ -1,11 +1,11 @@
 package nl.tudelft.sem.template.authentication.filters;
 
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,14 +26,15 @@ public class CheckAuthorHandler extends AbstractHandler {
     }
 
     @Override
-    public void filter(Book book, String bearerToken) {
-        AppUser appUser = userRepository.findByUsername(new Username(jwtService.extractUsername(bearerToken))).get();
+    public void filter(FilterBookRequestModel filterBookRequestModel) {
+        AppUser appUser = userRepository
+                .findByUsername(new Username(jwtService.extractUsername(filterBookRequestModel.getBearerToken()))).get();
         boolean isAuthorOfBook = appUser.getAuthority().equals(Authority.ADMIN)
-                || book.getAuthors().contains(appUser.getName());
+                || filterBookRequestModel.getBook().getAuthors().contains(appUser.getName());
         if (!isAuthorOfBook) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, super.getStrategy().getNotAuthorErrorMessage());
         } else {
-            super.getStrategy().passToService(book);
+            super.getStrategy().passToService(filterBookRequestModel.getBook());
         }
     }
 }

@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.authentication.filters;
 
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,10 +20,10 @@ public class CheckAuthorityHandler extends AbstractHandler {
     }
 
     @Override
-    public void filter(Book book, String bearerToken) {
-        Authority authority = jwtService.extractAuthorization(bearerToken);
-        if (authority.equals(Authority.AUTHOR) || authority.equals(Authority.ADMIN)) {
-            super.getHandler().filter(book, bearerToken);
+    public void filter(FilterBookRequestModel filterBookRequestModel) {
+        Authority authority = jwtService.extractAuthorization(filterBookRequestModel.getBearerToken());
+        if (this.getStrategy().getAllowedAuthorities().contains(authority)) {
+            super.getHandler().filter(filterBookRequestModel);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, super.getStrategy().getUnauthorizedErrorMessage());
         }

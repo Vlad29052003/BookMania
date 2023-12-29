@@ -6,13 +6,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
-import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
-import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,16 +33,9 @@ public class BookServiceTests {
     @Autowired
     private transient BookService bookService;
     @Autowired
-    private transient AuthenticationService authenticationService;
-    @Autowired
     private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
-    private transient Book book2;
-    private transient UUID book2Id;
-    private transient String tokenAdmin;
-    private transient String tokenNonAdmin;
-    private transient String tokenAuthor;
 
     /**
      * Sets up the testing environment.
@@ -57,49 +47,9 @@ public class BookServiceTests {
         bookRepository.saveAndFlush(book);
         bookId = bookRepository.findByTitle("title").get(0).getId();
 
-        this.book2 = new Book("title2", List.of("Author2"),
+        Book book2 = new Book("title2", List.of("Author2"),
                 List.of(Genre.CRIME), "testDescription", 550);
         bookRepository.saveAndFlush(book2);
-        book2Id = bookRepository.findByTitle("title2").get(0).getId();
-
-
-        RegistrationRequestModel registrationRequestModel = new RegistrationRequestModel();
-        registrationRequestModel.setUsername("admin");
-        registrationRequestModel.setEmail("email@gmail.com");
-        registrationRequestModel.setPassword("Password123!");
-
-        AuthenticationRequestModel authenticationRequestModel = new AuthenticationRequestModel();
-        authenticationRequestModel.setUsername("admin");
-        authenticationRequestModel.setPassword("Password123!");
-
-        RegistrationRequestModel registrationRequestModelAuthor = new RegistrationRequestModel();
-        registrationRequestModelAuthor.setUsername("authorTest");
-        registrationRequestModelAuthor.setEmail("authorEmail@gmail.com");
-        registrationRequestModelAuthor.setPassword("Password123!");
-
-        AuthenticationRequestModel authenticationRequestModelAuthor = new AuthenticationRequestModel();
-        authenticationRequestModelAuthor.setUsername("authorTest");
-        authenticationRequestModelAuthor.setPassword("Password123!");
-
-        authenticationService.registerUser(registrationRequestModel);
-        AppUser admin = userRepository.findByUsername(new Username("admin")).orElseThrow();
-        admin.setAuthority(Authority.ADMIN);
-        userRepository.saveAndFlush(admin);
-        tokenAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
-
-        registrationRequestModel.setUsername("user");
-        registrationRequestModel.setEmail("user_email@gmail.com");
-        authenticationRequestModel.setUsername("user");
-        authenticationService.registerUser(registrationRequestModel);
-        tokenNonAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
-
-        authenticationService.registerUser(registrationRequestModelAuthor);
-        AppUser author = userRepository.findByUsername(new Username("authorTest")).orElseThrow();
-        author.setAuthority(Authority.AUTHOR);
-        userRepository.saveAndFlush(author);
-        tokenAuthor = "Bearer " + authenticationService.authenticateUser(authenticationRequestModelAuthor).getToken();
-
-        author.setName("authorName");
     }
 
     @Test
@@ -238,25 +188,21 @@ public class BookServiceTests {
     @Test
     @Transactional
     public void testDeleteBook() {
-        bookService.deleteBook(bookId.toString(), tokenAdmin);
+        bookService.deleteBook(bookId);
         assertThat(bookRepository.findById(bookId)).isEmpty();
     }
 
     @Test
     @Transactional
     public void testDeleteBookWhileUserHasItAsFavorite() {
-        userService.updateFavouriteBook(new Username("user"), bookId.toString());
-        bookService.deleteBook(bookId.toString(), tokenAdmin);
-        assertThat(bookRepository.findById(bookId)).isEmpty();
-        assertThat(userRepository.findByUsername(new Username("user"))).isPresent();
-    }
+        Username username = new Username("user");
+        AppUser user = new AppUser(username, "test_emal@mail.com", new HashedPassword("hash"));
+        userRepository.saveAndFlush(user);
 
-    @Test
-    @Transactional
-    public void testDeleteBookNonAdmin() {
-        assertThatThrownBy(() -> bookService.deleteBook(bookId.toString(), tokenNonAdmin))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessage("401 UNAUTHORIZED \"Only admins may delete books from the system!\"");
+        userService.updateFavouriteBook(username, bookId.toString());
+        assertThat(userRepository.findByUsername(username).get().getFavouriteBook().getId()).isEqualTo(bookId);
+        bookService.deleteBook(bookId);
+        assertThat(bookRepository.findById(bookId)).isEmpty();
     }
 
     @Test
@@ -267,7 +213,7 @@ public class BookServiceTests {
             randomUuid = UUID.randomUUID();
         }
         UUID finalRandomUuid = randomUuid;
-        assertThatThrownBy(() -> bookService.deleteBook(finalRandomUuid.toString(), tokenAdmin))
+        assertThatThrownBy(() -> bookService.deleteBook(finalRandomUuid))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"This book does not exist!\"");
     }

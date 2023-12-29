@@ -15,7 +15,8 @@ import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
-import nl.tudelft.sem.template.authentication.strategy.Strategy;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
+import nl.tudelft.sem.template.authentication.strategies.Strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,8 @@ public class CheckUserExistenceHandlerTests {
     private transient UserRepository userRepository;
     private transient CheckUserExistenceHandler checkUserExistenceHandler;
     private transient Handler next;
-    private transient Strategy strategy;
+    private transient Username username;
+    private transient FilterBookRequestModel filterBookRequestModel;
 
     /**
      * Sets up the testing environment.
@@ -36,35 +38,33 @@ public class CheckUserExistenceHandlerTests {
         this.jwtService = mock(JwtService.class);
         this.userRepository = mock(UserRepository.class);
         this.next = mock(Handler.class);
-        this.strategy = mock(Strategy.class);
+        Strategy strategy = mock(Strategy.class);
         this.checkUserExistenceHandler = new CheckUserExistenceHandler(jwtService, userRepository);
         checkUserExistenceHandler.setNext(next);
         checkUserExistenceHandler.setStrategy(strategy);
         when(strategy.getUnauthorizedErrorMessage()).thenReturn("testMessage");
+
+        this.username = new Username("user");
+
+        Book book = new Book();
+        book.setId(UUID.randomUUID());
+        this.filterBookRequestModel = new FilterBookRequestModel(book, "bearer token");
     }
 
 
     @Test
     public void testExists() {
-        Book book = new Book();
-        book.setId(UUID.randomUUID());
-        String token = "token";
-        String username = "user";
-        when(jwtService.extractUsername(any())).thenReturn(username);
-        when(userRepository.findByUsername(new Username(username))).thenReturn(Optional.of(new AppUser()));
-        checkUserExistenceHandler.filter(book, token);
-        verify(next, times(1)).filter(book, token);
+        when(jwtService.extractUsername(any())).thenReturn(username.toString());
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(new AppUser()));
+        checkUserExistenceHandler.filter(filterBookRequestModel);
+        verify(next, times(1)).filter(filterBookRequestModel);
     }
 
     @Test
     public void testInexistent() {
-        Book book = new Book();
-        book.setId(UUID.randomUUID());
-        String token = "token";
-        String username = "user";
-        when(jwtService.extractUsername(any())).thenReturn(username);
-        when(userRepository.findByUsername(new Username(username))).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> checkUserExistenceHandler.filter(book, token))
+        when(jwtService.extractUsername(any())).thenReturn(username.toString());
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> checkUserExistenceHandler.filter(filterBookRequestModel))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("401 UNAUTHORIZED \"User does not exist!\"")
                 .satisfies(ex -> {
@@ -72,6 +72,6 @@ public class CheckUserExistenceHandlerTests {
                             .isEqualTo(HttpStatus.UNAUTHORIZED);
                 });
 
-        verify(next, times(0)).filter(any(), any());
+        verify(next, times(0)).filter(any());
     }
 }

@@ -1,10 +1,15 @@
-package nl.tudelft.sem.template.authentication.strategy;
+package nl.tudelft.sem.template.authentication.strategies;
 
+import java.util.List;
+import lombok.Getter;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
 
 public class EditBookStrategy implements Strategy {
     private final transient BookService bookService;
+    @Getter
+    private final transient List<Authority> allowedAuthorities = List.of(Authority.ADMIN, Authority.AUTHOR);
 
     public EditBookStrategy(BookService bookService) {
         this.bookService = bookService;

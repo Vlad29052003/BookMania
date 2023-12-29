@@ -8,11 +8,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
-import nl.tudelft.sem.template.authentication.strategy.Strategy;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
+import nl.tudelft.sem.template.authentication.strategies.Strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ public class CheckAuthorityHandlerTests {
     private transient JwtService jwtService;
     private transient CheckAuthorityHandler checkAuthorityHandler;
     private transient Handler next;
+    private transient FilterBookRequestModel filterBookRequestModel;
 
     /**
      * Sets up the testing environment.
@@ -35,35 +38,31 @@ public class CheckAuthorityHandlerTests {
         checkAuthorityHandler.setNext(next);
         checkAuthorityHandler.setStrategy(strategy);
         when(strategy.getUnauthorizedErrorMessage()).thenReturn("testMessage");
+        when(strategy.getAllowedAuthorities()).thenReturn(List.of(Authority.AUTHOR, Authority.ADMIN));
+
+        Book book = new Book();
+        book.setId(UUID.randomUUID());
+        this.filterBookRequestModel = new FilterBookRequestModel(book, "bearer token");
     }
 
     @Test
     public void testAdmin() {
-        Book book = new Book();
-        book.setId(UUID.randomUUID());
-        String token = "token";
         when(jwtService.extractAuthorization(any())).thenReturn(Authority.ADMIN);
-        checkAuthorityHandler.filter(book, token);
-        verify(next, times(1)).filter(book, token);
+        checkAuthorityHandler.filter(filterBookRequestModel);
+        verify(next, times(1)).filter(filterBookRequestModel);
     }
 
     @Test
     public void testAuthor() {
-        Book book = new Book();
-        book.setId(UUID.randomUUID());
-        String token = "token";
         when(jwtService.extractAuthorization(any())).thenReturn(Authority.AUTHOR);
-        checkAuthorityHandler.filter(book, token);
-        verify(next, times(1)).filter(book, token);
+        checkAuthorityHandler.filter(filterBookRequestModel);
+        verify(next, times(1)).filter(filterBookRequestModel);
     }
 
     @Test
     public void testRegularUser() {
-        Book book = new Book();
-        book.setId(UUID.randomUUID());
-        String token = "token";
         when(jwtService.extractAuthorization(any())).thenReturn(Authority.REGULAR_USER);
-        assertThatThrownBy(() -> checkAuthorityHandler.filter(book, token))
+        assertThatThrownBy(() -> checkAuthorityHandler.filter(filterBookRequestModel))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("401 UNAUTHORIZED \"testMessage\"")
                 .satisfies(ex -> {
@@ -71,6 +70,6 @@ public class CheckAuthorityHandlerTests {
                             .isEqualTo(HttpStatus.UNAUTHORIZED);
                 });
 
-        verify(next, times(0)).filter(any(), any());
+        verify(next, times(0)).filter(any());
     }
 }

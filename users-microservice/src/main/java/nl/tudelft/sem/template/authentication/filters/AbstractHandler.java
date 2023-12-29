@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.authentication.filters;
 
 import lombok.Setter;
-import nl.tudelft.sem.template.authentication.domain.book.Book;
-import nl.tudelft.sem.template.authentication.strategy.Strategy;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
+import nl.tudelft.sem.template.authentication.strategies.Strategy;
 
 abstract class AbstractHandler implements Handler {
     private transient Handler nextHandler;
@@ -15,7 +15,7 @@ abstract class AbstractHandler implements Handler {
     }
 
     @Override
-    public abstract void filter(Book book, String bearerToken);
+    public abstract void filter(FilterBookRequestModel filterBookRequestModel);
 
     protected Handler getHandler() {
         return this.nextHandler;

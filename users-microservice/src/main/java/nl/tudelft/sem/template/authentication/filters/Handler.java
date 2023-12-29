@@ -1,10 +1,9 @@
 package nl.tudelft.sem.template.authentication.filters;
 
-import nl.tudelft.sem.template.authentication.domain.book.Book;
-import nl.tudelft.sem.template.authentication.strategy.Strategy;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 
 public interface Handler {
     void setNext(Handler handler);
 
-    void filter(Book book, String bearerToken);
+    void filter(FilterBookRequestModel filterBookRequestModel);
 }
