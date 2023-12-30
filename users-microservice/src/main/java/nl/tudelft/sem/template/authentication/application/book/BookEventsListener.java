@@ -20,10 +20,11 @@ import org.springframework.web.server.ResponseStatusException;
  * which concerns books.
  */
 @Component
-public class BookWasUpdatedListener {
+public class BookEventsListener {
 
-    private final transient String bookshelfUri = "http://localhost:8080/a/catalog";
-    private final transient String reviewUri = "http://localhost:8081/b/book";
+    // Have everything on one port for now, since nothing on port 8080/8082 exist for now.
+    public static String BOOKSHELF_URI = "http://localhost:8081/a/catalog";
+    public static String REVIEW_URI = "http://localhost:8081/b/book";
     private final transient HttpClient client = HttpClient.newHttpClient();
     private final transient ObjectMapper mapper = new ObjectMapper();
 
@@ -41,7 +42,7 @@ public class BookWasUpdatedListener {
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(bookshelfUri))
+                    .uri(URI.create(BOOKSHELF_URI))
                     .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
@@ -51,6 +52,13 @@ public class BookWasUpdatedListener {
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (ResponseStatusException rse) {
+            // Since we do not have the other microservices locally yet, the http client will always throw an
+            // unauthorized exception. Thus, we will filter it out for now.
+
+            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+                throw new ResponseStatusException(rse.getStatus());
+            }
         }
 
         System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
@@ -70,7 +78,7 @@ public class BookWasUpdatedListener {
 
         try {
             HttpRequest requestBookshelf = HttpRequest.newBuilder()
-                    .uri(URI.create(bookshelfUri + "?bookId=" + book.getId()))
+                    .uri(URI.create(BOOKSHELF_URI + "?bookId=" + book.getId()))
                     .DELETE()
                     .build();
 
@@ -80,7 +88,7 @@ public class BookWasUpdatedListener {
             }
 
             HttpRequest requestReview = HttpRequest.newBuilder()
-                    .uri(URI.create(reviewUri + "/" + book.getId().toString() + "/" + event.getUserId().toString()))
+                    .uri(URI.create(REVIEW_URI + "/" + book.getId().toString() + "/" + event.getUserId().toString()))
                     .DELETE()
                     .build();
 
@@ -106,9 +114,15 @@ public class BookWasUpdatedListener {
                 }
             } catch (IOException | InterruptedException e2) {
                 throw new RuntimeException(e2);
+            } catch (ResponseStatusException rse) {
+                // Since we do not have the other microservices locally yet, the http client will always throw an
+                // unauthorized exception. Thus, we will filter it out for now.
+
+                if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+                    throw new ResponseStatusException(rse.getStatus());
+                }
             }
         }
-
 
         System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
     }
@@ -126,7 +140,7 @@ public class BookWasUpdatedListener {
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(bookshelfUri))
+                    .uri(URI.create(BOOKSHELF_URI))
                     .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
@@ -136,6 +150,13 @@ public class BookWasUpdatedListener {
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (ResponseStatusException rse) {
+            // Since we do not have the other microservices locally yet, the http client will always throw an
+            // unauthorized exception. Thus, we will filter it out for now.
+
+            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+                throw new ResponseStatusException(rse.getStatus());
+            }
         }
 
         System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");

@@ -23,7 +23,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import nl.tudelft.sem.template.authentication.application.book.BookWasUpdatedListener;
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
@@ -43,11 +43,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "classpath:application-test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class BookWasUpdatedListenerTests {
+public class BookEventsListenerTests {
 
     private static final String bookshelfPath = "/a/catalog";
     private static final String reviewPath = "/b/book";
-    private final transient BookWasUpdatedListener bookWasUpdatedListener = new BookWasUpdatedListener();
+    private final transient BookEventsListener bookEventsListener = new BookEventsListener();
 
     @Autowired
     private transient BookRepository bookRepository;
@@ -74,6 +74,10 @@ public class BookWasUpdatedListenerTests {
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
+
+        // Since wiremock is configured on 8080, we assume everything is on the same port.
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
     }
 
     @Test
@@ -86,7 +90,7 @@ public class BookWasUpdatedListenerTests {
 
         outputStreamCaptor.reset();
 
-        bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book));
+        bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
@@ -111,7 +115,7 @@ public class BookWasUpdatedListenerTests {
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-            bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book)));
+            bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book)));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
@@ -135,7 +139,7 @@ public class BookWasUpdatedListenerTests {
 
         outputStreamCaptor.reset();
 
-        bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book));
+        bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
@@ -160,7 +164,7 @@ public class BookWasUpdatedListenerTests {
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-            bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book)));
+            bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book)));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
@@ -190,7 +194,7 @@ public class BookWasUpdatedListenerTests {
 
         outputStreamCaptor.reset();
 
-        bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId()));
+        bookEventsListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId()));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
@@ -212,14 +216,14 @@ public class BookWasUpdatedListenerTests {
         userRepository.save(user);
 
         stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + user.getId()))
-                .willReturn(aResponse().withStatus(401)));
+                .willReturn(aResponse().withStatus(404)));
         stubFor(delete(urlEqualTo(bookshelfPath + "?bookId=" + book.getId()))
                 .willReturn(aResponse().withStatus(200)));
 
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-                bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())));
+                bookEventsListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
@@ -238,7 +242,7 @@ public class BookWasUpdatedListenerTests {
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-                bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())));
+                bookEventsListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
@@ -261,19 +265,19 @@ public class BookWasUpdatedListenerTests {
         mockServer.stop();
 
         outputStreamCaptor.reset();
-        assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())))
+        assertThatThrownBy(() -> bookEventsListener.onBookWasDeleted(new BookWasDeletedEvent(book, user.getId())))
                 .isInstanceOf(RuntimeException.class);
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
 
         outputStreamCaptor.reset();
-        assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasEdited(new BookWasEditedEvent(book)))
+        assertThatThrownBy(() -> bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book)))
                 .isInstanceOf(RuntimeException.class);
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
 
         outputStreamCaptor.reset();
-        assertThatThrownBy(() -> bookWasUpdatedListener.onBookWasCreated(new BookWasCreatedEvent(book)))
+        assertThatThrownBy(() -> bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book)))
                 .isInstanceOf(RuntimeException.class);
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
