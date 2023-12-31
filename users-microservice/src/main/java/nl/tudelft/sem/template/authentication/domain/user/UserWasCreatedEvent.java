@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import lombok.Getter;
+import org.springframework.context.ApplicationEvent;
 
 import java.util.UUID;
 
@@ -9,10 +10,9 @@ import java.util.UUID;
  */
 @Getter
 public class UserWasCreatedEvent {
-    private final transient UUID id;
+    private final transient AppUser user;
 
-    public UserWasCreatedEvent(UUID id) {
-        this.id = id;
+    public UserWasCreatedEvent(AppUser user) {
+        this.user = user;
     }
-
 }

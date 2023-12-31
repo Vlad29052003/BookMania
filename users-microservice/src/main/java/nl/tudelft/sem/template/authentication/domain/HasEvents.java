@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Objects;
 import org.springframework.data.domain.AfterDomainEventPublication;
 import org.springframework.data.domain.DomainEvents;
+import org.springframework.stereotype.Component;
 
 /**
  * A base class for adding domain event support to an entity.
  */
+@Component
 public abstract class HasEvents {
     private final transient List<Object> domainEvents = new ArrayList<>();
 

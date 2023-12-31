@@ -2,13 +2,11 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import lombok.Getter;
 
-import java.util.UUID;
-
 @Getter
 public class UserWasDeletedEvent {
-    private final transient UUID id;
+    private final transient AppUser user;
 
-    public UserWasDeletedEvent(UUID id) {
-        this.id = id;
+    public UserWasDeletedEvent(AppUser user) {
+        this.user = user;
     }
 }

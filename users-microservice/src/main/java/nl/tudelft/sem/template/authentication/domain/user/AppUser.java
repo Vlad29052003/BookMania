@@ -135,7 +135,14 @@ public class AppUser extends HasEvents {
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
         this.authority = Authority.REGULAR_USER;
-        this.recordThat(new UserWasCreatedEvent(id));
+    }
+
+    public void recordAccountWasCreated() {
+        this.recordThat(new UserWasCreatedEvent(this));
+    }
+
+    public void recordAccountWasDeleted() {
+        this.recordThat(new UserWasDeletedEvent(this));
     }
 
     /**

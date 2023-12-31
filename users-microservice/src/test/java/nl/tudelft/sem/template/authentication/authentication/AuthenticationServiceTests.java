@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,11 +10,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import nl.tudelft.sem.template.authentication.application.user.UserWasCreatedListener;
+import nl.tudelft.sem.template.authentication.application.user.UserWasCreatedListenerTests;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -25,6 +31,7 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -53,18 +60,34 @@ public class AuthenticationServiceTests {
     private transient UserWasCreatedListener userWasCreatedListener;
     private final transient String token = "Bearer token";
 
+    private static final String BOOKSHELF_URI = "/a/user";
+//    private static final String REVIEW_URI = "/b/";
+    private static WireMockServer wireMockServer;
+
+    private static ByteArrayOutputStream outputStreamCaptor;
     /**
      * Sets up the testing environment.
      */
     @BeforeEach
     public void setUp() {
+        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+        stubFor(post(urlEqualTo(BOOKSHELF_URI))
+                .willReturn(aResponse()
+                        .withStatus(200)));
         authenticationManager = mock(AuthenticationManager.class);
         jwtTokenGenerator = mock(JwtTokenGenerator.class);
         jwtUserDetailsService = mock(JwtUserDetailsService.class);
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
-        userWasCreatedListener = mock(UserWasCreatedListener.class);
+//        userWasCreatedListener = mock(UserWasCreatedListener.class);
+
+        outputStreamCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStreamCaptor));
+
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
                 jwtService, userRepository, passwordHashingService);
@@ -97,8 +120,15 @@ public class AuthenticationServiceTests {
 
     @Test
     public void registerUser() {
+//        UUID id = UUID.randomUUID();
+//        when(userRepository.findByUsername(new Username(registrationRequest.getUsername())).get().getId()).thenReturn(id);
+        outputStreamCaptor.reset();
         authenticationService.registerUser(registrationRequest);
+
         verify(userRepository, times(1)).save(any());
+
+        assertThat(outputStreamCaptor.toString().trim()).contains("User created");
+//        verify(eventPublisher, times(1)).publishEvents();
         verify(userWasCreatedListener, times(1)).onAccountWasCreated(any());
     }
 

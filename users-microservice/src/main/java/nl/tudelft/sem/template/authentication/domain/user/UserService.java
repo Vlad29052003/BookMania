@@ -179,7 +179,7 @@ public class UserService extends HasEvents {
 
         AppUser user = optionalAppUser.get();
 
-        this.recordThat(new UserWasDeletedEvent(user.getId()));
+        user.recordAccountWasDeleted();
 
         userRepository.delete(user);
     }
