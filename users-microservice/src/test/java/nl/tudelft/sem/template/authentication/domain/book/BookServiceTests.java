@@ -15,6 +15,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -88,6 +90,10 @@ public class BookServiceTests {
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
+
+        // Since wiremock is configured on 8080, we assume everything is on the same port.
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
     }
 
     /**

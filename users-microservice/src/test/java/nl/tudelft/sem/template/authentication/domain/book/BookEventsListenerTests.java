@@ -81,55 +81,6 @@ public class BookEventsListenerTests {
     }
 
     @Test
-    public void testPut() {
-        Book book = new Book("title", null, null, "", 1);
-        bookRepository.saveAndFlush(book);
-
-        stubFor(put(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(200)));
-
-        outputStreamCaptor.reset();
-
-        bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book));
-
-        assertThat(outputStreamCaptor.toString().trim())
-                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
-
-        verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
-                .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
-                .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
-                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
-                .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
-                .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
-    }
-
-    @Test
-    public void testPutException() {
-        Book book = new Book("title", null, null, "", 1);
-        bookRepository.saveAndFlush(book);
-
-        stubFor(put(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(404)));
-
-        outputStreamCaptor.reset();
-
-        assertThrows(RuntimeException.class, () ->
-            bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book)));
-
-        assertThat(outputStreamCaptor.toString().trim())
-                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
-
-        verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
-                .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
-                .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
-                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
-                .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
-                .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
-    }
-
-    @Test
     public void testPost() {
         Book book = new Book("title", null, null, "", 1);
         bookRepository.saveAndFlush(book);
@@ -139,10 +90,10 @@ public class BookEventsListenerTests {
 
         outputStreamCaptor.reset();
 
-        bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book));
+        bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book));
 
         assertThat(outputStreamCaptor.toString().trim())
-                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
+                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
         verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
                 .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
@@ -164,12 +115,61 @@ public class BookEventsListenerTests {
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
+            bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book)));
+
+        assertThat(outputStreamCaptor.toString().trim())
+                .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
+
+        verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
+                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
+                .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
+                .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
+    }
+
+    @Test
+    public void testPut() {
+        Book book = new Book("title", null, null, "", 1);
+        bookRepository.saveAndFlush(book);
+
+        stubFor(put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+
+        outputStreamCaptor.reset();
+
+        bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book));
+
+        assertThat(outputStreamCaptor.toString().trim())
+                .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
+
+        verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
+                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
+                .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
+                .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
+    }
+
+    @Test
+    public void testPutException() {
+        Book book = new Book("title", null, null, "", 1);
+        bookRepository.saveAndFlush(book);
+
+        stubFor(put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(404)));
+
+        outputStreamCaptor.reset();
+
+        assertThrows(RuntimeException.class, () ->
             bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book)));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
 
-        verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
+        verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
                 .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
                 .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
                 .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))

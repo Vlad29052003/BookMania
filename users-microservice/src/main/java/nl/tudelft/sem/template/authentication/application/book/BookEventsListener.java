@@ -43,7 +43,7 @@ public class BookEventsListener {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BOOKSHELF_URI))
-                    .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -141,7 +141,7 @@ public class BookEventsListener {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BOOKSHELF_URI))
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
+                    .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
                     .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());

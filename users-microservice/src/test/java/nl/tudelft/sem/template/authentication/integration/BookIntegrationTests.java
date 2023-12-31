@@ -18,6 +18,8 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -95,6 +97,10 @@ public class BookIntegrationTests {
                 .willReturn(aResponse().withStatus(200)));
         stubFor(WireMock.delete(urlEqualTo(reviewPath))
                 .willReturn(aResponse().withStatus(200)));
+
+        // Since wiremock is configured on 8080, we assume everything is on the same port.
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
     }
 
     /**
