@@ -228,11 +228,6 @@ public class BookEventsListenerTests {
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
 
-        verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withQueryParam("bookId", equalTo(book.getId().toString())));
-        verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
-                .withPathParam("bookId", equalTo(book.getId().toString()))
-                .withPathParam("userId", equalTo(user.getId().toString())));
 
         stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + user.getId()))
                 .willReturn(aResponse().withStatus(200)));
@@ -249,9 +244,6 @@ public class BookEventsListenerTests {
 
         verify(deleteRequestedFor(urlPathEqualTo(bookshelfPath))
                 .withQueryParam("bookId", equalTo(book.getId().toString())));
-        verify(deleteRequestedFor(urlPathTemplate(reviewPath + "/{bookId}/{userId}"))
-                .withPathParam("bookId", equalTo(book.getId().toString()))
-                .withPathParam("userId", equalTo(user.getId().toString())));
     }
 
     @Test

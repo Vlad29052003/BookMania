@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.application.book;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -32,7 +33,7 @@ public class BookEventsListener {
      * Event handler for creating books.
      *
      * @param event The event to react to
-     * @throws RuntimeException in the case that the request is not sent correctly
+     * @throws RuntimeException        in the case that the request is not sent correctly
      * @throws ResponseStatusException if the request is not received as expected
      */
     @EventListener
@@ -69,7 +70,7 @@ public class BookEventsListener {
      * Event handler for deleting books.
      *
      * @param event The event to react to
-     * @throws RuntimeException in the case that the request is not sent correctly
+     * @throws RuntimeException        in the case that the request is not sent correctly
      * @throws ResponseStatusException if the request is not received as expected
      */
     @EventListener
@@ -97,30 +98,14 @@ public class BookEventsListener {
                 throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
 
-            // This second try catch block is only required for testing, as wire mock can only configure one port at
-            // a time. It can be deleted later. Even if it is not removed, the handler should work for both the tests
-            // and the real server
+        } catch (ResponseStatusException rse) {
+            // Since we do not have the other microservices locally yet, the http client will always throw an
+            // unauthorized exception. Thus, we will filter it out for now.
 
-            try {
-                HttpRequest requestReview = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/b/book/" + book.getId().toString() + "/" + event.getUserId().toString()))
-                        .DELETE()
-                        .build();
-
-                HttpResponse<?> response = client.send(requestReview, HttpResponse.BodyHandlers.ofString());
-                if (response.statusCode() != HttpStatus.OK.value()) {
-                    throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
-                }
-            } catch (IOException | InterruptedException e2) {
-                throw new RuntimeException(e2);
-            } catch (ResponseStatusException rse) {
-                // Since we do not have the other microservices locally yet, the http client will always throw an
-                // unauthorized exception. Thus, we will filter it out for now.
-
-                if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
-                    throw new ResponseStatusException(rse.getStatus());
-                }
+            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+                throw new ResponseStatusException(rse.getStatus());
             }
         }
 
@@ -131,7 +116,7 @@ public class BookEventsListener {
      * Event handler for editing books.
      *
      * @param event The event to react to
-     * @throws RuntimeException in the case that the request is not sent correctly
+     * @throws RuntimeException        in the case that the request is not sent correctly
      * @throws ResponseStatusException if the request is not received as expected
      */
     @EventListener
