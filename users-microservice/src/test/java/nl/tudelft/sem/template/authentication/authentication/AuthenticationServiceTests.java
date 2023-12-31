@@ -32,16 +32,27 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@TestPropertySource(locations = "classpath:application-test.properties")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class AuthenticationServiceTests {
     private transient AuthenticationManager authenticationManager;
     private transient JwtTokenGenerator jwtTokenGenerator;
@@ -56,37 +67,42 @@ public class AuthenticationServiceTests {
     private transient AuthenticationResponseModel authenticationResponse;
     private transient TokenValidationResponse tokenValidationResponse;
     private transient UserRepository userRepository;
-
-    private transient UserWasCreatedListener userWasCreatedListener;
     private final transient String token = "Bearer token";
 
     private static final String BOOKSHELF_URI = "/a/user";
 //    private static final String REVIEW_URI = "/b/";
-    private static WireMockServer wireMockServer;
+    private static WireMockServer mockServer;
 
     private static ByteArrayOutputStream outputStreamCaptor;
-    /**
-     * Sets up the testing environment.
-     */
-    @BeforeEach
-    public void setUp() {
-        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
-        wireMockServer.start();
+
+    private transient UserWasCreatedListener userWasCreatedListener;
+
+    @BeforeAll
+    public static void init() {
+        mockServer = new WireMockServer(WireMockConfiguration.options().port(8080)
+        );
+        mockServer.start();
 
         configureFor("localhost", 8080);
         stubFor(post(urlEqualTo(BOOKSHELF_URI))
                 .willReturn(aResponse()
                         .withStatus(200)));
+
+        outputStreamCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStreamCaptor));
+    }
+    /**
+     * Sets up the testing environment.
+     */
+    @BeforeEach
+    public void setUp() {
         authenticationManager = mock(AuthenticationManager.class);
         jwtTokenGenerator = mock(JwtTokenGenerator.class);
         jwtUserDetailsService = mock(JwtUserDetailsService.class);
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
-//        userWasCreatedListener = mock(UserWasCreatedListener.class);
-
-        outputStreamCaptor = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outputStreamCaptor));
+        userWasCreatedListener = mock(UserWasCreatedListener.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
@@ -209,6 +225,11 @@ public class AuthenticationServiceTests {
         when(jwtService.extractUsername("token")).thenReturn("user1");
 
         assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("Bearer token"));
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        mockServer.stop();
     }
 
 }
