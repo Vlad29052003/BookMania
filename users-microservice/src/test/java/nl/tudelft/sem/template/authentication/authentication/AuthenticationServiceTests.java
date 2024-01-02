@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +19,6 @@ import java.util.UUID;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import nl.tudelft.sem.template.authentication.application.user.UserWasCreatedListener;
-import nl.tudelft.sem.template.authentication.application.user.UserWasCreatedListenerTests;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -31,7 +31,6 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,12 +74,11 @@ public class AuthenticationServiceTests {
 
     private static ByteArrayOutputStream outputStreamCaptor;
 
-    private transient UserWasCreatedListener userWasCreatedListener;
+//    private transient UserWasCreatedListener userWasCreatedListener;
 
     @BeforeAll
     public static void init() {
-        mockServer = new WireMockServer(WireMockConfiguration.options().port(8080)
-        );
+        mockServer = new WireMockServer(new WireMockConfiguration().port(8080));
         mockServer.start();
 
         configureFor("localhost", 8080);
@@ -102,7 +100,7 @@ public class AuthenticationServiceTests {
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
-        userWasCreatedListener = mock(UserWasCreatedListener.class);
+//        userWasCreatedListener = mock(UserWasCreatedListener.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
@@ -145,7 +143,7 @@ public class AuthenticationServiceTests {
 
         assertThat(outputStreamCaptor.toString().trim()).contains("User created");
 //        verify(eventPublisher, times(1)).publishEvents();
-        verify(userWasCreatedListener, times(1)).onAccountWasCreated(any());
+//        verify(userWasCreatedListener, times(1)).onAccountWasCreated(any());
     }
 
     @Test

@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.authentication.application.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+//import com.github.tomakehurst.wiremock.WireMockServer;
+//import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+//import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 /**
  * This event listener is automatically called when a user entity is saved
@@ -67,7 +67,7 @@ public class UserWasCreatedListener {
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != HttpStatus.OK.value()) {
-                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+                throw new RespgitonseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
