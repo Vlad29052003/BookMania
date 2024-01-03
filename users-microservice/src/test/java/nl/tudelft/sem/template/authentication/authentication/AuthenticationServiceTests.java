@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import nl.tudelft.sem.template.authentication.application.user.UserWasCreatedListener;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -58,6 +59,7 @@ public class AuthenticationServiceTests {
     private transient JwtUserDetailsService jwtUserDetailsService;
     private transient JwtService jwtService;
     private transient PasswordHashingService passwordHashingService;
+    @Autowired
     private transient AuthenticationService authenticationService;
     private transient UserDetails userDetails;
     private transient AppUser appUser;
@@ -88,6 +90,8 @@ public class AuthenticationServiceTests {
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
     /**
      * Sets up the testing environment.
@@ -142,8 +146,6 @@ public class AuthenticationServiceTests {
         verify(userRepository, times(1)).save(any());
 
         assertThat(outputStreamCaptor.toString().trim()).contains("User created");
-//        verify(eventPublisher, times(1)).publishEvents();
-//        verify(userWasCreatedListener, times(1)).onAccountWasCreated(any());
     }
 
     @Test

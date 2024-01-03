@@ -1,15 +1,24 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import org.assertj.core.api.WritableAssertionInfo;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +39,28 @@ public class UserServiceTests {
 
     @Autowired
     private transient BookRepository bookRepository;
+
+    private static final String BOOKSHELF_URI = "/a/user";
+
+    private static WireMockServer mockServer;
+
+    private static ByteArrayOutputStream outputStreamCaptor;
+
+    @BeforeAll
+    public static void setUp() {
+        mockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        mockServer.start();
+
+        configureFor("localhost", 8080);
+        stubFor(delete(BOOKSHELF_URI)
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        outputStreamCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStreamCaptor));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+    }
 
     @Test
     public void testGetUserByNetId() {
@@ -199,7 +230,11 @@ public class UserServiceTests {
         userRepository.save(user);
         AppUser retrievedUser = userService.getUserByUsername(username);
 
+        outputStreamCaptor.reset();
+
         userService.delete(retrievedUser.getUsername());
+
+        assertThat(outputStreamCaptor.toString()).contains("User deleted");
 
         assertThatThrownBy(() -> userService.getUserByUsername(retrievedUser.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)

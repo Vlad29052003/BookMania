@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.github.tomakehurst.wiremock.WireMockServer;
 //import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedEvent;
+import nl.tudelft.sem.template.authentication.domain.user.UserWasDeletedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -23,13 +24,13 @@ import java.util.UUID;
  * which has stored events of type: UserWasCreated.
  */
 @Component
-public class UserWasCreatedListener {
+public class UserEventsListener {
 
     private final transient HttpClient client = HttpClient.newHttpClient();
-//    private final transient ObjectMapper objectMapper = new ObjectMapper();
+    private final transient ObjectMapper objectMapper = new ObjectMapper();
 
 //    private static WireMockServer wireMockServer;
-    private static final String BOOKSHELF_URL = "http://localhost:8080/a/user";
+    public static String BOOKSHELF_URL = "http://localhost:8081/a/user";
 
 //    private static final String REVIEW_URL = "http://localhost:8080/b/user";
 
@@ -48,7 +49,7 @@ public class UserWasCreatedListener {
      * @param event The event to react to.
      */
     @EventListener
-    public void onAccountWasCreated(UserWasCreatedEvent event) {
+    public void onUserWasCreated(UserWasCreatedEvent event) {
         UUID id = event.getUser().getId();
 
 //        stubFor(post(BOOKSHELF_URL)
@@ -61,13 +62,13 @@ public class UserWasCreatedListener {
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BOOKSHELF_URL))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(id.toString()))
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(id)))
                 .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != HttpStatus.OK.value()) {
-                throw new RespgitonseStatusException(HttpStatus.valueOf(response.statusCode()));
+                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -84,5 +85,35 @@ public class UserWasCreatedListener {
         System.out.println("Account of user with id " + id + " was created.");
 
         //        wireMockServer.stop();
+    }
+
+    /**
+     * Event handler for account deletion.
+     *
+     * @param event The event to react to.
+     */
+    @EventListener
+    public void onUserWasDeleted(UserWasDeletedEvent event) {
+        UUID id = event.getUser().getId();
+
+        try { HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BOOKSHELF_URL + "?userId=" + id))
+            .DELETE()
+            .build();
+
+        HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if(response.statusCode() != HttpStatus.OK.value()) {
+                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ResponseStatusException rse) {
+
+            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+                throw new ResponseStatusException(rse.getStatus());
+            }
+        }
+
+        System.out.println("Account of user with id " + id + " was deleted.");
     }
 }

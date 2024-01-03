@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.UUID;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
