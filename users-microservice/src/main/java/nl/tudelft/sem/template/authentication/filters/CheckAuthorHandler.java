@@ -14,7 +14,7 @@ public class CheckAuthorHandler extends AbstractHandler {
     private final transient UserRepository userRepository;
 
     /**
-     * Creates a new AbstractHandler object.
+     * Creates a new CheckAuthorHandler object.
      *
      * @param jwtService is the JwtService.
      * @param userRepository is the UserRepository.
