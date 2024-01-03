@@ -21,6 +21,8 @@ import java.io.PrintStream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -70,6 +72,65 @@ public class UserEventsListenerTests {
         userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user));
 
         assertThat(outputCaptor.toString().trim()).contains("Account of user with id ");
+
+        WireMock.verify(postRequestedFor(urlEqualTo(BOOKSHELF_URI))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withRequestBody(containing(user.getId().toString())));
+    }
+
+    @Test
+    public void testOnUserWasCreatedWithException() {
+        AppUser user = new AppUser(new Username("username"), "email", new HashedPassword("password"));
+        userRepository.save(user);
+
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_URI))
+                .willReturn(aResponse().withStatus(404)));
+
+        outputCaptor.reset();
+
+        assertThrows(RuntimeException.class, () -> userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user)));
+
+        assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id ");
+
+        WireMock.verify(postRequestedFor(urlEqualTo(BOOKSHELF_URI))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withRequestBody(containing(user.getId().toString())));
+    }
+
+    @Test
+    public void testOnUserWasDeleted() {
+        AppUser user = new AppUser(new Username("username"), "email", new HashedPassword("password"));
+        userRepository.save(user);
+
+        stubFor(WireMock.delete(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+
+        outputCaptor.reset();
+
+        userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user));
+
+        assertThat(outputCaptor.toString().trim()).contains("Account of user with id " + user.getId().toString() + " was deleted");
+
+        WireMock.verify(deleteRequestedFor(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId()))
+                .withQueryParam("userId", equalTo(user.getId().toString())));
+    }
+
+    @Test
+    public void testOnUserWasDeletedWithException() {
+        AppUser user = new AppUser(new Username("username"), "email", new HashedPassword("password"));
+        userRepository.save(user);
+
+        stubFor(WireMock.delete(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId().toString()))
+                .willReturn(aResponse().withStatus(404)));
+
+        outputCaptor.reset();
+
+        assertThrows(RuntimeException.class, () -> userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user)));
+
+        assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id " + user.getId().toString() + " was deleted");
+
+        WireMock.verify(deleteRequestedFor(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId()))
+                .withQueryParam("userId", equalTo(user.getId().toString())));
     }
 
     @AfterAll

@@ -12,6 +12,7 @@ import java.util.UUID;
 import javax.transaction.Transactional;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -232,9 +233,12 @@ public class UserServiceTests {
 
         outputStreamCaptor.reset();
 
+        stubFor(WireMock.delete(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+
         userService.delete(retrievedUser.getUsername());
 
-        assertThat(outputStreamCaptor.toString()).contains("User deleted");
+        assertThat(outputStreamCaptor.toString().trim()).contains("User deleted");
 
         assertThatThrownBy(() -> userService.getUserByUsername(retrievedUser.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)

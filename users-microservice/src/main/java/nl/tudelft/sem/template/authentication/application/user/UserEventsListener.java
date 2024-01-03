@@ -97,7 +97,7 @@ public class UserEventsListener {
         UUID id = event.getUser().getId();
 
         try { HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(BOOKSHELF_URL + "?userId=" + id))
+            .uri(URI.create(BOOKSHELF_URL + "?userId=" + id.toString()))
             .DELETE()
             .build();
 
