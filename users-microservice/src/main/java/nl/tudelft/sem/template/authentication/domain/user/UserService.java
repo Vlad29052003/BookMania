@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
  * A DDD service for a user.
  */
 @Service
-public class UserService extends HasEvents {
+public class UserService {
     private final transient UserRepository userRepository;
     private final transient BookRepository bookRepository;
 
@@ -179,7 +179,7 @@ public class UserService extends HasEvents {
 
         AppUser user = optionalAppUser.get();
 
-        user.recordAccountWasDeleted();
+        user.recordUserWasDeleted();
 
         userRepository.delete(user);
     }

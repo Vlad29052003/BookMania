@@ -141,6 +141,7 @@ public class AuthenticationServiceTests {
 //        UUID id = UUID.randomUUID();
 //        when(userRepository.findByUsername(new Username(registrationRequest.getUsername())).get().getId()).thenReturn(id);
         outputStreamCaptor.reset();
+
         authenticationService.registerUser(registrationRequest);
 
         verify(userRepository, times(1)).save(any());

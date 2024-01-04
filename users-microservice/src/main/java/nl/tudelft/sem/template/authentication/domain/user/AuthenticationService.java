@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-public class AuthenticationService extends HasEvents {
+public class AuthenticationService {
     private final transient AuthenticationManager authenticationManager;
     private final transient JwtTokenGenerator jwtTokenGenerator;
     private final transient JwtUserDetailsService jwtUserDetailsService;
@@ -133,7 +133,8 @@ public class AuthenticationService extends HasEvents {
             // Create new account
             AppUser user = new AppUser(username, email, hashedPassword);
 
-            user.recordAccountWasCreated();
+            user.recordUserWasCreated();
+
             userRepository.save(user);
 
             return user;

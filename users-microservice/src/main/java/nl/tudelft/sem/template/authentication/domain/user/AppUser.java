@@ -137,11 +137,11 @@ public class AppUser extends HasEvents {
         this.authority = Authority.REGULAR_USER;
     }
 
-    public void recordAccountWasCreated() {
+    public void recordUserWasCreated() {
         this.recordThat(new UserWasCreatedEvent(this));
     }
 
-    public void recordAccountWasDeleted() {
+    public void recordUserWasDeleted() {
         this.recordThat(new UserWasDeletedEvent(this));
     }
 
