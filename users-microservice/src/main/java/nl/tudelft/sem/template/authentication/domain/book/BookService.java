@@ -11,7 +11,6 @@ import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -87,8 +86,8 @@ public class BookService {
                     createBookRequestModel.getDescription(),
                     createBookRequestModel.getNumPages());
 
-            newBook.recordBookWasCreated();
             bookRepository.saveAndFlush(newBook);
+            newBook.recordBookWasCreated();
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Only admins or authors may add books to the system!");
@@ -120,8 +119,8 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
-            currentBook.recordBookWasEdited();
             bookRepository.saveAndFlush(currentBook);
+            currentBook.recordBookWasEdited();
         } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
@@ -146,8 +145,8 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
-            currentBook.recordBookWasEdited();
             bookRepository.saveAndFlush(currentBook);
+            currentBook.recordBookWasEdited();
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Only admins or authors may update books in the system!");
@@ -178,11 +177,11 @@ public class BookService {
 
         Book book = optBook.get();
 
-        book.recordBookWasDeleted(appUserOptional.get().getId());
-
         userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
 
         bookRepository.deleteById(UUID.fromString(bookId));
+
+        book.recordBookWasDeleted(appUserOptional.get().getId());
     }
 
     private Authority getAuthority(String bearerToken) {
