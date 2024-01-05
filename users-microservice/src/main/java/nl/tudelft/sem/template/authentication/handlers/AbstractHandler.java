@@ -10,6 +10,7 @@ abstract class AbstractHandler implements Handler {
     @Getter
     private transient UserRepository userRepository;
     private transient Handler nextHandler;
+    @Getter
     @Setter
     private transient Strategy strategy;
 
@@ -32,9 +33,5 @@ abstract class AbstractHandler implements Handler {
 
     protected Handler getHandler() {
         return this.nextHandler;
-    }
-
-    public Strategy getStrategy() {
-        return this.strategy;
     }
 }
