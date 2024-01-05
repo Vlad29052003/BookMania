@@ -57,6 +57,7 @@ public class BookServiceTests {
     private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
+    private transient Book book2;
     private transient UUID book2Id;
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
@@ -66,6 +67,7 @@ public class BookServiceTests {
     private static WireMockServer mockServer;
 
     private static ByteArrayOutputStream outputStreamCaptor;
+    private UUID adminId;
 
     /**
      * Initializes wire mock server.
@@ -101,7 +103,7 @@ public class BookServiceTests {
         bookRepository.saveAndFlush(book);
         bookId = bookRepository.findByTitle("title").get(0).getId();
 
-        Book book2 = new Book("title2", List.of("Author2"),
+        this.book2 = new Book("title2", List.of("Author2"),
                 List.of(Genre.CRIME), "testDscription", 550);
         bookRepository.saveAndFlush(book2);
         book2Id = bookRepository.findByTitle("title2").get(0).getId();
@@ -128,7 +130,7 @@ public class BookServiceTests {
         authenticationService.registerUser(registrationRequestModel);
         AppUser admin = userRepository.findByUsername(new Username("admin")).orElseThrow();
         admin.setAuthority(Authority.ADMIN);
-        UUID adminId = admin.getId();
+        adminId = admin.getId();
         userRepository.saveAndFlush(admin);
         tokenAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
 
