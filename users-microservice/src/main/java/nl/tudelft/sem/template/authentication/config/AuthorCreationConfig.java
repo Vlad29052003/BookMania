@@ -1,3 +1,4 @@
+
 //package nl.tudelft.sem.template.authentication.config;
 //
 //import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -35,3 +36,4 @@
 //        userRepository.saveAndFlush(author);
 //    }
 //}
+

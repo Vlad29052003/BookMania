@@ -1,11 +1,11 @@
 package nl.tudelft.sem.template.authentication.strategies;
 
 import java.util.List;
-import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 
 public interface Strategy {
-    void passToService(Book book);
+    void passToService(FilterBookRequestModel bookRequest);
 
     String getUnauthorizedErrorMessage();
 

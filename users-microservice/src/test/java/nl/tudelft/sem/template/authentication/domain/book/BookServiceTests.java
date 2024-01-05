@@ -1,15 +1,28 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,16 +45,47 @@ public class BookServiceTests {
     private transient UserRepository userRepository;
     @Autowired
     private transient BookService bookService;
-    @Autowired
-    private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
+    private static final String bookshelfPath = "/a/catalog";
+    private static final String reviewPath = "/b/book";
+    private static WireMockServer mockServer;
+    private static ByteArrayOutputStream outputStreamCaptor;
+    private AppUser admin;
+
+    /**
+     * Initializes wire mock server.
+     */
+    @BeforeAll
+    public static void init() {
+        mockServer = new WireMockServer(
+                new WireMockConfiguration().port(8080)
+        );
+        mockServer.start();
+
+        configureFor("localhost", 8080);
+        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.post(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+
+        outputStreamCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStreamCaptor));
+
+        // Since wiremock is configured on 8080, we assume everything is on the same port.
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
+    }
 
     /**
      * Sets up the testing environment.
      */
     @BeforeEach
     public void setUp() {
+        Username adminUsername = new Username("testAdminUser");
+        userRepository.saveAndFlush(new AppUser(adminUsername, "testAdminUser@email.com", new HashedPassword("hash")));
+        this.admin = userRepository.findByUsername(adminUsername).get();
+
         this.book = new Book("title", List.of("Author1", "authorName"),
                 List.of(Genre.CRIME, Genre.DRAMA), "description", 257);
         bookRepository.saveAndFlush(book);
@@ -50,6 +94,11 @@ public class BookServiceTests {
         Book book2 = new Book("title2", List.of("Author2"),
                 List.of(Genre.CRIME), "testDescription", 550);
         bookRepository.saveAndFlush(book2);
+
+        stubFor(delete(urlEqualTo(bookshelfPath + "?bookId=" + book.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + admin.getId()))
+                .willReturn(aResponse().withStatus(200)));
     }
 
     @Test
@@ -121,8 +170,13 @@ public class BookServiceTests {
         updatedBook.setGenres(List.of(Genre.SCIENCE));
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
+
+        outputStreamCaptor.reset();
         bookService.updateBook(updatedBook);
+
         Book updatedBookTest = bookRepository.findByTitle("title new").get(0);
+        Assertions.assertThat(outputStreamCaptor.toString().trim())
+                .contains("Book (id: " + updatedBook.getId() + ", title: " + updatedBook.getTitle() + ") was edited.");
 
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
         assertThat(updatedBookTest.getTitle()).isEqualTo(updatedBook.getTitle());
@@ -188,33 +242,34 @@ public class BookServiceTests {
     @Test
     @Transactional
     public void testDeleteBook() {
-        bookService.deleteBook(bookId);
+        assertThat(userRepository.findByUsername(admin.getUsername()).isPresent()).isTrue();
+
+        bookService.deleteBook(bookId, admin.getUsername());
         assertThat(bookRepository.findById(bookId)).isEmpty();
+        Assertions.assertThat(outputStreamCaptor.toString().trim())
+                .contains("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
     }
 
-    @Test
-    @Transactional
-    public void testDeleteBookWhileUserHasItAsFavorite() {
-        Username username = new Username("user");
-        AppUser user = new AppUser(username, "test_emal@mail.com", new HashedPassword("hash"));
-        userRepository.saveAndFlush(user);
-
-        userService.updateFavouriteBook(username, bookId.toString());
-        assertThat(userRepository.findByUsername(username).get().getFavouriteBook().getId()).isEqualTo(bookId);
-        bookService.deleteBook(bookId);
-        assertThat(bookRepository.findById(bookId)).isEmpty();
-    }
 
     @Test
     @Transactional
     public void testDeleteBookNonExistent() {
+        Username username = new Username("user");
         UUID randomUuid = UUID.randomUUID();
         while (randomUuid.equals(bookId)) {
             randomUuid = UUID.randomUUID();
         }
         UUID finalRandomUuid = randomUuid;
-        assertThatThrownBy(() -> bookService.deleteBook(finalRandomUuid))
+        assertThatThrownBy(() -> bookService.deleteBook(finalRandomUuid, username))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"This book does not exist!\"");
+    }
+
+    /**
+     * Clean up for the testing environment after all tests.
+     */
+    @AfterAll
+    public static void afterEach() {
+        mockServer.stop();
     }
 }

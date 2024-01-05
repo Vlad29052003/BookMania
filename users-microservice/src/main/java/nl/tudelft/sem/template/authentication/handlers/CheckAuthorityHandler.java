@@ -1,28 +1,24 @@
-package nl.tudelft.sem.template.authentication.filters;
+package nl.tudelft.sem.template.authentication.handlers;
 
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 public class CheckAuthorityHandler extends AbstractHandler {
-    private final transient JwtService jwtService;
 
     /**
      * Creates a new CheckAuthorityHandler object.
      *
-     * @param jwtService is the JwtService.
+     * @param userRepository is the UserRepository.
      */
-    public CheckAuthorityHandler(JwtService jwtService) {
-        super();
-        this.jwtService = jwtService;
+    public CheckAuthorityHandler(UserRepository userRepository) {
+        super(userRepository);
     }
 
     @Override
     public void filter(FilterBookRequestModel filterBookRequestModel) {
-        Authority authority = jwtService.extractAuthorization(filterBookRequestModel.getBearerToken());
-        if (this.getStrategy().getAllowedAuthorities().contains(authority)) {
+        if (this.getStrategy().getAllowedAuthorities().contains(filterBookRequestModel.getUserAuthority())) {
             super.getHandler().filter(filterBookRequestModel);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, super.getStrategy().getUnauthorizedErrorMessage());

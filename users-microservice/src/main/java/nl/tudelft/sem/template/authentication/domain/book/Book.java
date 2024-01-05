@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.hibernate.annotations.Type;
@@ -33,7 +34,7 @@ import org.hibernate.annotations.Type;
 @Table(name = "books")
 @NoArgsConstructor
 @ToString
-public class Book {
+public class Book extends HasEvents {
     /**
      * Identifier for the book.
      */
@@ -128,5 +129,17 @@ public class Book {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void recordBookWasCreated() {
+        this.recordThat(new BookWasCreatedEvent(this));
+    }
+
+    public void recordBookWasEdited() {
+        this.recordThat(new BookWasEditedEvent(this));
+    }
+
+    public void recordBookWasDeleted(UUID userId) {
+        this.recordThat(new BookWasDeletedEvent(this, userId));
     }
 }

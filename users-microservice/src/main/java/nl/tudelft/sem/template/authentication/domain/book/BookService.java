@@ -5,7 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class BookService {
     private final transient BookRepository bookRepository;
     private final transient UserRepository userRepository;
+    private final transient BookEventsListener eventPublisher;
 
     /**
      * Creates a BookService service.
@@ -24,9 +28,11 @@ public class BookService {
      * @param userRepository is the user repository
      */
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository,
+                       BookEventsListener eventPublisher) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -55,7 +61,7 @@ public class BookService {
         if (invalid) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
         }
-
+        newBook.recordBookWasCreated();
         bookRepository.saveAndFlush(newBook);
     }
 
@@ -83,23 +89,27 @@ public class BookService {
         currentBook.setDescription(updatedBook.getDescription());
         currentBook.setNumPages(updatedBook.getNumPages());
 
+        currentBook.recordBookWasEdited();
         bookRepository.saveAndFlush(currentBook);
     }
 
     /**
      * Deletes a book from the overall collection.
      *
-     * @param bookId      is the id of the book to be deleted.
+     * @param bookId is the id of the book to be deleted.
      */
     @Transactional
-    public void deleteBook(UUID bookId) {
-        var optBook = bookRepository.findById(bookId);
+    public void deleteBook(UUID bookId, Username username) {
+        Optional<Book> optBook = bookRepository.findById(bookId);
         if (optBook.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
 
-        userRepository.removeBookFromUsersFavorites(bookId);
+        Book book = optBook.get();
 
+        userRepository.removeBookFromUsersFavorites(bookId);
+        UUID userId = userRepository.findByUsername(username).get().getId();
         bookRepository.deleteById(bookId);
+        eventPublisher.onBookWasDeleted(new BookWasDeletedEvent(book, userId));
     }
 }

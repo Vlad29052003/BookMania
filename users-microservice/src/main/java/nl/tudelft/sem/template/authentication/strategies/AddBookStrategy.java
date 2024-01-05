@@ -2,9 +2,9 @@ package nl.tudelft.sem.template.authentication.strategies;
 
 import java.util.List;
 import lombok.Getter;
-import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 
 public class AddBookStrategy implements Strategy {
     private final transient BookService bookService;
@@ -15,10 +15,9 @@ public class AddBookStrategy implements Strategy {
         this.bookService = bookService;
     }
 
-
     @Override
-    public void passToService(Book book) {
-        bookService.addBook(book);
+    public void passToService(FilterBookRequestModel bookRequest) {
+        this.bookService.addBook(bookRequest.getBook());
     }
 
     @Override

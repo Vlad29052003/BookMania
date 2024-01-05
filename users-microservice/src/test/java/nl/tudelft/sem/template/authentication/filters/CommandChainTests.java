@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.filters;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import nl.tudelft.sem.template.authentication.handlers.CommandChain;
 import nl.tudelft.sem.template.authentication.strategies.AddBookStrategy;
 import nl.tudelft.sem.template.authentication.strategies.EditBookStrategy;
 import org.junit.jupiter.api.Test;
@@ -20,25 +21,25 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-test.properties")
-public class FilterClientTests {
+public class CommandChainTests {
     @Autowired
-    private transient FilterClient filterClient;
+    private transient CommandChain commandChain;
 
     @Test
     public void testSetAddStrategy() {
-        filterClient.setAddBookStrategy();
+        commandChain.setAddBookStrategy();
 
-        assertThat(filterClient.getCheckUserExistenceHandler().getStrategy()).isInstanceOf(AddBookStrategy.class);
-        assertThat(filterClient.getCheckAuthorityHandler().getStrategy()).isInstanceOf(AddBookStrategy.class);
-        assertThat(filterClient.getCheckAuthorHandler().getStrategy()).isInstanceOf(AddBookStrategy.class);
+        assertThat(commandChain.getCheckUserExistenceHandler().getStrategy()).isInstanceOf(AddBookStrategy.class);
+        assertThat(commandChain.getCheckAuthorityHandler().getStrategy()).isInstanceOf(AddBookStrategy.class);
+        assertThat(commandChain.getCheckAuthorHandler().getStrategy()).isInstanceOf(AddBookStrategy.class);
     }
 
     @Test
     public void testSetEditStrategy() {
-        filterClient.setEditBookStrategy();
+        commandChain.setEditBookStrategy();
 
-        assertThat(filterClient.getCheckUserExistenceHandler().getStrategy()).isInstanceOf(EditBookStrategy.class);
-        assertThat(filterClient.getCheckAuthorityHandler().getStrategy()).isInstanceOf(EditBookStrategy.class);
-        assertThat(filterClient.getCheckAuthorHandler().getStrategy()).isInstanceOf(EditBookStrategy.class);
+        assertThat(commandChain.getCheckUserExistenceHandler().getStrategy()).isInstanceOf(EditBookStrategy.class);
+        assertThat(commandChain.getCheckAuthorityHandler().getStrategy()).isInstanceOf(EditBookStrategy.class);
+        assertThat(commandChain.getCheckAuthorHandler().getStrategy()).isInstanceOf(EditBookStrategy.class);
     }
 }

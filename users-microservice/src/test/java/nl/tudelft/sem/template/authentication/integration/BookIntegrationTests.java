@@ -1,5 +1,9 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,9 +13,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -24,6 +32,8 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +70,31 @@ public class BookIntegrationTests {
     private transient Book book2;
     private transient CreateBookRequestModel book1Request;
     private transient CreateBookRequestModel book3Request;
+    private static final String bookshelfPath = "/a/catalog";
+    private static final String reviewPath = "/b/book";
+    private static WireMockServer mockServer;
+    private UUID adminId;
+
+    /**
+     * Initialises mock servers for book listeners.
+     */
+    @BeforeAll
+    public static void init() {
+        mockServer = new WireMockServer(
+                new WireMockConfiguration().port(8080)
+        );
+        mockServer.start();
+
+        configureFor("localhost", 8080);
+        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.post(urlEqualTo(bookshelfPath))
+                .willReturn(aResponse().withStatus(200)));
+
+        // Since wiremock is configured on 8080, we assume everything is on the same port.
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
+    }
 
     /**
      * Sets up the testing environment.
@@ -112,6 +147,7 @@ public class BookIntegrationTests {
         AppUser adminUser = userRepository.findByUsername(adminUsername).get();
         adminUser.setAuthority(Authority.ADMIN);
         userRepository.saveAndFlush(adminUser);
+        adminId = adminUser.getId();
         AppUser authorUser = userRepository.findByUsername(authorUsername).get();
         authorUser.setAuthority(Authority.AUTHOR);
         authorUser.setName("author");
@@ -125,7 +161,7 @@ public class BookIntegrationTests {
                 .andReturn();
         AuthenticationResponseModel adminAuthenticationResponse =
                 JsonUtil.deserialize(resultAdmin.getResponse().getContentAsString(),
-                AuthenticationResponseModel.class);
+                        AuthenticationResponseModel.class);
         this.tokenAdmin = "Bearer " + adminAuthenticationResponse.getToken();
 
         ResultActions resultActionsAuthor = mockMvc.perform(post("/c/authenticate")
@@ -136,7 +172,7 @@ public class BookIntegrationTests {
                 .andReturn();
         AuthenticationResponseModel authorAuthenticationResponse =
                 JsonUtil.deserialize(resultAuthor.getResponse().getContentAsString(),
-                AuthenticationResponseModel.class);
+                        AuthenticationResponseModel.class);
         this.tokenAuthor = "Bearer " + authorAuthenticationResponse.getToken();
 
         ResultActions resultActionsUser = mockMvc.perform(post("/c/authenticate")
@@ -147,7 +183,7 @@ public class BookIntegrationTests {
                 .andReturn();
         AuthenticationResponseModel userAuthenticationResponse =
                 JsonUtil.deserialize(resultUser.getResponse().getContentAsString(),
-                AuthenticationResponseModel.class);
+                        AuthenticationResponseModel.class);
         this.tokenUser = "Bearer " + userAuthenticationResponse.getToken();
 
         this.book1 = new Book("book1", List.of("Author1", "Author2"),
@@ -159,6 +195,7 @@ public class BookIntegrationTests {
 
         this.book1Request = new CreateBookRequestModel(book1);
         this.book3Request = new CreateBookRequestModel(book3);
+
     }
 
     @Test
@@ -311,6 +348,16 @@ public class BookIntegrationTests {
         assertThat(updated.getDescription()).isEqualTo(book1.getDescription());
         assertThat(updated.getNumPages()).isEqualTo(book1.getNumPages());
 
+        stubFor(WireMock.delete(urlEqualTo(bookshelfPath + "?bookId=" + id1))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(reviewPath + "/" + id1 + "/" + adminId))
+                .willReturn(aResponse().withStatus(200)));
+
+        stubFor(WireMock.delete(urlEqualTo(bookshelfPath + "?bookId=" + id3))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(reviewPath + "/" + id3 + "/" + adminId))
+                .willReturn(aResponse().withStatus(200)));
+
         ResultActions deleteBook1 = mockMvc.perform(delete("/c/books/" + id3)
                 .header("Authorization", tokenAuthor));
         deleteBook1.andExpect(status().isUnauthorized())
@@ -347,6 +394,11 @@ public class BookIntegrationTests {
         AppUser appUser = userRepository.findByUsername(new Username("user")).get();
         assertThat(appUser.getFavouriteBook().getId()).isEqualTo(id1);
 
+        stubFor(WireMock.delete(urlEqualTo(bookshelfPath + "?bookId=" + id1))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(reviewPath + "/" + id1 + "/" + adminId))
+                .willReturn(aResponse().withStatus(200)));
+
         ResultActions deleteBook3 = mockMvc.perform(delete("/c/books/" + id1)
                 .header("Authorization", tokenAdmin));
         deleteBook3.andExpect(status().isOk());
@@ -376,6 +428,13 @@ public class BookIntegrationTests {
                 .content(JsonUtil.serialize(book2)));
         updateBook2.andExpect(status().isUnauthorized())
                 .andExpect(content().string("401 UNAUTHORIZED \"Only the authors of the book may edit it!\""));
+    }
 
+    /**
+     * Set up for the testing environment after all tests.
+     */
+    @AfterAll
+    public static void afterEach() {
+        mockServer.stop();
     }
 }

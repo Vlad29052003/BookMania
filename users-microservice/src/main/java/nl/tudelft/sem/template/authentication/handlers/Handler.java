@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.authentication.filters;
+package nl.tudelft.sem.template.authentication.handlers;
 
 import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 

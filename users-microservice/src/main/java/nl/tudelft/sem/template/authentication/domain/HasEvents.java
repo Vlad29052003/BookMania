@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ public abstract class HasEvents {
         this.domainEvents.clear();
     }
 
+    @JsonIgnore
     // New method for testing purposes
     public int getDomainEventsSize() {
         return domainEvents.size();
