@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -22,6 +23,7 @@ public class BookService {
     private final transient BookRepository bookRepository;
     private final transient UserRepository userRepository;
     private final transient JwtService jwtService;
+    private final transient BookEventsListener eventPublisher;
 
     /**
      * Creates a BookService service.
@@ -31,10 +33,12 @@ public class BookService {
      * @param jwtService     is the jwt service
      */
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository, JwtService jwtService) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository,
+                       JwtService jwtService, BookEventsListener eventPublisher) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -85,6 +89,8 @@ public class BookService {
                     createBookRequestModel.getGenres(),
                     createBookRequestModel.getDescription(),
                     createBookRequestModel.getNumPages());
+
+            newBook.recordBookWasCreated();
             bookRepository.saveAndFlush(newBook);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -117,6 +123,7 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
+            currentBook.recordBookWasEdited();
             bookRepository.saveAndFlush(currentBook);
         } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
 
@@ -142,6 +149,7 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
+            currentBook.recordBookWasEdited();
             bookRepository.saveAndFlush(currentBook);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -165,9 +173,20 @@ public class BookService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
 
+        Optional<AppUser> appUserOptional = userRepository
+                .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
+        if (appUserOptional.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        Book book = optBook.get();
+
         userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
 
         bookRepository.deleteById(UUID.fromString(bookId));
+
+        eventPublisher.onBookWasDeleted(new BookWasDeletedEvent(book, appUserOptional.get().getId()));
+
     }
 
     private Authority getAuthority(String bearerToken) {
