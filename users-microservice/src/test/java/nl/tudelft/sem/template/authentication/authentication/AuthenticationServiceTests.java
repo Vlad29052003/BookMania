@@ -60,10 +60,9 @@ public class AuthenticationServiceTests {
     private transient JwtUserDetailsService jwtUserDetailsService;
     private transient JwtService jwtService;
     private transient PasswordHashingService passwordHashingService;
-    @Autowired
     private transient AuthenticationService authenticationService;
-//    @Autowired
-//    private transient AuthenticationService authenticationService2;
+    @Autowired
+    private transient AuthenticationService authenticationService2;
     private transient UserDetails userDetails;
     private transient AppUser appUser;
     private transient RegistrationRequestModel registrationRequest;
@@ -141,20 +140,23 @@ public class AuthenticationServiceTests {
 
     @Test
     public void registerUser() {
-//        outputStreamCaptor.reset();
-//
-////        authenticationService2.registerUser(registrationRequest);
-//
-//        assertThat(outputStreamCaptor.toString().trim()).contains("Account of user with id ");
-//
-//        AppUser appUser = new AppUser(new Username(registrationRequest.getUsername()), registrationRequest.getEmail(),
-//                new HashedPassword(registrationRequest.getPassword()));
-//        when(userRepository.findByUsername(new Username(registrationRequest.getUsername()))).thenReturn(Optional.of(appUser));
-//        Optional<AppUser> appUserOptional = userRepository.findByUsername(new Username(registrationRequest.getUsername()));
-//
-//        assertThat(appUserOptional.get().getUsername()).isEqualTo(appUser.getUsername());
-//        assertThat(appUserOptional.get().getEmail()).isEqualTo(appUser.getEmail());
-//        assertThat(appUserOptional.get().getPassword()).isEqualTo(appUser.getPassword());
+        authenticationService.registerUser(registrationRequest);
+        verify(userRepository, times(1)).save(any());
+
+        outputStreamCaptor.reset();
+
+        authenticationService2.registerUser(registrationRequest);
+
+        assertThat(outputStreamCaptor.toString().trim()).contains("Account of user with id ");
+
+        AppUser appUser = new AppUser(new Username(registrationRequest.getUsername()), registrationRequest.getEmail(),
+                new HashedPassword(registrationRequest.getPassword()));
+        when(userRepository.findByUsername(new Username(registrationRequest.getUsername()))).thenReturn(Optional.of(appUser));
+        Optional<AppUser> appUserOptional = userRepository.findByUsername(new Username(registrationRequest.getUsername()));
+
+        assertThat(appUserOptional.get().getUsername()).isEqualTo(appUser.getUsername());
+        assertThat(appUserOptional.get().getEmail()).isEqualTo(appUser.getEmail());
+        assertThat(appUserOptional.get().getPassword()).isEqualTo(appUser.getPassword());
     }
 
     @Test

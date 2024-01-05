@@ -28,20 +28,9 @@ public class UserEventsListener {
 
     private final transient HttpClient client = HttpClient.newHttpClient();
     private final transient ObjectMapper objectMapper = new ObjectMapper();
-
-//    private static WireMockServer wireMockServer;
     public static String BOOKSHELF_URL = "http://localhost:8081/a/user";
 
 //    private static final String REVIEW_URL = "http://localhost:8080/b/user";
-
-//    /**
-//     * Constructor for the UserWasCreatedListener.
-//     */
-//    public void setUp() {
-//        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
-//        wireMockServer.start();
-//        configureFor("localhost", 8080);
-//    }
 
     /**
      * Event handler for account creation.
@@ -51,12 +40,6 @@ public class UserEventsListener {
     @EventListener
     public void onUserWasCreated(UserWasCreatedEvent event) {
         UUID id = event.getUser().getId();
-
-//        stubFor(post(BOOKSHELF_URL)
-//                .withHeader("Content-Type", equalTo("application/json"))
-//                .withRequestBody(equalTo(id.toString()))
-//                .willReturn(aResponse()
-//                        .withStatus(200)));
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
