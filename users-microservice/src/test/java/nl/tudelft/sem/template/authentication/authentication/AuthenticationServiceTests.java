@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;

@@ -137,14 +137,6 @@ public class AppUser extends HasEvents {
         this.authority = Authority.REGULAR_USER;
     }
 
-    public void recordUserWasCreated() {
-        this.recordThat(new UserWasCreatedEvent(this));
-    }
-
-    public void recordUserWasDeleted() {
-        this.recordThat(new UserWasDeletedEvent(this));
-    }
-
     /**
      * Equality is only based on the identifier.
      */
@@ -163,5 +155,13 @@ public class AppUser extends HasEvents {
     @Override
     public int hashCode() {
         return Objects.hash(username);
+    }
+
+    public void recordUserWasCreated() {
+        this.recordThat(new UserWasCreatedEvent(this));
+    }
+
+    public void recordUserWasDeleted() {
+        this.recordThat(new UserWasDeletedEvent(this));
     }
 }

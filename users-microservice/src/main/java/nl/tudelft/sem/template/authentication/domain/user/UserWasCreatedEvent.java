@@ -10,6 +10,7 @@ import java.util.UUID;
  */
 @Getter
 public class UserWasCreatedEvent {
+
     private final transient AppUser user;
 
     public UserWasCreatedEvent(AppUser user) {

@@ -133,9 +133,9 @@ public class AuthenticationService {
             // Create new account
             AppUser user = new AppUser(username, email, hashedPassword);
 
-            user.recordUserWasCreated();
-
             userRepository.save(user);
+
+            user.recordUserWasCreated();
 
             return user;
         }
