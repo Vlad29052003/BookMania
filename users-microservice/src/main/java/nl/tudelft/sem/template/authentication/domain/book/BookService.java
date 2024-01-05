@@ -23,6 +23,7 @@ public class BookService {
     private final transient BookRepository bookRepository;
     private final transient UserRepository userRepository;
     private final transient JwtService jwtService;
+    private final transient BookEventsListener eventPublisher;
 
     /**
      * Creates a BookService service.
@@ -32,10 +33,12 @@ public class BookService {
      * @param jwtService     is the jwt service
      */
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository, JwtService jwtService) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository,
+                       JwtService jwtService, BookEventsListener eventPublisher) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -182,7 +185,7 @@ public class BookService {
 
         bookRepository.deleteById(UUID.fromString(bookId));
 
-        new BookEventsListener().onBookWasDeleted(new BookWasDeletedEvent(book, appUserOptional.get().getId()));
+        eventPublisher.onBookWasDeleted(new BookWasDeletedEvent(book, appUserOptional.get().getId()));
 
     }
 
