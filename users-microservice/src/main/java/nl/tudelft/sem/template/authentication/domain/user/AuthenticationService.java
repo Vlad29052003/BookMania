@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.Optional;
 import java.util.UUID;
 
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
@@ -31,6 +32,8 @@ public class AuthenticationService {
     private final transient UserRepository userRepository;
     private final transient PasswordHashingService passwordHashingService;
 
+    private final transient UserEventsListener userEventsListener;
+
     /**
      * Creates an AuthenticationService service.
      *
@@ -46,13 +49,14 @@ public class AuthenticationService {
                                  JwtUserDetailsService jwtUserDetailsService,
                                  JwtService jwtService,
                                  UserRepository userRepository,
-                                 PasswordHashingService passwordHashingService) {
+                                 PasswordHashingService passwordHashingService, UserEventsListener userEventsListener) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenGenerator = jwtTokenGenerator;
         this.jwtUserDetailsService = jwtUserDetailsService;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordHashingService = passwordHashingService;
+        this.userEventsListener = userEventsListener;
     }
 
     /**
@@ -135,7 +139,7 @@ public class AuthenticationService {
 
             userRepository.save(user);
 
-            user.recordUserWasCreated();
+            userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user));
 
             return user;
         }

@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
@@ -66,7 +68,7 @@ public class UserLookupServiceTests {
         when(passwordHashingService.hash(new Password("someOtherHash"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
-                jwtService, userRepository, passwordHashingService);
+                jwtService, userRepository, passwordHashingService, new UserEventsListener());
 
         String email = "email";
         String netId = "user";

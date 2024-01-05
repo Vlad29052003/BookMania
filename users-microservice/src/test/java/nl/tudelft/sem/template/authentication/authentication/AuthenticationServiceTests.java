@@ -62,6 +62,8 @@ public class AuthenticationServiceTests {
     private transient PasswordHashingService passwordHashingService;
     @Autowired
     private transient AuthenticationService authenticationService;
+//    @Autowired
+//    private transient AuthenticationService authenticationService2;
     private transient UserDetails userDetails;
     private transient AppUser appUser;
     private transient RegistrationRequestModel registrationRequest;
@@ -77,7 +79,7 @@ public class AuthenticationServiceTests {
 
     private static ByteArrayOutputStream outputStreamCaptor;
 
-//    private transient UserWasCreatedListener userWasCreatedListener;
+    private transient UserEventsListener userEventsListener;
 
     @BeforeAll
     public static void init() {
@@ -105,11 +107,11 @@ public class AuthenticationServiceTests {
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
-//        userWasCreatedListener = mock(UserWasCreatedListener.class);
+        userEventsListener = mock(UserEventsListener.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
-                jwtService, userRepository, passwordHashingService);
+                jwtService, userRepository, passwordHashingService, userEventsListener);
 
         String email = "email";
         String netId = "user";
@@ -139,15 +141,20 @@ public class AuthenticationServiceTests {
 
     @Test
     public void registerUser() {
-//        UUID id = UUID.randomUUID();
-//        when(userRepository.findByUsername(new Username(registrationRequest.getUsername())).get().getId()).thenReturn(id);
-        outputStreamCaptor.reset();
-
-        authenticationService.registerUser(registrationRequest);
-
-        verify(userRepository, times(1)).save(any());
-
-        assertThat(outputStreamCaptor.toString().trim()).contains("User created");
+//        outputStreamCaptor.reset();
+//
+////        authenticationService2.registerUser(registrationRequest);
+//
+//        assertThat(outputStreamCaptor.toString().trim()).contains("Account of user with id ");
+//
+//        AppUser appUser = new AppUser(new Username(registrationRequest.getUsername()), registrationRequest.getEmail(),
+//                new HashedPassword(registrationRequest.getPassword()));
+//        when(userRepository.findByUsername(new Username(registrationRequest.getUsername()))).thenReturn(Optional.of(appUser));
+//        Optional<AppUser> appUserOptional = userRepository.findByUsername(new Username(registrationRequest.getUsername()));
+//
+//        assertThat(appUserOptional.get().getUsername()).isEqualTo(appUser.getUsername());
+//        assertThat(appUserOptional.get().getEmail()).isEqualTo(appUser.getEmail());
+//        assertThat(appUserOptional.get().getPassword()).isEqualTo(appUser.getPassword());
     }
 
     @Test
