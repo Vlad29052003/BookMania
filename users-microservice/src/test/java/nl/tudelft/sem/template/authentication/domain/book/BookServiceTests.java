@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.book;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -56,7 +57,6 @@ public class BookServiceTests {
     private transient UserService userService;
     private transient UUID bookId;
     private transient Book book;
-    private transient Book book2;
     private transient UUID book2Id;
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
@@ -82,10 +82,6 @@ public class BookServiceTests {
                 .willReturn(aResponse().withStatus(200)));
         stubFor(WireMock.post(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.delete(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.delete(urlEqualTo(reviewPath))
-                .willReturn(aResponse().withStatus(200)));
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
@@ -105,7 +101,7 @@ public class BookServiceTests {
         bookRepository.saveAndFlush(book);
         bookId = bookRepository.findByTitle("title").get(0).getId();
 
-        this.book2 = new Book("title2", List.of("Author2"),
+        Book book2 = new Book("title2", List.of("Author2"),
                 List.of(Genre.CRIME), "testDscription", 550);
         bookRepository.saveAndFlush(book2);
         book2Id = bookRepository.findByTitle("title2").get(0).getId();
@@ -132,6 +128,7 @@ public class BookServiceTests {
         authenticationService.registerUser(registrationRequestModel);
         AppUser admin = userRepository.findByUsername(new Username("admin")).orElseThrow();
         admin.setAuthority(Authority.ADMIN);
+        UUID adminId = admin.getId();
         userRepository.saveAndFlush(admin);
         tokenAdmin = "Bearer " + authenticationService.authenticateUser(authenticationRequestModel).getToken();
 
@@ -148,6 +145,12 @@ public class BookServiceTests {
         tokenAuthor = "Bearer " + authenticationService.authenticateUser(authenticationRequestModelAuthor).getToken();
 
         author.setName("authorName");
+
+
+        stubFor(delete(urlEqualTo(bookshelfPath + "?bookId=" + book.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(reviewPath + "/" + book.getId() + "/" + adminId))
+                .willReturn(aResponse().withStatus(200)));
     }
 
     @Test
@@ -421,6 +424,9 @@ public class BookServiceTests {
     public void testDeleteBook() {
         bookService.deleteBook(bookId.toString(), tokenAdmin);
         assertThat(bookRepository.findById(bookId)).isEmpty();
+        Assertions.assertThat(outputStreamCaptor.toString().trim())
+                .contains("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was deleted.");
+
     }
 
     @Test

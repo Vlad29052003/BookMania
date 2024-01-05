@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -86,8 +87,8 @@ public class BookService {
                     createBookRequestModel.getDescription(),
                     createBookRequestModel.getNumPages());
 
-            bookRepository.saveAndFlush(newBook);
             newBook.recordBookWasCreated();
+            bookRepository.saveAndFlush(newBook);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Only admins or authors may add books to the system!");
@@ -119,8 +120,8 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
-            bookRepository.saveAndFlush(currentBook);
             currentBook.recordBookWasEdited();
+            bookRepository.saveAndFlush(currentBook);
         } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
 
             Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
@@ -145,8 +146,8 @@ public class BookService {
             currentBook.setDescription(updatedBook.getDescription());
             currentBook.setNumPages(updatedBook.getNumPages());
 
-            bookRepository.saveAndFlush(currentBook);
             currentBook.recordBookWasEdited();
+            bookRepository.saveAndFlush(currentBook);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Only admins or authors may update books in the system!");
@@ -181,7 +182,8 @@ public class BookService {
 
         bookRepository.deleteById(UUID.fromString(bookId));
 
-        book.recordBookWasDeleted(appUserOptional.get().getId());
+        new BookEventsListener().onBookWasDeleted(new BookWasDeletedEvent(book, appUserOptional.get().getId()));
+
     }
 
     private Authority getAuthority(String bearerToken) {

@@ -72,7 +72,6 @@ public class BookEventsListener {
      * @throws RuntimeException        in the case that the request is not sent correctly
      * @throws ResponseStatusException if the request is not received as expected
      */
-    @EventListener
     public void onBookWasDeleted(BookWasDeletedEvent event) {
         Book book = event.getBook();
 
