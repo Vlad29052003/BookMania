@@ -3,7 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.io.Serial;
 
 /**
- * Exception to indicate the NetID is already in use.
+ * Exception to indicate the username is already in use.
  */
 public class UsernameAlreadyInUseException extends Exception {
     @Serial

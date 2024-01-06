@@ -112,18 +112,18 @@ public class AuthenticationServiceTests {
                 jwtTokenGenerator, jwtUserDetailsService,
                 jwtService, userRepository, passwordHashingService, userEventsListener);
 
-        String email = "email";
-        String netId = "user";
-        String password = "someHash";
+        String email = "email@gmail.com";
+        String username = "user";
+        String password = "someHash123!";
         Authority authority = Authority.REGULAR_USER;
         UUID id = UUID.randomUUID();
 
-        userDetails = new User(netId, password, List.of(authority));
-        appUser = new AppUser(new Username(netId), email, new HashedPassword(password));
+        userDetails = new User(username, password, List.of(authority));
+        appUser = new AppUser(new Username(username), email, new HashedPassword(password));
         appUser.setId(id);
 
         registrationRequest = new RegistrationRequestModel();
-        registrationRequest.setUsername(netId);
+        registrationRequest.setUsername(username);
         registrationRequest.setEmail(email);
         registrationRequest.setPassword(password);
 
@@ -169,18 +169,14 @@ public class AuthenticationServiceTests {
         when(authenticationService.registrationHelper(username, email, password))
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, ""));
 
-        assertThrows(ResponseStatusException.class, () -> {
-            authenticationService.registerUser(registrationRequest);
-        });
+        assertThrows(ResponseStatusException.class, () -> authenticationService.registerUser(registrationRequest));
     }
 
     @Test
     public void registerUserInvalidUsername() {
         authenticationService.registerUser(registrationRequest);
         registrationRequest.setUsername("@#asfa");
-        assertThrows(ResponseStatusException.class, () -> {
-            authenticationService.registerUser(registrationRequest);
-        });
+        assertThrows(ResponseStatusException.class, () -> authenticationService.registerUser(registrationRequest));
     }
 
     @Test
@@ -196,9 +192,7 @@ public class AuthenticationServiceTests {
         when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
         when(authenticationManager.authenticate(any())).thenThrow(new DisabledException(""));
 
-        assertThrows(ResponseStatusException.class, () -> {
-            authenticationService.authenticateUser(authenticationRequest);
-        });
+        assertThrows(ResponseStatusException.class, () -> authenticationService.authenticateUser(authenticationRequest));
     }
 
     @Test
@@ -206,13 +200,11 @@ public class AuthenticationServiceTests {
         when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException(""));
 
-        assertThrows(ResponseStatusException.class, () -> {
-            authenticationService.authenticateUser(authenticationRequest);
-        });
+        assertThrows(ResponseStatusException.class, () -> authenticationService.authenticateUser(authenticationRequest));
     }
 
     @Test
-    public void validateToken() throws Exception {
+    public void validateToken() {
         when(jwtUserDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
         when(jwtService.extractUsername("token")).thenReturn(userDetails.getUsername());
         when(userRepository.findByUsername(appUser.getUsername())).thenReturn(Optional.of(appUser));
@@ -222,12 +214,8 @@ public class AuthenticationServiceTests {
 
     @Test
     public void validateTokenFails() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            authenticationService.getId(null);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            authenticationService.getId("token");
-        });
+        assertThrows(IllegalArgumentException.class, () -> authenticationService.getId(null));
+        assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("token"));
     }
 
     @Test

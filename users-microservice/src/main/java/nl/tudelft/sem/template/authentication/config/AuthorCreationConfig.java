@@ -1,3 +1,4 @@
+
 //package nl.tudelft.sem.template.authentication.config;
 //
 //import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -30,8 +31,9 @@
 //        PasswordHashingService passwordHashingService = new PasswordHashingService(passwordEncoder);
 //        AppUser author = new AppUser(new Username("author"),
 //                "author@email.com",
-//                new HashedPassword(passwordHashingService.hash(new Password("password123")).toString()));
+//                new HashedPassword(passwordHashingService.hash(new Password("Password123!")).toString()));
 //        author.setAuthority(Authority.AUTHOR);
 //        userRepository.saveAndFlush(author);
 //    }
 //}
+

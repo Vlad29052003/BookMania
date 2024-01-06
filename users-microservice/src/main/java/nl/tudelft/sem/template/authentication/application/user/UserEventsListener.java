@@ -17,8 +17,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
-//import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 /**
  * This event listener is automatically called when a user entity is saved
  * which has stored events of type: UserWasCreated.
@@ -28,9 +26,11 @@ public class UserEventsListener {
 
     private final transient HttpClient client = HttpClient.newHttpClient();
     private final transient ObjectMapper objectMapper = new ObjectMapper();
+
+//    private final WireMockServer wireMockServer;
     public static String BOOKSHELF_URL = "http://localhost:8081/a/user";
 
-//    private static final String REVIEW_URL = "http://localhost:8080/b/user";
+    public static String REVIEW_URL = "http://localhost:8081/b/user";
 
     /**
      * Event handler for account creation.
@@ -56,8 +56,6 @@ public class UserEventsListener {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ResponseStatusException rse) {
-            // Since we do not have the other microservices locally yet, the http client will always throw an
-            // unauthorized exception. Thus, we will filter it out for now.
 
             if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
                 throw new ResponseStatusException(rse.getStatus());
@@ -66,8 +64,6 @@ public class UserEventsListener {
 
 
         System.out.println("Account of user with id " + id + " was created.");
-
-        //        wireMockServer.stop();
     }
 
     /**
@@ -78,16 +74,29 @@ public class UserEventsListener {
     @EventListener
     public void onUserWasDeleted(UserWasDeletedEvent event) {
         UUID id = event.getUser().getId();
+        UUID adminId = event.getAdminId();
 
-        try { HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(BOOKSHELF_URL + "?userId=" + id.toString()))
-            .DELETE()
-            .build();
+        try {
+            HttpRequest bookShelfRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BOOKSHELF_URL + "?userId=" + id.toString()))
+                .DELETE()
+                .build();
 
-        HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if(response.statusCode() != HttpStatus.OK.value()) {
-                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            HttpResponse<?> response = client.send(bookShelfRequest, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != HttpStatus.OK.value()) {
+                    throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
             }
+
+            HttpRequest reviewRequest = HttpRequest.newBuilder()
+                .uri(URI.create(REVIEW_URL + "/" + id.toString() + "/" + adminId.toString()))
+                .DELETE()
+                .build();
+
+            response = client.send(reviewRequest, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != HttpStatus.OK.value()) {
+                    throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+            }
+
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ResponseStatusException rse) {

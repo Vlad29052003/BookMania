@@ -1,37 +1,42 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
+import nl.tudelft.sem.template.authentication.domain.user.Password;
+import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
+import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/c/users")
 public class UserController {
     private final transient UserService userService;
+    private final transient PasswordHashingService passwordHashingService;
 
     /**
      * Instantiates a new UserController.
      *
-     * @param userService       the registration service
+     * @param userService the registration service
      */
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordHashingService passwordHashingService) {
         this.userService = userService;
+        this.passwordHashingService = passwordHashingService;
     }
 
     /**
@@ -44,8 +49,7 @@ public class UserController {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         AppUser user = userService.getUserByUsername(username);
 
-        UserModel userModel = new UserModel(user.getUsername().toString(), user.getEmail(), user.getName(), user.getBio(),
-                user.getLocation(), user.getFavouriteGenres(), user.getFavouriteBook());
+        UserModel userModel = new UserModel(user);
 
         return ResponseEntity.ok(userModel);
     }
@@ -80,7 +84,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's bio.
      *
-     * @param bio         the new bio of the user
+     * @param bio the new bio of the user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/bio")
@@ -94,7 +98,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's profile picture.
      *
-     * @param picture     the new profile photo of the user
+     * @param picture the new profile photo of the user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping(value = "/picture", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -108,7 +112,7 @@ public class UserController {
     /**
      * Endpoint for updating a user's location.
      *
-     * @param location    the new location of the user
+     * @param location the new location of the user
      * @return a ResponseEntity containing the OK response
      */
     @PatchMapping("/location")
@@ -152,6 +156,80 @@ public class UserController {
     }
 
     /**
+     * Patch request to ban / unban a user.
+     *
+     * @param banUserRequestModel username and future status of user that needs to be (un)banned.
+     * @return request status.
+     */
+    @PatchMapping("/isDeactivated")
+    public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel) {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                                                .get(0).getAuthority();
+        try {
+            userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
+                                            banUserRequestModel.isBanned(),
+                                            authority);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        return ResponseEntity.ok().build();
+    }
+    
+    /**
+     * Endpoint for updating the username.
+     *
+     * @param newUsername the new username
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/username")
+    public ResponseEntity<Void> updateUsername(@RequestBody String newUsername) {
+        try {
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            userService.updateUsername(username, newUsername);
+        } catch (UsernameAlreadyInUseException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating the email of a user.
+     *
+     * @param newEmail the new email
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/email")
+    public ResponseEntity<Void> updateEmail(@RequestBody String newEmail) {
+        try {
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            userService.updateEmail(username, newEmail);
+        } catch (EmailAlreadyInUseException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating the password of a user.
+     *
+     * @param newPassword the new password
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/password")
+    public ResponseEntity<Void> updatePassword(@RequestBody String newPassword) {
+        try {
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            Password newPass = new Password(newPassword);
+            userService.updatePassword(username, passwordHashingService.hash(newPass));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * Endpoint for deleting a user.
      *
      * @return a ResponseEntity containing the OK response
@@ -159,7 +237,37 @@ public class UserController {
     @DeleteMapping
     public ResponseEntity<Void> delete() {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        userService.delete(username);
+        AppUser user = userService.getUserByUsername(username);
+        userService.delete(username, user);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for deleting a user by an admin.
+     * @param username username of the user to be deleted
+     * @return a ResponseEntity containing the OK response
+     */
+    @DeleteMapping("/{username}")
+    public ResponseEntity<Void> deleteByAdmin(@PathVariable String username) {
+        Username adminName = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+        AppUser admin = userService.getUserByUsername(adminName);
+
+        userService.delete(new Username(username), admin);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating a user's privacy settings.
+     *
+     * @param isPrivate new privacy setting
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/isPrivate")
+    public ResponseEntity<Void> updatePrivacy(@RequestBody String isPrivate) {
+        Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+        userService.updatePrivacy(username, Boolean.parseBoolean(isPrivate));
 
         return ResponseEntity.ok().build();
     }

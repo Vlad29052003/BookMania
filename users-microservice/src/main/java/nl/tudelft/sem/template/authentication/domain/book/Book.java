@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -21,8 +22,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 /**
@@ -32,7 +33,7 @@ import org.hibernate.annotations.Type;
 @Table(name = "books")
 @NoArgsConstructor
 @ToString
-public class Book {
+public class Book extends HasEvents {
     /**
      * Identifier for the book.
      */
@@ -40,12 +41,7 @@ public class Book {
     @Getter
     @Setter
     @Column(name = "book_id", nullable = false)
-    @GeneratedValue(generator = "useExistingIdOtherwiseGenerateUuid")
-    @GenericGenerator(
-            name = "useExistingIdOtherwiseGenerateUuid",
-            strategy = "nl.tudelft.sem.template.authentication."
-                    + "domain.providers.implementations.UseExistingIdOtherwiseGenerateUuid"
-    )
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Type(type = "uuid-char")
     private UUID id;
 
@@ -119,5 +115,17 @@ public class Book {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void recordBookWasCreated() {
+        this.recordThat(new BookWasCreatedEvent(this));
+    }
+
+    public void recordBookWasEdited() {
+        this.recordThat(new BookWasEditedEvent(this));
+    }
+
+    public void recordBookWasDeleted(UUID userId) {
+        this.recordThat(new BookWasDeletedEvent(this, userId));
     }
 }

@@ -107,7 +107,7 @@ public class UserEventsListenerTests {
 
         outputCaptor.reset();
 
-        userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user));
+        userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, any()));
 
         assertThat(outputCaptor.toString().trim()).contains("Account of user with id " + user.getId().toString() + " was deleted");
 
@@ -125,7 +125,7 @@ public class UserEventsListenerTests {
 
         outputCaptor.reset();
 
-        assertThrows(RuntimeException.class, () -> userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user)));
+        assertThrows(RuntimeException.class, () -> userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, any())));
 
         assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id " + user.getId().toString() + " was deleted");
 
