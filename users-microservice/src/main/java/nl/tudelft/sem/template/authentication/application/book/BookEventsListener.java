@@ -74,7 +74,6 @@ public class BookEventsListener {
      */
     public void onBookWasDeleted(BookWasDeletedEvent event) {
         Book book = event.getBook();
-
         try {
             HttpRequest requestBookshelf = HttpRequest.newBuilder()
                     .uri(URI.create(BOOKSHELF_URI + "?bookId=" + book.getId()))

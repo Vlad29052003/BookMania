@@ -1,19 +1,21 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.handlers.CommandChain;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,16 +24,18 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/c/books")
 public class BookController {
     private final transient BookService bookService;
+    private final transient CommandChain commandChain;
 
     @Autowired
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, CommandChain commandChain) {
         this.bookService = bookService;
+        this.commandChain = commandChain;
     }
 
     /**
      * Gets a book from the overall collection.
      *
-     * @param bookId      the id of the book to get
+     * @param bookId the id of the book to get
      * @return the status of the operation
      */
     @GetMapping("/{bookId}")
@@ -47,14 +51,18 @@ public class BookController {
      * Adds a book to the overall collection.
      *
      * @param createBookRequestModel the request information about the book
-     * @param bearerToken            the jwt token
      * @return the status of the operation
      */
     @PostMapping("")
-    public ResponseEntity<?> addBook(@RequestBody CreateBookRequestModel createBookRequestModel,
-                                     @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> addBook(@RequestBody CreateBookRequestModel createBookRequestModel) {
         try {
-            bookService.addBook(createBookRequestModel, bearerToken);
+            commandChain.setAddBookStrategy();
+            Book newBook = new Book(createBookRequestModel);
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
+                    .getAuthorities().iterator().next();
+            commandChain.handle(username, authority, newBook);
+
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
@@ -66,14 +74,16 @@ public class BookController {
      * Updates a book in the system.
      *
      * @param updatedBook contains the new information for the book
-     * @param bearerToken            is the jwt token of the user that made the request
      * @return the status of the operation
      */
     @PutMapping("")
-    public ResponseEntity<?> updateBook(@RequestBody Book updatedBook,
-                                        @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> updateBook(@RequestBody Book updatedBook) {
         try {
-            bookService.updateBook(updatedBook, bearerToken);
+            commandChain.setEditBookStrategy();
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
+                    .getAuthorities().iterator().next();
+            commandChain.handle(username, authority, updatedBook);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
@@ -85,14 +95,18 @@ public class BookController {
      * Deletes a book from the overall collection.
      *
      * @param bookId      the id of the book to be deleted
-     * @param bearerToken the jwt token
      * @return the status of the operation
      */
     @DeleteMapping("/{bookId}")
-    public ResponseEntity<?> deleteBook(@PathVariable String bookId,
-                                        @RequestHeader(name = AUTHORIZATION) String bearerToken) {
+    public ResponseEntity<?> deleteBook(@PathVariable String bookId) {
         try {
-            bookService.deleteBook(bookId, bearerToken);
+            commandChain.setDeleteBookStrategy();
+            Book deletedBook = new Book();
+            deletedBook.setId(UUID.fromString(bookId));
+            Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
+                    .getAuthorities().iterator().next();
+            commandChain.handle(username, authority, deletedBook);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

@@ -24,7 +24,7 @@ public class AuthenticationController {
     /**
      * Instantiates a new UsersController.
      *
-     * @param authenticationService the authentication service
+     * @param authenticationService the authentication service.
      */
     @Autowired
     public AuthenticationController(AuthenticationService authenticationService) {
@@ -35,9 +35,9 @@ public class AuthenticationController {
     /**
      * Endpoint for registration.
      *
-     * @param request The registration model
-     * @return 200 OK if the registration is successful
-     * @throws ResponseStatusException if a user with this netId already exists
+     * @param request The registration model.
+     * @return 200 OK if the registration is successful.
+     * @throws ResponseStatusException if a user with this username already exists.
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegistrationRequestModel request) throws ResponseStatusException {
@@ -52,9 +52,9 @@ public class AuthenticationController {
     /**
      * Endpoint for authentication.
      *
-     * @param request The login model
-     * @return JWT token if the login is successful
-     * @throws ResponseStatusException if the user does not exist or the password is incorrect
+     * @param request The login model.
+     * @return JWT token if the login is successful.
+     * @throws ResponseStatusException if the user does not exist or the password is incorrect.
      */
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody AuthenticationRequestModel request) throws ResponseStatusException {
@@ -69,8 +69,8 @@ public class AuthenticationController {
     /**
      * Endpoint for validating the jwt bearer token.
      *
-     * @param token The bearer jwt token
-     * @return Authority if verification is successful
+     * @param token The bearer jwt token.
+     * @return Authority if verification is successful.
      */
     @GetMapping("/validate-token")
     public ResponseEntity<?> verifyJwt(@RequestHeader("Authorization") String token) {
