@@ -14,6 +14,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,20 +43,21 @@ public class UserEventsListenerTests {
 
     private static ByteArrayOutputStream outputCaptor;
 
+    /**
+     * Sets up for testing.
+     */
     @BeforeAll
     public static void setUp() {
-        outputCaptor = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outputCaptor));
-    }
-
-    /**
-     * Configures the wire mock server.
-     */
-    public static void configureWireMockServer() {
         wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
         wireMockServer.start();
 
         WireMock.configureFor("localhost", 8080);
+
+        outputCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputCaptor));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+        UserEventsListener.REVIEW_URL = "http://localhost:8080/b/user";
     }
 
     @Test
@@ -65,6 +67,10 @@ public class UserEventsListenerTests {
 
         outputCaptor.reset();
 
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_URI))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .willReturn(aResponse().withStatus(200)));
+
         userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user));
 
         assertThat(outputCaptor.toString().trim()).contains("Account of user with id ");
@@ -72,8 +78,6 @@ public class UserEventsListenerTests {
 
     @Test
     public void testOnUserWasCreatedWithException() {
-        configureWireMockServer();
-
         AppUser user = new AppUser(new Username("username"), "email@email.com", new HashedPassword("password"));
 
         outputCaptor.reset();
@@ -85,8 +89,6 @@ public class UserEventsListenerTests {
         assertThrows(RuntimeException.class, () -> userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user)));
 
         assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id ");
-
-        stop();
     }
 
     @Test
@@ -96,6 +98,11 @@ public class UserEventsListenerTests {
 
         outputCaptor.reset();
 
+        stubFor(WireMock.delete(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(REVIEW_URI + "/" + user.getId().toString() + "/" + user.getId()))
+                .willReturn(aResponse().withStatus(200)));
+
         userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, user.getId()));
 
         assertThat(outputCaptor.toString().trim()).contains("Account of user with id "
@@ -104,8 +111,6 @@ public class UserEventsListenerTests {
 
     @Test
     public void testOnUserWasDeletedWithException() {
-        configureWireMockServer();
-
         AppUser user = new AppUser(new Username("username"), "email@email.com", new HashedPassword("password"));
         userRepository.save(user);
 
@@ -121,13 +126,9 @@ public class UserEventsListenerTests {
 
         assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id "
                 + user.getId().toString() + " was deleted");
-
-        stop();
     }
 
-    /**
-     * Stops the wire mock server.
-     */
+    @AfterAll
     public static void stop() {
         wireMockServer.stop();
     }

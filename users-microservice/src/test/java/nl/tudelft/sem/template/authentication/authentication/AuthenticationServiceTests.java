@@ -1,5 +1,11 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,11 +15,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -26,6 +35,7 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,12 +75,30 @@ public class AuthenticationServiceTests {
     private transient UserRepository userRepository;
     private final transient String token = "Bearer token";
 
+    private static final String BOOKSHELF_PATH = "/a/user";
+
     private static ByteArrayOutputStream outputStreamCaptor;
 
+    private static WireMockServer wireMockServer;
+
+    /**
+     * Sets up for testing.
+     */
     @BeforeAll
     public static void init() {
+        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        stubFor(post(urlEqualTo(BOOKSHELF_PATH))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .willReturn(aResponse().withStatus(200)));
+
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**
@@ -205,4 +233,8 @@ public class AuthenticationServiceTests {
         assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("Bearer token"));
     }
 
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
+    }
 }

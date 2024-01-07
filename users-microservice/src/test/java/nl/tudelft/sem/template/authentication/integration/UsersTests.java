@@ -1,5 +1,9 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -9,6 +13,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
@@ -20,6 +28,8 @@ import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +67,24 @@ public class UsersTests {
 
     @Autowired
     private transient UserRepository userRepository;
+
+    private static WireMockServer wireMockServer;
+
+    /**
+     * Sets up for testing.
+     */
+    @BeforeAll
+    public static void setUp() {
+        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        stubFor(WireMock.post(urlEqualTo("/a/user"))
+                .willReturn(aResponse().withStatus(200)));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+    }
 
     @Test
     public void register_withValidData_worksCorrectly() throws Exception {
@@ -220,5 +248,10 @@ public class UsersTests {
         resultActions.andExpect(status().isUnauthorized());
 
         verify(mockJwtTokenGenerator, times(0)).generateToken(any());
+    }
+
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
     }
 }

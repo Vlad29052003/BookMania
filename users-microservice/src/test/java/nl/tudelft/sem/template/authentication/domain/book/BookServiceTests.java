@@ -1,8 +1,9 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -35,7 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +44,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-@ActiveProfiles({"test"})
 @TestPropertySource(locations = "classpath:application-test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class BookServiceTests {
@@ -64,8 +64,10 @@ public class BookServiceTests {
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
     private transient String tokenAuthor;
-    private static final String bookshelfPath = "/a/catalog";
-    private static final String reviewPath = "/b/book";
+    private static final String bookshelfPathBooks = "/a/catalog";
+    private static final String reviewPathBooks = "/b/book";
+
+    private static final String BOOKSHELF_PATH_USERS = "/a/user";
     private static WireMockServer mockServer;
 
     private static ByteArrayOutputStream outputStreamCaptor;
@@ -76,26 +78,25 @@ public class BookServiceTests {
      */
     @BeforeAll
     public static void init() {
-        mockServer = new WireMockServer(
-                new WireMockConfiguration().port(8081)
-
-        );
+        mockServer = new WireMockServer(new WireMockConfiguration().port(8080));
         mockServer.start();
 
-        configureFor("localhost", 8081);
-        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
+        configureFor("localhost", 8080);
+        stubFor(WireMock.put(urlEqualTo(bookshelfPathBooks))
                 .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.post(urlEqualTo(bookshelfPath))
+        stubFor(WireMock.post(urlEqualTo(bookshelfPathBooks))
                 .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.delete(anyUrl())
+        stubFor(post(urlEqualTo(BOOKSHELF_PATH_USERS))
                 .willReturn(aResponse().withStatus(200)));
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
-        BookEventsListener.BOOKSHELF_URI = "http://localhost:8081/a/catalog";
-        BookEventsListener.REVIEW_URI = "http://localhost:8081/b/book";
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**
@@ -152,6 +153,11 @@ public class BookServiceTests {
         tokenAuthor = "Bearer " + authenticationService.authenticateUser(authenticationRequestModelAuthor).getToken();
 
         author.setName("authorName");
+
+        stubFor(delete(urlEqualTo(bookshelfPathBooks + "?bookId=" + book.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(reviewPathBooks + "/" + book.getId() + "/" + adminId))
+                .willReturn(aResponse().withStatus(200)));
     }
 
     @Test
@@ -496,7 +502,7 @@ public class BookServiceTests {
      * Clean up for the testing environment after all tests.
      */
     @AfterAll
-    public static void afterEach() {
+    public static void stop() {
         mockServer.stop();
     }
 }
