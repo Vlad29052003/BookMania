@@ -125,8 +125,13 @@ public class UserControllerTests {
 
     @Test
     public void testDelete() {
+        AppUser user = new AppUser(new Username("user"), "email@email.com", new HashedPassword("hash"));
+        user.setId(UUID.randomUUID());
+
+        when(userService.getUserByUsername(username)).thenReturn(user);
+
         assertThat(userController.delete()).isEqualTo(ResponseEntity.ok().build());
-        verify(userService, times(1)).delete(username, any());
+        verify(userService, times(1)).delete(username, user);
     }
 
     @Test
