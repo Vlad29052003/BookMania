@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,21 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
-
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
-
-import org.junit.jupiter.api.BeforeAll;
-
 import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,33 +46,12 @@ public class UserServiceTests {
 
     @Autowired
     private transient ReportRepository reportRepository;
-
-    private static final String BOOKSHELF_URI = "/a/user";
-
-    private static final String REVIEW_URI = "/b/user";
-
-    private static WireMockServer mockServer;
-
     private static ByteArrayOutputStream outputStreamCaptor;
 
     @BeforeAll
     public static void setUp() {
-        mockServer = new WireMockServer(new WireMockConfiguration().port(8080));
-        mockServer.start();
-
-        configureFor("localhost", 8080);
-        stubFor(delete(BOOKSHELF_URI)
-                .willReturn(aResponse()
-                        .withStatus(200)));
-        stubFor(delete(REVIEW_URI)
-                .willReturn(aResponse()
-                        .withStatus(200)));
-
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
-        UserEventsListener.REVIEW_URL = "http://localhost:8080/b/user";
     }
 
     @Test
@@ -379,12 +350,6 @@ public class UserServiceTests {
         AppUser retrievedUser = userService.getUserByUsername(username);
 
         outputStreamCaptor.reset();
-
-        stubFor(WireMock.delete(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId().toString()))
-                .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.delete(urlEqualTo(REVIEW_URI + "/" + user.getId().toString()
-                        + "/" + user.getId()))
-                .willReturn(aResponse().withStatus(200)));
 
         userService.delete(retrievedUser.getUsername(), retrievedUser);
 

@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.authentication.authentication;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,11 +14,6 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -32,7 +26,6 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,29 +65,14 @@ public class AuthenticationServiceTests {
     private transient UserRepository userRepository;
     private final transient String token = "Bearer token";
 
-    private static final String BOOKSHELF_URI = "/a/user";
-//    private static final String REVIEW_URI = "/b/";
-    private static WireMockServer mockServer;
-
     private static ByteArrayOutputStream outputStreamCaptor;
-
-    private transient UserEventsListener userEventsListener;
 
     @BeforeAll
     public static void init() {
-        mockServer = new WireMockServer(new WireMockConfiguration().port(8080));
-        mockServer.start();
-
-        configureFor("localhost", 8080);
-        stubFor(post(urlEqualTo(BOOKSHELF_URI))
-                .willReturn(aResponse()
-                        .withStatus(200)));
-
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
+
     /**
      * Sets up the testing environment.
      */
@@ -106,11 +84,10 @@ public class AuthenticationServiceTests {
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
-        userEventsListener = mock(UserEventsListener.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
-                jwtService, userRepository, passwordHashingService, userEventsListener);
+                jwtService, userRepository, passwordHashingService);
 
         String email = "email@gmail.com";
         String username = "user";
@@ -151,8 +128,10 @@ public class AuthenticationServiceTests {
 
         AppUser appUser = new AppUser(new Username(registrationRequest.getUsername()), registrationRequest.getEmail(),
                 new HashedPassword(registrationRequest.getPassword()));
-        when(userRepository.findByUsername(new Username(registrationRequest.getUsername()))).thenReturn(Optional.of(appUser));
-        Optional<AppUser> appUserOptional = userRepository.findByUsername(new Username(registrationRequest.getUsername()));
+        when(userRepository.findByUsername(new Username(registrationRequest.getUsername())))
+                .thenReturn(Optional.of(appUser));
+        Optional<AppUser> appUserOptional = userRepository.findByUsername(new Username(registrationRequest
+                .getUsername()));
 
         assertThat(appUserOptional.get().getUsername()).isEqualTo(appUser.getUsername());
         assertThat(appUserOptional.get().getEmail()).isEqualTo(appUser.getEmail());
@@ -224,11 +203,6 @@ public class AuthenticationServiceTests {
         when(jwtService.extractUsername("token")).thenReturn("user1");
 
         assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("Bearer token"));
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        mockServer.stop();
     }
 
 }

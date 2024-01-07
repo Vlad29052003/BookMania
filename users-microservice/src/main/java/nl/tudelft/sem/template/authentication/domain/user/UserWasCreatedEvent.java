@@ -1,9 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationEvent;
-
-import java.util.UUID;
 
 /**
  * A DDD domain event that indicated a user was created.

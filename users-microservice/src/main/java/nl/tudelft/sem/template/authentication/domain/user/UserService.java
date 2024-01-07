@@ -3,9 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
-import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;

@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import lombok.Getter;
-
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
 public class UserWasDeletedEvent {

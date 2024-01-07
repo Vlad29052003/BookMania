@@ -2,8 +2,6 @@ package nl.tudelft.sem.template.authentication.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
@@ -19,7 +17,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -245,6 +249,7 @@ public class UserController {
 
     /**
      * Endpoint for deleting a user by an admin.
+     *
      * @param username username of the user to be deleted
      * @return a ResponseEntity containing the OK response
      */

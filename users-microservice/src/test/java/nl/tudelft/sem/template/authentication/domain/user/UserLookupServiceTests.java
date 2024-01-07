@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
@@ -22,7 +20,6 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
-import org.h2.engine.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,9 +65,6 @@ public class UserLookupServiceTests {
 
     @Autowired
     private transient JwtService jwtService;
-
-    @Autowired
-    private transient UserEventsListener userEventsListener;
     private transient RegistrationRequestModel registrationRequest;
     private transient RegistrationRequestModel registrationRequest2;
 
@@ -92,7 +86,7 @@ public class UserLookupServiceTests {
         when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
                 jwtTokenGenerator, jwtUserDetailsService,
-                jwtService, userRepository, passwordHashingService, userEventsListener);
+                jwtService, userRepository, passwordHashingService);
 
         String email = "email@gmail.com";
         String username = "user";
