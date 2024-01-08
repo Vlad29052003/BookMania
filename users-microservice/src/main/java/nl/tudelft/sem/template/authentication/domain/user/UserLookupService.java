@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
  * A DDD service for looking up users.
  */
 @Service
-public class UserLookupService {
+public class    UserLookupService {
     private final transient UserRepository userRepository;
 
     /**

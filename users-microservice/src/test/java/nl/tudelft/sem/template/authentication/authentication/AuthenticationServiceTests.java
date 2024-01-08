@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +32,7 @@ import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
+import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -231,6 +233,26 @@ public class AuthenticationServiceTests {
         when(jwtService.extractUsername("token")).thenReturn("user1");
 
         assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("Bearer token"));
+    }
+
+    @Test
+    public void testRegistrationHelper() throws Exception {
+        Username username = new Username("user");
+        when(userRepository.existsByUsername(username)).thenReturn(false);
+        when(passwordHashingService.hash(any())).thenReturn(new HashedPassword("hash"));
+
+        AppUser user = authenticationService.registrationHelper(username, "email@mail.com", new Password("Pass123@"));
+
+        assertThat(user.getAuthority()).isEqualTo(Authority.REGULAR_USER);
+        assertThat(user.getUsername()).isEqualTo(username);
+        assertThat(user.getPassword()).isEqualTo(new HashedPassword("hash"));
+        assertThat(user.getEmail()).isEqualTo("email@mail.com");
+
+        when(userRepository.existsByUsername(username)).thenReturn(true);
+        assertThatThrownBy(() -> authenticationService.registrationHelper(
+                username, "email@mail.com", new Password("Pass123@")))
+                .isInstanceOf(UsernameAlreadyInUseException.class)
+                .hasMessage("user username is already in use!");
     }
 
     @AfterAll

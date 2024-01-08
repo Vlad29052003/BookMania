@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -122,7 +121,7 @@ public class UserEventsListenerTests {
         outputCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-                userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, any())));
+                userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, user.getId())));
 
         assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id "
                 + user.getId().toString() + " was deleted");

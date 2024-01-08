@@ -89,7 +89,6 @@ public class UserLookupServiceTests {
 
     private static final String BOOKSHELF_PATH = "/a/user";
 
-
     /**
      * Sets up for testing.
      */

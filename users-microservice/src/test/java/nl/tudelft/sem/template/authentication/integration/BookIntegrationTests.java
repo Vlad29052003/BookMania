@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -63,15 +64,11 @@ public class BookIntegrationTests {
     private transient UserRepository userRepository;
     @Autowired
     private transient BookRepository bookRepository;
-    private transient Username adminUsername;
-    private transient Username authorUsername;
-    private transient Username userUsername;
     private transient String tokenAdmin;
     private transient String tokenAuthor;
     private transient String tokenUser;
     private transient Book book1;
     private transient Book book2;
-    private transient Book book3;
     private transient CreateBookRequestModel book1Request;
     private transient CreateBookRequestModel book3Request;
     private static final String bookshelfPath = "/a/catalog";
@@ -114,10 +111,7 @@ public class BookIntegrationTests {
      */
     @BeforeEach
     public void setUp() throws Exception {
-        adminUsername = new Username("admin");
-        authorUsername = new Username("author");
-        userUsername = new Username("user");
-
+        Username adminUsername = new Username("admin");
         String adminEmail = "admin@email.com";
         String password = "Pass@123";
         RegistrationRequestModel adminRegistrationRequest = new RegistrationRequestModel();
@@ -128,6 +122,7 @@ public class BookIntegrationTests {
         adminAuthenticationRequest.setUsername(adminUsername.toString());
         adminAuthenticationRequest.setPassword(password);
 
+        Username authorUsername = new Username("author");
         String authorEmail = "author@email.com";
         RegistrationRequestModel authorRegistrationRequest = new RegistrationRequestModel();
         authorRegistrationRequest.setUsername(authorUsername.toString());
@@ -137,6 +132,7 @@ public class BookIntegrationTests {
         authorAuthenticationRequest.setUsername(authorUsername.toString());
         authorAuthenticationRequest.setPassword(password);
 
+        Username userUsername = new Username("user");
         String userEmail = "user@email.com";
         RegistrationRequestModel userRegistrationRequest = new RegistrationRequestModel();
         userRegistrationRequest.setUsername(userUsername.toString());
@@ -173,7 +169,7 @@ public class BookIntegrationTests {
                 .andReturn();
         AuthenticationResponseModel adminAuthenticationResponse =
                 JsonUtil.deserialize(resultAdmin.getResponse().getContentAsString(),
-                AuthenticationResponseModel.class);
+                        AuthenticationResponseModel.class);
         this.tokenAdmin = "Bearer " + adminAuthenticationResponse.getToken();
 
         ResultActions resultActionsAuthor = mockMvc.perform(post("/c/authenticate")
@@ -184,7 +180,7 @@ public class BookIntegrationTests {
                 .andReturn();
         AuthenticationResponseModel authorAuthenticationResponse =
                 JsonUtil.deserialize(resultAuthor.getResponse().getContentAsString(),
-                AuthenticationResponseModel.class);
+                        AuthenticationResponseModel.class);
         this.tokenAuthor = "Bearer " + authorAuthenticationResponse.getToken();
 
         ResultActions resultActionsUser = mockMvc.perform(post("/c/authenticate")
@@ -195,14 +191,14 @@ public class BookIntegrationTests {
                 .andReturn();
         AuthenticationResponseModel userAuthenticationResponse =
                 JsonUtil.deserialize(resultUser.getResponse().getContentAsString(),
-                AuthenticationResponseModel.class);
+                        AuthenticationResponseModel.class);
         this.tokenUser = "Bearer " + userAuthenticationResponse.getToken();
 
         this.book1 = new Book("book1", List.of("Author1", "Author2"),
                 List.of(Genre.CRIME, Genre.DRAMA), "description1", 246);
         this.book2 = new Book("book2", List.of("Author6"),
                 List.of(Genre.SCIENCE), "description2", 87);
-        this.book3 = new Book("book2", List.of("author"),
+        Book book3 = new Book("book2", List.of("author"),
                 List.of(Genre.POETRY, Genre.ROMANCE, Genre.BIOGRAPHY), "description3", 784);
 
         this.book1Request = new CreateBookRequestModel(book1);
@@ -214,52 +210,87 @@ public class BookIntegrationTests {
         UUID random = UUID.randomUUID();
         ResultActions resultActions = mockMvc.perform(get("/c/books/" + random)
                 .header("Authorization", tokenUser));
-        resultActions.andExpect(status().isNotFound());
+        resultActions.andExpect(status().isNotFound())
+                .andExpect(content().string("404 NOT_FOUND \"The book does not exist!\""));
     }
 
     @Test
-    public void testCreate() throws Exception {
+    public void testCreateBookUserNonExistent() throws Exception {
+        userRepository.deleteAll();
+
         ResultActions resultActions = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenUser)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book1Request)));
 
         //only admins or authors of the book may add them
-        resultActions.andExpect(status().isUnauthorized());
+        resultActions.andExpect(status().isUnauthorized())
+                .andExpect(content().string("User does not exist!"));
+    }
 
-        ResultActions resultActions2 = mockMvc.perform(post("/c/books/")
+    @Test
+    public void testCreate() throws Exception {
+        ResultActions regularUserAddsBook = mockMvc.perform(post("/c/books/")
+                .header("Authorization", tokenUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book1Request)));
+
+        //only admins or authors of the book may add them
+        regularUserAddsBook.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only admins or authors may add books to the system!\""));
+
+        ResultActions notAuthorOfBookAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAuthor)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book1Request)));
 
         //only admins or authors of the book may add them
-        resultActions2.andExpect(status().isUnauthorized());
+        notAuthorOfBookAddsBook.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only the authors of the book may add it to the system!\""));
 
-        ResultActions resultActions3 = mockMvc.perform(post("/c/books/")
+        ResultActions authorOfBookAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAuthor)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book3Request)));
 
         //authors of the book may add them
-        resultActions3.andExpect(status().isOk());
+        authorOfBookAddsBook.andExpect(status().isOk());
 
-        ResultActions resultActions4 = mockMvc.perform(post("/c/books/")
+        ResultActions bookAlreadyInSystem = mockMvc.perform(post("/c/books/")
+                .header("Authorization", tokenAuthor)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book3Request)));
+
+        //authors of the book may add them
+        bookAlreadyInSystem.andExpect(status().isConflict())
+                .andExpect(content().string("409 CONFLICT \"The book is already in the system!\""));
+
+        ResultActions adminAddsBook = mockMvc.perform(post("/c/books/")
                 .header("Authorization", tokenAdmin)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.serialize(book1Request)));
 
         //admins may add books
-        resultActions4.andExpect(status().isOk());
+        adminAddsBook.andExpect(status().isOk());
 
         List<Book> books = bookRepository.findAll();
         assertThat(books.size()).isEqualTo(2);
         UUID id1 = books.get(1).getId();
 
-        ResultActions resultActions5 = mockMvc.perform(get("/c/books/" + id1)
+        book1Request.setAuthors(List.of("newAuthor1", "newAuthor2"));
+        ResultActions adminAddsBook2 = mockMvc.perform(post("/c/books/")
+                .header("Authorization", tokenAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book1Request)));
+
+        //admins may add books
+        adminAddsBook2.andExpect(status().isOk());
+
+        ResultActions getBook = mockMvc.perform(get("/c/books/" + id1)
                 .header("Authorization", tokenUser));
 
 
-        MvcResult getResult = resultActions5.andExpect(status().isOk()).andReturn();
+        MvcResult getResult = getBook.andExpect(status().isOk()).andReturn();
         Book bookResponse = JsonUtil.deserialize(getResult.getResponse().getContentAsString(),
                 Book.class);
 
@@ -269,6 +300,11 @@ public class BookIntegrationTests {
         assertThat(bookResponse.getGenres()).isEqualTo(book1.getGenres());
         assertThat(bookResponse.getDescription()).isEqualTo(book1.getDescription());
         assertThat(bookResponse.getNumPages()).isEqualTo(book1.getNumPages());
+    }
+
+    @Test
+    public void testAddErrors() {
+
     }
 
     @Test
@@ -331,7 +367,8 @@ public class BookIntegrationTests {
 
         ResultActions deleteBook1 = mockMvc.perform(delete("/c/books/" + id3)
                 .header("Authorization", tokenAuthor));
-        deleteBook1.andExpect(status().isUnauthorized());
+        deleteBook1.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only admins may delete books from the system!\""));
 
         ResultActions deleteBook2 = mockMvc.perform(delete("/c/books/" + id3)
                 .header("Authorization", tokenAdmin));
@@ -375,6 +412,29 @@ public class BookIntegrationTests {
         assertThat(bookRepository.findAll().isEmpty()).isTrue();
         AppUser updatedUser = userRepository.findByUsername(new Username("user")).get();
         assertThat(updatedUser.getFavouriteBook()).isNull();
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateErrors() throws Exception {
+        ResultActions addBook1 = mockMvc.perform(put("/c/books/")
+                .header("Authorization", tokenAuthor)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book3Request)));
+
+        ResultActions updateBook1 = mockMvc.perform(put("/c/books/")
+                .header("Authorization", tokenUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book2)));
+        updateBook1.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only admins or authors may update books in the system!\""));
+
+        ResultActions updateBook2 = mockMvc.perform(put("/c/books/")
+                .header("Authorization", tokenAuthor)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(book2)));
+        updateBook2.andExpect(status().isUnauthorized())
+                .andExpect(content().string("401 UNAUTHORIZED \"Only the authors of the book may edit it!\""));
     }
 
     /**

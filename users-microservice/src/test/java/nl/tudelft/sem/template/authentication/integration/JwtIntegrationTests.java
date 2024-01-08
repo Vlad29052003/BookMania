@@ -1,18 +1,28 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -21,8 +31,14 @@ import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
+import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
+import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
+import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,10 +46,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -41,9 +59,10 @@ import org.springframework.test.web.servlet.ResultActions;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 // activate profiles to have spring use mocks during auto-injection of certain beans.
-@ActiveProfiles({"test", "mockPasswordEncoder"})
+@ActiveProfiles({"test"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:application-test.properties")
 public class JwtIntegrationTests {
     @Autowired
     private transient MockMvc mockMvc;
@@ -61,10 +80,31 @@ public class JwtIntegrationTests {
     private transient String jwtExpiredToken;
     private transient String nullUsernameJwtToken;
 
+    private static final String BOOKSHELF_PATH = "/a/user";
+
+    private static WireMockServer wireMockServer;
+    private final transient ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+    /**
+     * Sets up the testing environment.
+     */
+    @BeforeAll
+    public static void init() {
+        wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
+                .willReturn(aResponse().withStatus(200)));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+    }
+
     /**
      * Sets up the testing environment.
      *
-     * @throws NoSuchFieldException if there is no such field
+     * @throws NoSuchFieldException   if there is no such field
      * @throws IllegalAccessException if there is no access
      */
     @BeforeEach
@@ -90,6 +130,8 @@ public class JwtIntegrationTests {
         user = new User("username", "someHash", List.of(Authority.REGULAR_USER));
         when(timeProvider.getCurrentTime()).thenReturn(expiredTime);
         jwtExpiredToken = jwtTokenGenerator.generateToken(user);
+
+        System.setOut(new PrintStream(outputStreamCaptor));
     }
 
     @Test
@@ -214,9 +256,76 @@ public class JwtIntegrationTests {
         resultActions.andExpect(status().isNotFound());
     }
 
+    @Test
+    @Transactional
+    public void performFullCycle() throws Exception {
+        RegistrationRequestModel registrationRequest = new RegistrationRequestModel();
+        registrationRequest.setUsername("user1");
+        registrationRequest.setEmail("user@email.com");
+        registrationRequest.setPassword("Pass123@");
+
+        ResultActions register = mockMvc.perform(post("/c/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(registrationRequest)));
+
+        register.andExpect(status().isOk());
+        assertThat(outputStreamCaptor.toString().trim())
+                .contains("Account of user with ");
+        assertThat(userRepository.findAll().get(0).getDomainEventsSize()).isEqualTo(0);
+
+        AuthenticationRequestModel authenticationRequest = new AuthenticationRequestModel();
+        authenticationRequest.setUsername("user1");
+        authenticationRequest.setPassword("Pass123@");
+
+        ResultActions authenticate = mockMvc.perform(post("/c/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(authenticationRequest)));
+
+        authenticate.andExpect(status().isOk());
+        AuthenticationResponseModel authenticationResponse =
+                JsonUtil.deserialize(authenticate.andReturn().getResponse().getContentAsString(),
+                        AuthenticationResponseModel.class);
+
+        UUID id = userRepository.findAll().get(0).getId();
+
+        TokenValidationResponse expected = new TokenValidationResponse();
+        expected.setId(id);
+        expected.setAuthority(Authority.REGULAR_USER);
+
+        ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
+                .header("Authorization", "Bearer " + authenticationResponse.getToken()));
+
+        TokenValidationResponse response = JsonUtil
+                .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
+                        TokenValidationResponse.class);
+
+        resultActions.andExpect(status().isOk());
+
+        assertThat(response.getId()).isEqualTo(expected.getId());
+        assertThat(response.getAuthority()).isEqualTo(expected.getAuthority());
+
+        registrationRequest.setEmail("modEmail@maiul.org");
+        ResultActions register2 = mockMvc.perform(post("/c/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(registrationRequest)));
+
+        register2.andExpect(status().isBadRequest())
+                .andExpect(content().string("Username or email already in use!"));
+    }
+
     private void injectSecret(String secret) throws NoSuchFieldException, IllegalAccessException {
         Field declaredField = jwtTokenGenerator.getClass().getDeclaredField("jwtSecret");
         declaredField.setAccessible(true);
         declaredField.set(jwtTokenGenerator, secret);
+    }
+
+    @AfterEach
+    public void revertChanges() {
+        System.setOut(System.out);
+    }
+
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
     }
 }

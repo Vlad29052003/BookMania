@@ -24,6 +24,7 @@ import lombok.Setter;
 import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.HasEvents;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.hibernate.annotations.Type;
 
 /**
@@ -95,6 +96,19 @@ public class Book extends HasEvents {
         this.description = description;
         this.numPages = numPages;
         this.usersWithBookAsFavorite = new ArrayList<>();
+    }
+
+    /**
+     * Creates a book object.
+     *
+     * @param createBookRequestModel is given a create book request.
+     */
+    public Book(CreateBookRequestModel createBookRequestModel) {
+        this.title = createBookRequestModel.getTitle();
+        this.authors = new ArrayList<>(createBookRequestModel.getAuthors());
+        this.genres = new ArrayList<>(createBookRequestModel.getGenres());
+        this.description = createBookRequestModel.getDescription();
+        this.numPages = createBookRequestModel.getNumPages();
     }
 
     /**

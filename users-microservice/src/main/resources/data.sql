@@ -7,3 +7,5 @@ INSERT INTO USERS (id, username, email, password_hash, authority, deactivated, p
             'ADMIN',
             false,
             true);
+
+-- username: PrimeAdmin, password: Pass123!

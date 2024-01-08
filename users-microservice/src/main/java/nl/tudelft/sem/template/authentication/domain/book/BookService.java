@@ -6,12 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
-import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
-import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class BookService {
     private final transient BookRepository bookRepository;
     private final transient UserRepository userRepository;
-    private final transient JwtService jwtService;
     private final transient BookEventsListener eventPublisher;
 
     /**
@@ -30,14 +26,12 @@ public class BookService {
      *
      * @param bookRepository is the book repository
      * @param userRepository is the user repository
-     * @param jwtService     is the jwt service
      */
     @Autowired
     public BookService(BookRepository bookRepository, UserRepository userRepository,
-                       JwtService jwtService, BookEventsListener eventPublisher) {
+                       BookEventsListener eventPublisher) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.jwtService = jwtService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -58,44 +52,17 @@ public class BookService {
     /**
      * Adds a book to the database.
      *
-     * @param createBookRequestModel contains the book information
-     * @param bearerToken            is the jwt token of the user who made the request
+     * @param newBook is the book to be added.
      */
-    public void addBook(CreateBookRequestModel createBookRequestModel, String bearerToken) {
-        if (getAuthority(bearerToken).equals(Authority.ADMIN) || getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-            if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-                Optional<AppUser> authorOptional = userRepository
-                        .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
-                if (authorOptional.isEmpty()) {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                            "Only the authors of the book may add it to the system!");
-                }
-                AppUser currentAuthor = authorOptional.get();
-                if (!createBookRequestModel.getAuthors().contains(currentAuthor.getName())) {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                            "Only the authors of the book may add it to the system!");
-                }
-            }
-
-            List<Book> books = bookRepository.findByTitle(createBookRequestModel.getTitle());
-            boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
-                    .equals(new HashSet<>(createBookRequestModel.getAuthors())));
-            if (invalid) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
-            }
-
-            Book newBook = new Book(createBookRequestModel.getTitle(),
-                    createBookRequestModel.getAuthors(),
-                    createBookRequestModel.getGenres(),
-                    createBookRequestModel.getDescription(),
-                    createBookRequestModel.getNumPages());
-
-            newBook.recordBookWasCreated();
-            bookRepository.saveAndFlush(newBook);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Only admins or authors may add books to the system!");
+    public void addBook(Book newBook) {
+        List<Book> books = bookRepository.findByTitle(newBook.getTitle());
+        boolean invalid = books.stream().anyMatch(x -> new HashSet<>(x.getAuthors())
+                .equals(new HashSet<>(newBook.getAuthors())));
+        if (invalid) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
         }
+        newBook.recordBookWasCreated();
+        bookRepository.saveAndFlush(newBook);
     }
 
 
@@ -103,93 +70,46 @@ public class BookService {
      * Updates a book in the system.
      *
      * @param updatedBook contains the new information for the book
-     * @param bearerToken is the jwt token of the user that made the request
      */
-    public void updateBook(Book updatedBook, String bearerToken) {
+    public void updateBook(Book updatedBook) {
         if (updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The authors and genres cannot be null!");
         }
-        if (getAuthority(bearerToken).equals(Authority.ADMIN)) {
+        Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
 
-            Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
-            if (optBook.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
-            }
-            Book currentBook = optBook.get();
-
-            currentBook.setTitle(updatedBook.getTitle());
-            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            currentBook.setDescription(updatedBook.getDescription());
-            currentBook.setNumPages(updatedBook.getNumPages());
-
-            currentBook.recordBookWasEdited();
-            bookRepository.saveAndFlush(currentBook);
-        } else if (getAuthority(bearerToken).equals(Authority.AUTHOR)) {
-
-            Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
-
-            if (optBook.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
-            }
-
-            Book currentBook = optBook.get();
-
-            Optional<AppUser> authorOptional = userRepository
-                    .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
-            AppUser currentAuthor = authorOptional.get();
-
-            if (!currentBook.getAuthors().contains(currentAuthor.getName())) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the authors of the book may edit it!");
-            }
-
-            currentBook.setTitle(updatedBook.getTitle());
-            currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-            currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
-            currentBook.setDescription(updatedBook.getDescription());
-            currentBook.setNumPages(updatedBook.getNumPages());
-
-            currentBook.recordBookWasEdited();
-            bookRepository.saveAndFlush(currentBook);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Only admins or authors may update books in the system!");
+        if (optBook.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!");
         }
+
+        Book currentBook = optBook.get();
+
+        currentBook.setTitle(updatedBook.getTitle());
+        currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
+        currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
+        currentBook.setDescription(updatedBook.getDescription());
+        currentBook.setNumPages(updatedBook.getNumPages());
+
+        currentBook.recordBookWasEdited();
+        bookRepository.saveAndFlush(currentBook);
     }
 
     /**
      * Deletes a book from the overall collection.
      *
-     * @param bookId      is the id of the book to be deleted.
-     * @param bearerToken is the jwt token of the user that made the request
+     * @param bookId is the id of the book to be deleted.
      */
     @Transactional
-    public void deleteBook(String bookId, String bearerToken) {
-        if (!getAuthority(bearerToken).equals(Authority.ADMIN)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins may delete books from the system!");
-        }
-        var optBook = bookRepository.findById(UUID.fromString(bookId));
+    public void deleteBook(UUID bookId, Username username) {
+        Optional<Book> optBook = bookRepository.findById(bookId);
         if (optBook.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This book does not exist!");
         }
 
-        Optional<AppUser> appUserOptional = userRepository
-                .findByUsername(new Username(jwtService.extractUsername(bearerToken.substring(7))));
-        if (appUserOptional.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
         Book book = optBook.get();
 
-        userRepository.removeBookFromUsersFavorites(UUID.fromString(bookId));
-
-        bookRepository.deleteById(UUID.fromString(bookId));
-
-        eventPublisher.onBookWasDeleted(new BookWasDeletedEvent(book, appUserOptional.get().getId()));
-
-    }
-
-    private Authority getAuthority(String bearerToken) {
-        return jwtService.extractAuthorization(bearerToken.substring(7));
+        userRepository.removeBookFromUsersFavorites(bookId);
+        UUID userId = userRepository.findByUsername(username).get().getId();
+        bookRepository.deleteById(bookId);
+        eventPublisher.onBookWasDeleted(new BookWasDeletedEvent(book, userId));
     }
 }
