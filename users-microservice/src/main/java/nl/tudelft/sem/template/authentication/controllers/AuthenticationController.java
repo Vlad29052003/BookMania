@@ -75,7 +75,7 @@ public class AuthenticationController {
     @GetMapping("/validate-token")
     public ResponseEntity<?> verifyJwt() {
         try {
-            return ResponseEntity.ok(authenticationService.getId(
+            return ResponseEntity.ok(authenticationService.getAuthority(
                     new Username(SecurityContextHolder.getContext().getAuthentication().getName())));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!");

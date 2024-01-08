@@ -149,12 +149,12 @@ public class AuthenticationServiceTests {
         when(jwtService.extractUsername("token")).thenReturn(userDetails.getUsername());
         when(userRepository.findByUsername(appUser.getUsername())).thenReturn(Optional.of(appUser));
 
-        assertEquals(authenticationService.getId(new Username("user")), tokenValidationResponse);
+        assertEquals(authenticationService.getAuthority(new Username("user")), tokenValidationResponse);
     }
 
     @Test
     public void validateTokenFails() {
-        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getId(new Username("user")));
+        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getAuthority(new Username("user")));
     }
 
     @Test
@@ -162,7 +162,7 @@ public class AuthenticationServiceTests {
         when(userRepository.findByUsername(any())).thenReturn(Optional.empty());
         when(jwtService.extractUsername("token")).thenReturn("user1");
 
-        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getId(new Username("user")));
+        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getAuthority(new Username("user")));
     }
 
     @Test

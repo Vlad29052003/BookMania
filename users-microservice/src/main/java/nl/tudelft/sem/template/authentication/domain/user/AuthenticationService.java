@@ -97,7 +97,7 @@ public class AuthenticationService {
      *
      * @return a data object containing the authority
      */
-    public TokenValidationResponse getId(Username username) {
+    public TokenValidationResponse getAuthority(Username username) {
         Optional<AppUser> appUserOptional = userRepository
                 .findByUsername(username);
         if (appUserOptional.isEmpty()) {

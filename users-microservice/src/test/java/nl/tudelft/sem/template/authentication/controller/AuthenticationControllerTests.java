@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.AuthenticationController;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
@@ -84,7 +85,7 @@ public class AuthenticationControllerTests {
         response.setId(UUID.randomUUID());
         response.setAuthority(Authority.REGULAR_USER);
 
-        when(authenticationService.getId(new Username("ExampleUsername"))).thenReturn(response);
+        when(authenticationService.getAuthority(new Username("ExampleUsername"))).thenReturn(response);
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(
                         "ExampleUsername",
@@ -94,11 +95,13 @@ public class AuthenticationControllerTests {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         assertEquals(authenticationController.verifyJwt(), ResponseEntity.ok(response));
+        assertEquals(((TokenValidationResponse) Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getId(), response.getId());
+        assertEquals(((TokenValidationResponse) Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getAuthority(), response.getAuthority());
     }
 
     @Test
     public void validateTokenThrowsError() {
-        when(authenticationService.getId(new Username("ExampleUsername")))
+        when(authenticationService.getAuthority(new Username("ExampleUsername")))
                 .thenThrow(new UsernameNotFoundException("User does not exist!"));
 
         assertEquals(authenticationController.verifyJwt(),
