@@ -11,6 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

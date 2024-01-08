@@ -1,9 +1,12 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -73,6 +76,8 @@ public class UserEventsListenerTests {
         userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user));
 
         assertThat(outputCaptor.toString().trim()).contains("Account of user with id ");
+        verify(postRequestedFor(urlEqualTo(BOOKSHELF_URI))
+                .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
@@ -88,6 +93,8 @@ public class UserEventsListenerTests {
         assertThrows(RuntimeException.class, () -> userEventsListener.onUserWasCreated(new UserWasCreatedEvent(user)));
 
         assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id ");
+        verify(postRequestedFor(urlEqualTo(BOOKSHELF_URI))
+                .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
@@ -106,6 +113,8 @@ public class UserEventsListenerTests {
 
         assertThat(outputCaptor.toString().trim()).contains("Account of user with id "
                 + user.getId().toString() + " was deleted");
+        verify(deleteRequestedFor(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId())));
+        verify(deleteRequestedFor(urlEqualTo(REVIEW_URI + "/" + user.getId().toString() + "/" + user.getId())));
     }
 
     @Test
@@ -125,6 +134,7 @@ public class UserEventsListenerTests {
 
         assertThat(outputCaptor.toString().trim()).doesNotContain("Account of user with id "
                 + user.getId().toString() + " was deleted");
+        verify(deleteRequestedFor(urlEqualTo(BOOKSHELF_URI + "?userId=" + user.getId())));
     }
 
     @AfterAll
