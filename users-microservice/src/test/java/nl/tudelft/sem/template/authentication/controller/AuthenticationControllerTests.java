@@ -95,12 +95,24 @@ public class AuthenticationControllerTests {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         assertEquals(authenticationController.verifyJwt(), ResponseEntity.ok(response));
-        assertEquals(((TokenValidationResponse) Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getId(), response.getId());
-        assertEquals(((TokenValidationResponse) Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getAuthority(), response.getAuthority());
+        assertEquals(((TokenValidationResponse)
+                Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getId(),
+                response.getId());
+        assertEquals(((TokenValidationResponse)
+                Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getAuthority(),
+                response.getAuthority());
     }
 
     @Test
     public void validateTokenThrowsError() {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                        "ExampleUsername",
+                        null,
+                        List.of(Authority.REGULAR_USER)
+                );
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
         when(authenticationService.getAuthority(new Username("ExampleUsername")))
                 .thenThrow(new UsernameNotFoundException("User does not exist!"));
 
