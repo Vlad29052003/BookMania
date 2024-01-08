@@ -1,16 +1,17 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -69,13 +70,13 @@ public class AuthenticationController {
     /**
      * Endpoint for validating the jwt bearer token.
      *
-     * @param token The bearer jwt token.
      * @return Authority if verification is successful.
      */
     @GetMapping("/validate-token")
-    public ResponseEntity<?> verifyJwt(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> verifyJwt() {
         try {
-            return ResponseEntity.ok(authenticationService.getId(token));
+            return ResponseEntity.ok(authenticationService.getAuthority(
+                    new Username(SecurityContextHolder.getContext().getAuthentication().getName())));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!");
         }

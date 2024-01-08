@@ -34,6 +34,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.server.ResponseStatusException;
 
 public class AuthenticationServiceTests {
@@ -64,8 +65,7 @@ public class AuthenticationServiceTests {
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService,
-                jwtService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
 
         String email = "email@gmail.com";
         String username = "user";
@@ -149,13 +149,12 @@ public class AuthenticationServiceTests {
         when(jwtService.extractUsername("token")).thenReturn(userDetails.getUsername());
         when(userRepository.findByUsername(appUser.getUsername())).thenReturn(Optional.of(appUser));
 
-        assertEquals(authenticationService.getId(token), tokenValidationResponse);
+        assertEquals(authenticationService.getAuthority(new Username("user")), tokenValidationResponse);
     }
 
     @Test
     public void validateTokenFails() {
-        assertThrows(IllegalArgumentException.class, () -> authenticationService.getId(null));
-        assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("token"));
+        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getAuthority(new Username("user")));
     }
 
     @Test
@@ -163,7 +162,7 @@ public class AuthenticationServiceTests {
         when(userRepository.findByUsername(any())).thenReturn(Optional.empty());
         when(jwtService.extractUsername("token")).thenReturn("user1");
 
-        assertThrows(IllegalArgumentException.class, () -> authenticationService.getId("Bearer token"));
+        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getAuthority(new Username("user")));
     }
 
     @Test
