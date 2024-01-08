@@ -135,6 +135,17 @@ public class UserControllerTests {
     }
 
     @Test
+    public void testDeleteByAdmin() {
+        Username usernameAdmin = new Username("admin");
+        AppUser admin = new AppUser(usernameAdmin, "admin@email.com", new HashedPassword("hash"));
+        admin.setId(UUID.randomUUID());
+
+        when(userService.getUserByUsername(usernameAdmin)).thenReturn(admin);
+
+        assertThat(userController.deleteByAdmin(username.toString())).isEqualTo(ResponseEntity.ok().build());
+    }
+
+    @Test
     public void testUpdateBannedStatus() {
         BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
         banUserRequestModel.setUsername(username.toString());
