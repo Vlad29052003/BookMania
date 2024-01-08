@@ -83,6 +83,7 @@ public class AuthenticationControllerTests {
         TokenValidationResponse response = new TokenValidationResponse();
         response.setId(UUID.randomUUID());
         response.setAuthority(Authority.REGULAR_USER);
+
         when(authenticationService.getAuthority(new Username("ExampleUsername"))).thenReturn(response);
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(
@@ -91,6 +92,7 @@ public class AuthenticationControllerTests {
                         List.of(Authority.REGULAR_USER)
                 );
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
         assertEquals(authenticationController.verifyJwt(), ResponseEntity.ok(response));
     }
 
