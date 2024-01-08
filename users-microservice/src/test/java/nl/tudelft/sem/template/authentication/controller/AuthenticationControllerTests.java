@@ -104,6 +104,8 @@ public class AuthenticationControllerTests {
         assertEquals(((TokenValidationResponse)
                 Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getAuthority(),
                 tokenValidationResponse.getAuthority());
+
+        SecurityContextHolder.clearContext();
     }
 
     @Test
