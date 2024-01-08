@@ -84,7 +84,7 @@ public class AuthenticationControllerTests {
         response.setId(UUID.randomUUID());
         response.setAuthority(Authority.REGULAR_USER);
 
-        when(authenticationService.getAuthority(new Username("ExampleUsername"))).thenReturn(response);
+        when(authenticationService.getId(new Username("ExampleUsername"))).thenReturn(response);
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(
                         "ExampleUsername",
@@ -98,7 +98,7 @@ public class AuthenticationControllerTests {
 
     @Test
     public void validateTokenThrowsError() {
-        when(authenticationService.getAuthority(new Username("ExampleUsername")))
+        when(authenticationService.getId(new Username("ExampleUsername")))
                 .thenThrow(new UsernameNotFoundException("User does not exist!"));
 
         assertEquals(authenticationController.verifyJwt(),
