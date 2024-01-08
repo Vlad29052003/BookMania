@@ -1,7 +1,8 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
+
 import java.util.Optional;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
@@ -24,7 +25,6 @@ public class AuthenticationService {
     private final transient AuthenticationManager authenticationManager;
     private final transient JwtTokenGenerator jwtTokenGenerator;
     private final transient JwtUserDetailsService jwtUserDetailsService;
-    private final transient JwtService jwtService;
     private final transient UserRepository userRepository;
     private final transient PasswordHashingService passwordHashingService;
 
@@ -34,20 +34,17 @@ public class AuthenticationService {
      * @param authenticationManager  manages the authentication
      * @param jwtTokenGenerator      manages the jwt generation
      * @param jwtUserDetailsService  manages the user details
-     * @param jwtService             extract the claims from the jwt
      * @param passwordHashingService the password encoder
      */
     @Autowired
     public AuthenticationService(AuthenticationManager authenticationManager,
                                  JwtTokenGenerator jwtTokenGenerator,
                                  JwtUserDetailsService jwtUserDetailsService,
-                                 JwtService jwtService,
                                  UserRepository userRepository,
                                  PasswordHashingService passwordHashingService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenGenerator = jwtTokenGenerator;
         this.jwtUserDetailsService = jwtUserDetailsService;
-        this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordHashingService = passwordHashingService;
     }
@@ -98,17 +95,13 @@ public class AuthenticationService {
     /**
      * Gets the authority the user has.
      *
-     * @param token is the jwt bearer token.
      * @return a data object containing the authority
      */
-    public TokenValidationResponse getId(String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new IllegalArgumentException();
-        }
+    public TokenValidationResponse getAuthority(Username username) {
         Optional<AppUser> appUserOptional = userRepository
-                .findByUsername(new Username(jwtService.extractUsername(token.substring(7))));
+                .findByUsername(username);
         if (appUserOptional.isEmpty()) {
-            throw new IllegalArgumentException();
+            throw new UsernameNotFoundException(NO_SUCH_USER);
         }
         return new TokenValidationResponse(appUserOptional.get().getId(), appUserOptional.get().getAuthority());
     }

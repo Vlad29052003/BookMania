@@ -5,9 +5,12 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.AuthenticationController;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -15,6 +18,9 @@ import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.server.ResponseStatusException;
 
 public class AuthenticationControllerTests {
@@ -76,15 +82,24 @@ public class AuthenticationControllerTests {
     public void validateToken() {
         TokenValidationResponse response = new TokenValidationResponse();
         response.setId(UUID.randomUUID());
-        when(authenticationService.getId("token")).thenReturn(response);
-        assertEquals(authenticationController.verifyJwt("token"), ResponseEntity.ok(response));
+        response.setAuthority(Authority.REGULAR_USER);
+        when(authenticationService.getAuthority(new Username("ExampleUsername"))).thenReturn(response);
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                        "ExampleUsername",
+                        null,
+                        List.of(Authority.REGULAR_USER)
+                );
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        assertEquals(authenticationController.verifyJwt(), ResponseEntity.ok(response));
     }
 
     @Test
     public void validateTokenThrowsError() {
-        when(authenticationService.getId("token")).thenThrow(new IllegalArgumentException());
+        when(authenticationService.getAuthority(new Username("ExampleUsername")))
+                .thenThrow(new UsernameNotFoundException("User does not exist!"));
 
-        assertEquals(authenticationController.verifyJwt("token"),
+        assertEquals(authenticationController.verifyJwt(),
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!"));
     }
 }

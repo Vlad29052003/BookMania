@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import nl.tudelft.sem.template.authentication.authentication.JwtService;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -63,8 +62,6 @@ public class UserLookupServiceTests {
     @Autowired
     private transient JwtUserDetailsService jwtUserDetailsService;
 
-    @Autowired
-    private transient JwtService jwtService;
     private transient RegistrationRequestModel registrationRequest;
     private transient RegistrationRequestModel registrationRequest2;
 
@@ -85,8 +82,7 @@ public class UserLookupServiceTests {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
         when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService,
-                jwtService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
 
         String email = "email@gmail.com";
         String username = "user";
