@@ -9,6 +9,7 @@ import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -16,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
@@ -399,9 +401,17 @@ public class UserServiceTests {
     @Transactional
     public void testDeleteUserNotFound() {
         AppUser user = new AppUser(new Username("nonExistentUser"), "email@email.com", new HashedPassword("password"));
-        assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser"), new Username("nonExistentUser")))
+        AppUser requester = new AppUser(new Username("nonExistentRequester"),
+                "requester@email.com", new HashedPassword("password"));
+        assertThatThrownBy(() ->
+                userService.delete(new Username("nonExistentUser"), new Username("nonExistentUser")))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(NO_SUCH_USER);
+
+        userRepository.save(user);
+        assertThatThrownBy(() -> userService.delete(user.getUsername(), requester.getUsername()))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage("Requester does not exist!");
     }
 
     @Test
