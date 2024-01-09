@@ -12,6 +12,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -93,7 +94,7 @@ public class AppUser extends HasEvents {
     private Book favouriteBook;
 
     @Setter
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_connections",
             joinColumns = @JoinColumn(name = "follower_id"),
@@ -101,7 +102,7 @@ public class AppUser extends HasEvents {
     private List<AppUser> follows;
 
     @Setter
-    @ManyToMany(mappedBy = "follows")
+    @ManyToMany(mappedBy = "follows", fetch = FetchType.EAGER)
     private List<AppUser> followedBy;
 
     @Setter
@@ -122,7 +123,7 @@ public class AppUser extends HasEvents {
     /**
      * Create new application user.
      *
-     * @param username    The Username for the new user
+     * @param username The Username for the new user
      * @param password The password for the new user
      */
     public AppUser(Username username, String email, HashedPassword password) {
@@ -173,5 +174,30 @@ public class AppUser extends HasEvents {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    /**
+     * Follows a user.
+     *
+     * @param user - The user to follow.
+     */
+    public void follow(AppUser user) {
+        if (!follows.contains(user)) {
+            follows.add(user);
+            user.followedBy.add(this);
+        }
+    }
+
+    /**
+     * Unfollows a user.
+     *
+     * @param user - The user to unfollow.
+     */
+
+    public void unfollow(AppUser user) {
+        if (follows.contains(user)) {
+            follows.remove(user);
+            user.followedBy.remove(this);
+        }
     }
 }

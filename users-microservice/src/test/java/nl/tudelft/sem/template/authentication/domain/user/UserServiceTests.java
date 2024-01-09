@@ -401,4 +401,55 @@ public class UserServiceTests {
         assertThatThrownBy(() -> userService.updatePrivacy(new Username("inexistentUsername"), true))
                 .isInstanceOf(UsernameNotFoundException.class).hasMessage(NO_SUCH_USER);
     }
+
+
+    @Test
+    public void testFollowUser() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+
+
+        Username username2 = new Username("usernameToFollow");
+        String email2 = "test2@email.com";
+        HashedPassword password2 = new HashedPassword("pass123");
+        AppUser user2 = new AppUser(username2, email2, password2);
+        userRepository.save(user2);
+
+        userService.followUser(username, username2);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        AppUser retrievedUser2 = userService.getUserByUsername(username2);
+        assertThat(retrievedUser.getFollows().get(0).getUsername()).isEqualTo(username2);
+        assertThat(retrievedUser2.getFollowedBy().get(0).getUsername()).isEqualTo(username);
+    }
+
+    @Test
+    public void testUnfollowUser() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+
+
+        Username username2 = new Username("usernameToFollow");
+        String email2 = "test2@email.com";
+        HashedPassword password2 = new HashedPassword("pass123");
+        AppUser user2 = new AppUser(username2, email2, password2);
+        userRepository.save(user2);
+
+        userService.followUser(username, username2);
+        userService.unfollowUser(username, username2);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        AppUser retrievedUser2 = userService.getUserByUsername(username2);
+        assertThat(retrievedUser.getFollows().isEmpty()).isTrue();
+        assertThat(retrievedUser2.getFollowedBy().isEmpty()).isTrue();
+    }
+
 }

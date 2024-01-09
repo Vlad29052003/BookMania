@@ -171,4 +171,22 @@ public class UserControllerTests {
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1)).updateEmail(username, newEmail);
     }
+
+    @Test
+    public void testFollowUser() {
+        String userToFollow = "userToFollow";
+
+        assertThat(userController.followUser(userToFollow))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).followUser(username, new Username(userToFollow));
+    }
+
+    @Test
+    public void testUnfollowUser() {
+        String userToUnfollow = "userToUnfollow";
+
+        assertThat(userController.unfollowUser(userToUnfollow))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).unfollowUser(username, new Username(userToUnfollow));
+    }
 }

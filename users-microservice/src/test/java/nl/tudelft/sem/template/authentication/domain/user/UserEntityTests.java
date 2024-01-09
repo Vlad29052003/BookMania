@@ -97,4 +97,21 @@ public class UserEntityTests {
     public void testEventCreated() {
         assertThat(user1.getDomainEventsSize()).isEqualTo(1);
     }
+
+
+    @Test
+    public void testFollow() {
+        assertThat(user1.getFollows()).isEqualTo(new ArrayList<>());
+        user1.follow(user2);
+        assertThat(user1.getFollows()).isEqualTo(List.of(user2));
+    }
+
+    @Test
+    public void testUnfollow() {
+        assertThat(user1.getFollows()).isEqualTo(new ArrayList<>());
+        user1.follow(user2);
+        assertThat(user1.getFollows()).isEqualTo(List.of(user2));
+        user1.unfollow(user2);
+        assertThat(user1.getFollows()).isEqualTo(new ArrayList<>());
+    }
 }
