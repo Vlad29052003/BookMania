@@ -7,10 +7,10 @@ import lombok.Getter;
  */
 @Getter
 public class UserWasCreatedEvent {
-    private final transient Username username;
 
-    public UserWasCreatedEvent(Username username) {
-        this.username = username;
+    private final transient AppUser user;
+
+    public UserWasCreatedEvent(AppUser user) {
+        this.user = user;
     }
-
 }

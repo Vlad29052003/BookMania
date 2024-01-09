@@ -137,7 +137,6 @@ public class AppUser extends HasEvents {
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
         this.authority = Authority.REGULAR_USER;
-        this.recordThat(new UserWasCreatedEvent(username));
     }
 
     /**
@@ -176,5 +175,9 @@ public class AppUser extends HasEvents {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void recordUserWasCreated() {
+        this.recordThat(new UserWasCreatedEvent(this));
     }
 }

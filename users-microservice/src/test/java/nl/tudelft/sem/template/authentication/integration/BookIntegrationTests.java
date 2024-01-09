@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -71,7 +72,10 @@ public class BookIntegrationTests {
     private transient CreateBookRequestModel book1Request;
     private transient CreateBookRequestModel book3Request;
     private static final String bookshelfPath = "/a/catalog";
+
     private static final String reviewPath = "/b/book";
+
+    private static final String BOOKSHELF_PATH = "/a/user";
     private static WireMockServer mockServer;
     private UUID adminId;
 
@@ -90,10 +94,14 @@ public class BookIntegrationTests {
                 .willReturn(aResponse().withStatus(200)));
         stubFor(WireMock.post(urlEqualTo(bookshelfPath))
                 .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
+                .willReturn(aResponse().withStatus(200)));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
         BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**
@@ -195,7 +203,6 @@ public class BookIntegrationTests {
 
         this.book1Request = new CreateBookRequestModel(book1);
         this.book3Request = new CreateBookRequestModel(book3);
-
     }
 
     @Test
@@ -434,7 +441,7 @@ public class BookIntegrationTests {
      * Set up for the testing environment after all tests.
      */
     @AfterAll
-    public static void afterEach() {
+    public static void stop() {
         mockServer.stop();
     }
 }
