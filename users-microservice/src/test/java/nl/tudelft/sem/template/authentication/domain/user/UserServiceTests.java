@@ -385,7 +385,7 @@ public class UserServiceTests {
 
         outputStreamCaptor.reset();
 
-        userService.delete(retrievedUser.getUsername(), retrievedUser);
+        userService.delete(retrievedUser.getUsername(), retrievedUser.getUsername());
 
         assertThat(outputStreamCaptor.toString().trim()).contains("Account of user with id " + user.getId().toString()
                 + " was deleted.");
@@ -399,7 +399,7 @@ public class UserServiceTests {
     @Transactional
     public void testDeleteUserNotFound() {
         AppUser user = new AppUser(new Username("nonExistentUser"), "email@email.com", new HashedPassword("password"));
-        assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser"), user))
+        assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser"), new Username("nonExistentUser")))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(NO_SUCH_USER);
     }

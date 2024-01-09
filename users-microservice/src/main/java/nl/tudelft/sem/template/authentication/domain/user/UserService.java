@@ -286,13 +286,18 @@ public class UserService {
      * @param username the username
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void delete(Username username, AppUser requester) {
+    public void delete(Username username, Username requesterUsername) {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
+        Optional<AppUser> optionalRequester = userRepository.findByUsername(requesterUsername);
+        if (optionalRequester.isEmpty()) {
+            throw new UsernameNotFoundException("Requester does not exist!");
+        }
 
         AppUser user = optionalAppUser.get();
+        AppUser requester = optionalRequester.get();
 
         userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, requester.getId()));
 

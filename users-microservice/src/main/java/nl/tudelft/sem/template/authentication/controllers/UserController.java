@@ -241,8 +241,7 @@ public class UserController {
     @DeleteMapping
     public ResponseEntity<Void> delete() {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        AppUser user = userService.getUserByUsername(username);
-        userService.delete(username, user);
+        userService.delete(username, username);
 
         return ResponseEntity.ok().build();
     }
@@ -255,10 +254,8 @@ public class UserController {
      */
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> deleteByAdmin(@PathVariable String username) {
-        Username adminName = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        AppUser admin = userService.getUserByUsername(adminName);
-
-        userService.delete(new Username(username), admin);
+        Username adminUsername = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+        userService.delete(new Username(username), adminUsername);
 
         return ResponseEntity.ok().build();
     }

@@ -131,7 +131,7 @@ public class UserControllerTests {
         when(userService.getUserByUsername(username)).thenReturn(user);
 
         assertThat(userController.delete()).isEqualTo(ResponseEntity.ok().build());
-        verify(userService, times(1)).delete(username, user);
+        verify(userService, times(1)).delete(username, username);
     }
 
     @Test
