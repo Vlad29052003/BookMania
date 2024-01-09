@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.authentication.handlers;
 
-import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
 
 import java.util.Optional;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -8,6 +7,7 @@ import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.models.FilterBookRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
 public class CheckUserExistenceHandler extends AbstractHandler {
 

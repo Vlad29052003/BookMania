@@ -59,8 +59,7 @@ public class BookController {
             commandChain.setAddBookStrategy();
             Book newBook = new Book(createBookRequestModel);
             Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
-                    .getAuthorities().iterator().next();
+            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication().getAuthorities().iterator().next();
             commandChain.handle(username, authority, newBook);
 
         } catch (ResponseStatusException e) {
@@ -81,8 +80,7 @@ public class BookController {
         try {
             commandChain.setEditBookStrategy();
             Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
-                    .getAuthorities().iterator().next();
+            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication().getAuthorities().iterator().next();
             commandChain.handle(username, authority, updatedBook);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
@@ -94,7 +92,7 @@ public class BookController {
     /**
      * Deletes a book from the overall collection.
      *
-     * @param bookId      the id of the book to be deleted
+     * @param bookId the id of the book to be deleted
      * @return the status of the operation
      */
     @DeleteMapping("/{bookId}")
@@ -104,8 +102,7 @@ public class BookController {
             Book deletedBook = new Book();
             deletedBook.setId(UUID.fromString(bookId));
             Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
-                    .getAuthorities().iterator().next();
+            Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication().getAuthorities().iterator().next();
             commandChain.handle(username, authority, deletedBook);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());

@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
-import java.util.Optional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
@@ -19,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.Optional;
 
 @Service
 public class AuthenticationService {

@@ -13,6 +13,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+import static nl.tudelft.sem.template.authentication.application.Constants.BOOKSHELF_SERVER;
+import static nl.tudelft.sem.template.authentication.application.Constants.REVIEW_SERVER;
 
 /**
  * This event listener is automatically called when a user entity is saved
@@ -23,9 +25,8 @@ public class UserEventsListener {
 
     private final transient HttpClient client = HttpClient.newHttpClient();
     private final transient ObjectMapper objectMapper = new ObjectMapper();
-    public static String BOOKSHELF_URL = "http://localhost:8081/a/user";
-
-    public static String REVIEW_URL = "http://localhost:8081/b/user";
+    public static String BOOKSHELF_URL = BOOKSHELF_SERVER + "/user";
+    public static String REVIEW_URL = REVIEW_SERVER + "/user";
 
 
     /**
@@ -39,10 +40,10 @@ public class UserEventsListener {
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BOOKSHELF_URL))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(id)))
-                .build();
+                    .uri(URI.create(BOOKSHELF_URL))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(id)))
+                    .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -74,9 +75,9 @@ public class UserEventsListener {
 
         try {
             HttpRequest bookShelfRequest = HttpRequest.newBuilder()
-                .uri(URI.create(BOOKSHELF_URL + "?userId=" + id))
-                .DELETE()
-                .build();
+                    .uri(URI.create(BOOKSHELF_URL + "?userId=" + id))
+                    .DELETE()
+                    .build();
 
             HttpResponse<?> response = client.send(bookShelfRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != HttpStatus.OK.value()) {
@@ -86,9 +87,9 @@ public class UserEventsListener {
             UUID adminId = event.getAdminId();
 
             HttpRequest reviewRequest = HttpRequest.newBuilder()
-                .uri(URI.create(REVIEW_URL + "/" + id + "/" + adminId))
-                .DELETE()
-                .build();
+                    .uri(URI.create(REVIEW_URL + "/" + id + "/" + adminId))
+                    .DELETE()
+                    .build();
 
             response = client.send(reviewRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != HttpStatus.OK.value()) {

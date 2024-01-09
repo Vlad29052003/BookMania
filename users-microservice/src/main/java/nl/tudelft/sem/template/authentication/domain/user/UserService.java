@@ -11,11 +11,11 @@ import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
 /**
  * A DDD service for a user.
@@ -27,7 +27,6 @@ public class UserService {
     private final transient BookRepository bookRepository;
 
     private final transient UserEventsListener userEventsListener;
-    public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
      * Instantiates a new UserService.

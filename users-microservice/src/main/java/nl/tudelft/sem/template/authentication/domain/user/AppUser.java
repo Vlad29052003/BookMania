@@ -122,7 +122,7 @@ public class AppUser extends HasEvents {
     /**
      * Create new application user.
      *
-     * @param username    The Username for the new user
+     * @param username The Username for the new user
      * @param password The password for the new user
      */
     public AppUser(Username username, String email, HashedPassword password) {

@@ -14,6 +14,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+import static nl.tudelft.sem.template.authentication.application.Constants.BOOKSHELF_SERVER;
+import static nl.tudelft.sem.template.authentication.application.Constants.REVIEW_SERVER;
 
 /**
  * This event listener is automatically called when a domain entity is saved
@@ -23,8 +25,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class BookEventsListener {
 
     // Have everything on one port for now, since nothing on port 8080/8082 exist for now.
-    public static String BOOKSHELF_URI = "http://localhost:8081/a/catalog";
-    public static String REVIEW_URI = "http://localhost:8081/b/book";
+    public static String BOOKSHELF_URI = BOOKSHELF_SERVER + "/catalog";
+    public static String REVIEW_URI = REVIEW_SERVER + "/book";
     private final transient HttpClient client = HttpClient.newHttpClient();
     private final transient ObjectMapper mapper = new ObjectMapper();
 

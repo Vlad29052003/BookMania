@@ -44,10 +44,10 @@ public class Report {
     /**
      * Creates a new Report.
      *
-     * @param id id of the report as received from the Review microservice
-     * @param type report type.
+     * @param id     id of the report as received from the Review microservice
+     * @param type   report type.
      * @param userId id of the targeted user.
-     * @param text text of the report.
+     * @param text   text of the report.
      */
     public Report(UUID id, ReportType type, String userId, String text) {
         this.id = id;
