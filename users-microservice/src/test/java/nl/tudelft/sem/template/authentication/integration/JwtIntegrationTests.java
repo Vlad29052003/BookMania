@@ -22,15 +22,13 @@ import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedEvent;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
-import org.assertj.core.api.Assertions;
+import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +38,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.DirtiesContext;
@@ -141,16 +136,16 @@ public class JwtIntegrationTests {
         userRepository.save(appUser);
         UUID id = userRepository.findAll().get(0).getId();
 
-        TokenValidationResponse expected = new TokenValidationResponse();
+        ValidationTokenResponse expected = new ValidationTokenResponse();
         expected.setId(id);
         expected.setAuthority(Authority.REGULAR_USER);
 
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
-        TokenValidationResponse response = JsonUtil
+        ValidationTokenResponse response = JsonUtil
                 .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
-                        TokenValidationResponse.class);
+                        ValidationTokenResponse.class);
 
         resultActions.andExpect(status().isOk());
 
@@ -264,16 +259,16 @@ public class JwtIntegrationTests {
 
         UUID id = userRepository.findAll().get(0).getId();
 
-        TokenValidationResponse expected = new TokenValidationResponse();
+        ValidationTokenResponse expected = new ValidationTokenResponse();
         expected.setId(id);
         expected.setAuthority(Authority.REGULAR_USER);
 
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + authenticationResponse.getToken()));
 
-        TokenValidationResponse response = JsonUtil
+        ValidationTokenResponse response = JsonUtil
                 .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
-                        TokenValidationResponse.class);
+                        ValidationTokenResponse.class);
 
         resultActions.andExpect(status().isOk());
 

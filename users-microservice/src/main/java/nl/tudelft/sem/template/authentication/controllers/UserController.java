@@ -11,7 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
-import nl.tudelft.sem.template.authentication.models.UserModel;
+import nl.tudelft.sem.template.authentication.models.UserProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,13 +48,13 @@ public class UserController {
      * @return the ResponseEntity containing the most important user information
      */
     @GetMapping
-    public ResponseEntity<UserModel> getUserByUsername() {
+    public ResponseEntity<UserProfile> getUserByUsername() {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         AppUser user = userService.getUserByUsername(username);
 
-        UserModel userModel = new UserModel(user);
+        UserProfile userProfile = new UserProfile(user);
 
-        return ResponseEntity.ok(userModel);
+        return ResponseEntity.ok(userProfile);
     }
 
     /**

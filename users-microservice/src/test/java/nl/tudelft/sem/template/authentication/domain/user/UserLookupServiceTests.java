@@ -17,8 +17,8 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,8 +106,8 @@ public class UserLookupServiceTests {
         String token = "Bearer token";
         authenticationResponse.setToken(token);
 
-        TokenValidationResponse tokenValidationResponse = new TokenValidationResponse();
-        tokenValidationResponse.setId(id);
+        ValidationTokenResponse validationTokenResponse = new ValidationTokenResponse();
+        validationTokenResponse.setId(id);
 
 
         String email2 = "email2@gmail.com";

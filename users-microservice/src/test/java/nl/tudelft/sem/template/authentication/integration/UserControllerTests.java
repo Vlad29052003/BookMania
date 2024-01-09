@@ -24,7 +24,7 @@ import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
-import nl.tudelft.sem.template.authentication.models.UserModel;
+import nl.tudelft.sem.template.authentication.models.UserProfile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,15 +76,15 @@ public class UserControllerTests {
                 .andExpect(status().isOk());
 
         String response = resultActions.andReturn().getResponse().getContentAsString();
-        UserModel userModel = new ObjectMapper().readValue(response, UserModel.class);
+        UserProfile userProfile = new ObjectMapper().readValue(response, UserProfile.class);
 
-        assertThat(userModel.getUsername()).isEqualTo(testUser);
-        assertThat(userModel.getEmail()).isEqualTo(email);
-        assertThat(userModel.getName()).isNull();
-        assertThat(userModel.getBio()).isNull();
-        assertThat(userModel.getLocation()).isNull();
-        assertThat(userModel.getFavouriteGenres()).isEmpty();
-        assertThat(userModel.getFavouriteBook()).isNull();
+        assertThat(userProfile.getUsername()).isEqualTo(testUser);
+        assertThat(userProfile.getEmail()).isEqualTo(email);
+        assertThat(userProfile.getName()).isNull();
+        assertThat(userProfile.getBio()).isNull();
+        assertThat(userProfile.getLocation()).isNull();
+        assertThat(userProfile.getFavouriteGenres()).isEmpty();
+        assertThat(userProfile.getFavouriteBook()).isNull();
     }
 
     @Test

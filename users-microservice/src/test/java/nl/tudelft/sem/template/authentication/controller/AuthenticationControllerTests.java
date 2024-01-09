@@ -17,11 +17,10 @@ import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -92,18 +91,18 @@ public class AuthenticationControllerTests {
         when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
         SecurityContextHolder.setContext(securityContextMock);
 
-        TokenValidationResponse tokenValidationResponse = new TokenValidationResponse();
-        tokenValidationResponse.setAuthority(Authority.ADMIN);
-        tokenValidationResponse.setId(UUID.randomUUID());
-        when(authenticationService.getAuthority(new Username("user"))).thenReturn(tokenValidationResponse);
+        ValidationTokenResponse validationTokenResponse = new ValidationTokenResponse();
+        validationTokenResponse.setAuthority(Authority.ADMIN);
+        validationTokenResponse.setId(UUID.randomUUID());
+        when(authenticationService.getAuthority(new Username("user"))).thenReturn(validationTokenResponse);
 
-        assertEquals(authenticationController.verifyJwt(), ResponseEntity.ok(tokenValidationResponse));
-        assertEquals(((TokenValidationResponse)
+        assertEquals(authenticationController.verifyJwt(), ResponseEntity.ok(validationTokenResponse));
+        assertEquals(((ValidationTokenResponse)
                 Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getId(),
-                tokenValidationResponse.getId());
-        assertEquals(((TokenValidationResponse)
+                validationTokenResponse.getId());
+        assertEquals(((ValidationTokenResponse)
                 Objects.requireNonNull(authenticationController.verifyJwt().getBody())).getAuthority(),
-                tokenValidationResponse.getAuthority());
+                validationTokenResponse.getAuthority());
 
         SecurityContextHolder.clearContext();
     }

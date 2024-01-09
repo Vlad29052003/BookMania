@@ -9,7 +9,7 @@ import nl.tudelft.sem.template.authentication.domain.user.Authority;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenValidationResponse {
+public class ValidationTokenResponse {
     private transient UUID id;
     private transient Authority authority;
 }
