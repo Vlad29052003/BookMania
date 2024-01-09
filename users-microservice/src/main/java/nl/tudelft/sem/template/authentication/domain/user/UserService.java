@@ -26,7 +26,6 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
-
     private final transient UserEventsListener userEventsListener;
 
     /**
