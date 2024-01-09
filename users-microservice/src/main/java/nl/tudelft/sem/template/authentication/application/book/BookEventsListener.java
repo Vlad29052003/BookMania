@@ -1,5 +1,8 @@
 package nl.tudelft.sem.template.authentication.application.book;
 
+import static nl.tudelft.sem.template.authentication.application.Constants.BOOKSHELF_SERVER;
+import static nl.tudelft.sem.template.authentication.application.Constants.REVIEW_SERVER;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
@@ -14,8 +17,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
-import static nl.tudelft.sem.template.authentication.application.Constants.BOOKSHELF_SERVER;
-import static nl.tudelft.sem.template.authentication.application.Constants.REVIEW_SERVER;
 
 /**
  * This event listener is automatically called when a domain entity is saved

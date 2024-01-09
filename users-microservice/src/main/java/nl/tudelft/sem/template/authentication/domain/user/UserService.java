@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,7 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
 /**
  * A DDD service for a user.
