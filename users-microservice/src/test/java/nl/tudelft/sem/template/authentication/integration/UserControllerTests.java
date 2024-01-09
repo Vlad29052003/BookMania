@@ -1,5 +1,8 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -7,12 +10,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
@@ -25,6 +32,8 @@ import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +65,29 @@ public class UserControllerTests {
 
     @Autowired
     private transient BookRepository bookRepository;
+
+    private static WireMockServer wireMockServer;
+
+    private static final String BOOKSHELF_PATH = "/a/user";
+
+    private static final String REVIEW_PATH = "/b/user";
+
+    /**
+     * Sets up for testing.
+     */
+    @BeforeAll
+    public static void setUp() {
+        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        wireMockServer.start();
+
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
+                .willReturn(aResponse().withStatus(200)));
+
+        WireMock.configureFor("localhost", 8080);
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+        UserEventsListener.REVIEW_URL = "http://localhost:8080/b/user";
+    }
 
     @Test
     public void testGetUserByNetId() throws Exception {
@@ -501,6 +533,11 @@ public class UserControllerTests {
                 testHashedPassword.toString(), roles));
         userRepository.save(user);
 
+        stubFor(WireMock.delete(urlEqualTo(BOOKSHELF_PATH + "?userId=" + user.getId().toString()))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.delete(urlEqualTo(REVIEW_PATH + "/" + user.getId().toString() + "/" + user.getId()))
+                .willReturn(aResponse().withStatus(200)));
+
         mockMvc.perform(delete("/c/users")
                         .header("Authorization", "Bearer " + token))
                         .andExpect(status().isOk());
@@ -536,5 +573,10 @@ public class UserControllerTests {
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().isPrivate()).isTrue();
+    }
+
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
     }
 }

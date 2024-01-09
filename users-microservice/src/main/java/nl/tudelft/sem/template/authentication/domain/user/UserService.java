@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -11,6 +12,7 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,8 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
+
+    private final transient UserEventsListener userEventsListener;
     public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
@@ -35,10 +39,11 @@ public class UserService {
      */
     public UserService(UserRepository userRepository,
                        ReportRepository reportRepository,
-                       BookRepository bookRepository) {
+                       BookRepository bookRepository, UserEventsListener userEventsListener) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.bookRepository = bookRepository;
+        this.userEventsListener = userEventsListener;
     }
 
     /**
@@ -282,13 +287,20 @@ public class UserService {
      * @param username the username
      * @throws UsernameNotFoundException if the given username doesn't exist
      */
-    public void delete(Username username) {
+    public void delete(Username username, Username requesterUsername) {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
         if (optionalAppUser.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
+        Optional<AppUser> optionalRequester = userRepository.findByUsername(requesterUsername);
+        if (optionalRequester.isEmpty()) {
+            throw new UsernameNotFoundException("Requester does not exist!");
+        }
 
         AppUser user = optionalAppUser.get();
+        AppUser requester = optionalRequester.get();
+
+        userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, requester.getId()));
 
         userRepository.delete(user);
     }

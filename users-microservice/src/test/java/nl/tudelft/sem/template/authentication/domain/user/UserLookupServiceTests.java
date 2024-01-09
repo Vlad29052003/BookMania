@@ -1,14 +1,20 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
@@ -19,6 +25,8 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +70,7 @@ public class UserLookupServiceTests {
     @Autowired
     private transient JwtUserDetailsService jwtUserDetailsService;
 
+    private static WireMockServer wireMockServer;
     private transient RegistrationRequestModel registrationRequest;
     private transient RegistrationRequestModel registrationRequest2;
 
@@ -73,6 +82,23 @@ public class UserLookupServiceTests {
 
     private transient AppUser testUser2;
 
+    private static final String BOOKSHELF_PATH = "/a/user";
+
+    /**
+     * Sets up for testing.
+     */
+    @BeforeAll
+    public static void init() {
+        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        wireMockServer.start();
+
+        WireMock.configureFor("localhost", 8080);
+
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
+                .willReturn(WireMock.aResponse().withStatus(200)));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+    }
 
     /**
      * Sets up the testing environment.
@@ -138,7 +164,6 @@ public class UserLookupServiceTests {
      */
     @Test
     public void userSearchByName_worksCorrectly() {
-
         authenticationService.registerUser(registrationRequest);
         authenticationService.registerUser(registrationRequest2);
 
@@ -389,5 +414,10 @@ public class UserLookupServiceTests {
         assertThatThrownBy(() -> userLookupService.getUsersByFavouriteGenres(List.of(Genre.CRIME)))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"No users found!\"");
+    }
+
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
     }
 }

@@ -94,7 +94,8 @@ public class UserEntityTests {
     }
 
     @Test
-    public void testEventCreated() {
+    public void testRecordUserWasCreated() {
+        user1.recordUserWasCreated();
         assertThat(user1.getDomainEventsSize()).isEqualTo(1);
     }
 

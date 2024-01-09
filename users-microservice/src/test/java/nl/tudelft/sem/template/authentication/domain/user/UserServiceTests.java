@@ -1,14 +1,26 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -16,6 +28,8 @@ import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +57,30 @@ public class UserServiceTests {
 
     @Autowired
     private transient ReportRepository reportRepository;
+    private static ByteArrayOutputStream outputStreamCaptor;
+
+    private static WireMockServer wireMockServer;
+
+    private static final String BOOKSHELF_PATH = "/a/user";
+
+    private static final String REVIEW_PATH = "/b/user";
+
+    /**
+     * Set up for testing.
+     */
+    @BeforeAll
+    public static void setUp() {
+        wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        outputStreamCaptor = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStreamCaptor));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080" + BOOKSHELF_PATH;
+        UserEventsListener.REVIEW_URL = "http://localhost:8080" + REVIEW_PATH;
+    }
 
     @Test
     public void testGetUserByNetId() {
@@ -339,7 +377,20 @@ public class UserServiceTests {
         userRepository.save(user);
         AppUser retrievedUser = userService.getUserByUsername(username);
 
-        userService.delete(retrievedUser.getUsername());
+        UUID userId = retrievedUser.getId();
+
+        stubFor(delete(urlEqualTo(BOOKSHELF_PATH + "?userId=" + userId))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(REVIEW_PATH + "/" + userId
+                + "/" + userId))
+                .willReturn(aResponse().withStatus(200)));
+
+        outputStreamCaptor.reset();
+
+        userService.delete(retrievedUser.getUsername(), retrievedUser.getUsername());
+
+        assertThat(outputStreamCaptor.toString().trim()).contains("Account of user with id " + user.getId().toString()
+                + " was deleted.");
 
         assertThatThrownBy(() -> userService.getUserByUsername(retrievedUser.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)
@@ -349,9 +400,18 @@ public class UserServiceTests {
     @Test
     @Transactional
     public void testDeleteUserNotFound() {
-        assertThatThrownBy(() -> userService.delete(new Username("nonExistentUser")))
+        AppUser user = new AppUser(new Username("nonExistentUser"), "email@email.com", new HashedPassword("password"));
+        AppUser requester = new AppUser(new Username("nonExistentRequester"),
+                "requester@email.com", new HashedPassword("password"));
+        assertThatThrownBy(() ->
+                userService.delete(new Username("nonExistentUser"), new Username("nonExistentUser")))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(NO_SUCH_USER);
+
+        userRepository.save(user);
+        assertThatThrownBy(() -> userService.delete(user.getUsername(), requester.getUsername()))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage("Requester does not exist!");
     }
 
     @Test
@@ -452,4 +512,9 @@ public class UserServiceTests {
         assertThat(retrievedUser2.getFollowedBy().isEmpty()).isTrue();
     }
 
+
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
+    }
 }

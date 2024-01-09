@@ -135,7 +135,6 @@ public class AppUser extends HasEvents {
         this.followedBy = new ArrayList<>();
         this.authority = Authority.REGULAR_USER;
         this.isPrivate = false;
-        this.recordThat(new UserWasCreatedEvent(username));
     }
 
     /**
@@ -199,5 +198,9 @@ public class AppUser extends HasEvents {
             follows.remove(user);
             user.followedBy.remove(this);
         }
+    }
+
+    public void recordUserWasCreated() {
+        this.recordThat(new UserWasCreatedEvent(this));
     }
 }

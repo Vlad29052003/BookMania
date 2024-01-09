@@ -1,5 +1,9 @@
 package nl.tudelft.sem.template.authentication.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -9,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
@@ -16,13 +22,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
+import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
-import nl.tudelft.sem.template.authentication.domain.user.UserWasCreatedEvent;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
@@ -30,8 +36,9 @@ import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,9 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.DirtiesContext;
@@ -75,7 +79,27 @@ public class JwtIntegrationTests {
     private transient String jwtToken;
     private transient String jwtExpiredToken;
     private transient String nullUsernameJwtToken;
+
+    private static final String BOOKSHELF_PATH = "/a/user";
+
+    private static WireMockServer wireMockServer;
     private final transient ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+    /**
+     * Sets up the testing environment.
+     */
+    @BeforeAll
+    public static void init() {
+        wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
+                .willReturn(aResponse().withStatus(200)));
+
+        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
+    }
 
     /**
      * Sets up the testing environment.
@@ -246,7 +270,7 @@ public class JwtIntegrationTests {
 
         register.andExpect(status().isOk());
         assertThat(outputStreamCaptor.toString().trim())
-                .contains("Account (user1) was created.");
+                .contains("Account of user with ");
         assertThat(userRepository.findAll().get(0).getDomainEventsSize()).isEqualTo(0);
 
         AuthenticationRequestModel authenticationRequest = new AuthenticationRequestModel();
@@ -298,5 +322,10 @@ public class JwtIntegrationTests {
     @AfterEach
     public void revertChanges() {
         System.setOut(System.out);
+    }
+
+    @AfterAll
+    public static void stop() {
+        wireMockServer.stop();
     }
 }
