@@ -120,6 +120,9 @@ public class AuthenticationService {
             HashedPassword hashedPassword = passwordHashingService.hash(password);
             // Create new account
             AppUser user = new AppUser(username, email, hashedPassword);
+
+            user.recordUserWasCreated();
+
             userRepository.save(user);
 
             return user;
