@@ -21,7 +21,7 @@ import nl.tudelft.sem.template.authentication.domain.user.UserService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.models.BanUserRequestModel;
-import nl.tudelft.sem.template.authentication.models.UserModel;
+import nl.tudelft.sem.template.authentication.models.UserProfile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ public class UserControllerTests {
     private transient UserController userController;
     private transient PasswordHashingService passwordHashingService;
     private transient AppUser user;
-    private transient UserModel userModel;
+    private transient UserProfile userProfile;
     private Username username;
 
     /**
@@ -57,7 +57,7 @@ public class UserControllerTests {
         this.user = new AppUser(new Username("user"), "email@mail.com", new HashedPassword("hash"));
         when(userService.getUserByUsername(new Username("user"))).thenReturn(user);
 
-        this.userModel = new UserModel(user);
+        this.userProfile = new UserProfile(user);
 
         this.username = new Username("user");
     }
@@ -69,7 +69,7 @@ public class UserControllerTests {
 
     @Test
     public void testGetUser() {
-        assertThat(userController.getUserByUsername()).isEqualTo(ResponseEntity.ok(userModel));
+        assertThat(userController.getUserByUsername()).isEqualTo(ResponseEntity.ok(userProfile));
         verify(userService, times(1)).getUserByUsername(username);
     }
 
