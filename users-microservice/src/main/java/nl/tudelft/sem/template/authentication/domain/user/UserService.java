@@ -360,6 +360,7 @@ public class UserService {
      * @param username the username of the user that wants to follow.
      * @param toFollow the username of the user that should be followed.
      */
+    @Transactional
     public void followUser(Username username, Username toFollow) {
         Pair<AppUser, AppUser> users = extractUsersFromUsernames(username, toFollow);
         users.getFirst().follow(users.getSecond());
@@ -373,6 +374,7 @@ public class UserService {
      * @param username   the username of the user that wants to unfollow.
      * @param toUnfollow the username of the user that should be unfollowed.
      */
+    @Transactional
     public void unfollowUser(Username username, Username toUnfollow) {
         Pair<AppUser, AppUser> users = extractUsersFromUsernames(username, toUnfollow);
         users.getFirst().unfollow(users.getSecond());

@@ -188,6 +188,8 @@ public class AppUser extends HasEvents {
         if (!follows.contains(user)) {
             follows.add(user);
             user.followedBy.add(this);
+        } else {
+            throw new IllegalArgumentException("User already followed!");
         }
     }
 
@@ -201,6 +203,8 @@ public class AppUser extends HasEvents {
         if (follows.contains(user)) {
             follows.remove(user);
             user.followedBy.remove(this);
+        } else {
+            throw new IllegalArgumentException("User not followed!");
         }
     }
 

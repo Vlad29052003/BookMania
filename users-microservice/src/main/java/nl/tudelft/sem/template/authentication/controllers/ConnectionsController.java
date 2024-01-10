@@ -35,7 +35,12 @@ public class ConnectionsController {
     @PostMapping("/{username}")
     public ResponseEntity<Void> followUser(@PathVariable String username) {
         Username currentUsername = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        userService.followUser(currentUsername, new Username(username));
+        try {
+            userService.followUser(currentUsername, new Username(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+
 
         return ResponseEntity.ok().build();
     }
@@ -49,7 +54,11 @@ public class ConnectionsController {
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> unfollowUser(@PathVariable String username) {
         Username currentUsername = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        userService.unfollowUser(currentUsername, new Username(username));
+        try {
+            userService.unfollowUser(currentUsername, new Username(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
 
         return ResponseEntity.ok().build();
     }
