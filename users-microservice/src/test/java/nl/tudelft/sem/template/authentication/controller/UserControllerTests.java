@@ -187,4 +187,5 @@ public class UserControllerTests {
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1)).updateEmail(username, newEmail);
     }
+
 }

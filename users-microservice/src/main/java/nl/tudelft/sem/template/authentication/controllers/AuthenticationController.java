@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
+import java.util.Objects;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
@@ -45,7 +46,11 @@ public class AuthenticationController {
         try {
             authenticationService.registerUser(request);
         } catch (ResponseStatusException e) {
-            return new ResponseEntity<>("Username or email already in use!", e.getStatus());
+            if (Objects.requireNonNull(e.getMessage()).contains("password")) {
+                return new ResponseEntity<>(e.getMessage(), e.getStatus());
+            } else {
+                return new ResponseEntity<>("Username or email already in use!", e.getStatus());
+            }
         }
         return ResponseEntity.ok().build();
     }
