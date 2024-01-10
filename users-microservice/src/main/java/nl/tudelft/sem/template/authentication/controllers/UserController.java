@@ -274,32 +274,4 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
-
-    /**
-     * Endpoint for following a user.
-     *
-     * @param username the username of the user to follow
-     * @return a ResponseEntity containing the OK response if the follow is successful
-     */
-    @PostMapping("/connections/{username}")
-    public ResponseEntity<Void> followUser(@PathVariable String username) {
-        Username currentUsername = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        userService.followUser(currentUsername, new Username(username));
-
-        return ResponseEntity.ok().build();
-    }
-
-    /**
-     * Endpoint for unfollowing a user.
-     *
-     * @param username the username of the user to unfollow
-     * @return a ResponseEntity containing the OK response if the unfollow is successful
-     */
-    @DeleteMapping("/connections/{username}")
-    public ResponseEntity<Void> unfollowUser(@PathVariable String username) {
-        Username currentUsername = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
-        userService.unfollowUser(currentUsername, new Username(username));
-
-        return ResponseEntity.ok().build();
-    }
 }
