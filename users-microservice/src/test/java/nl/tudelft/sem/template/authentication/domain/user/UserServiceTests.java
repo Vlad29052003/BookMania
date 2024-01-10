@@ -513,6 +513,45 @@ public class UserServiceTests {
     }
 
 
+    @Test
+    public void testFollowAndDelete() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+
+
+        Username username2 = new Username("usernameToFollow");
+        String email2 = "test2@email.com";
+        HashedPassword password2 = new HashedPassword("pass123");
+        AppUser user2 = new AppUser(username2, email2, password2);
+        userRepository.save(user2);
+
+        AppUser retrievedUser = userService.getUserByUsername(username);
+
+        UUID userId = retrievedUser.getId();
+
+        stubFor(delete(urlEqualTo(BOOKSHELF_PATH + "?userId=" + userId))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(REVIEW_PATH + "/" + userId
+                + "/" + userId))
+                .willReturn(aResponse().withStatus(200)));
+
+
+        userService.followUser(username, username2);
+        userService.delete(username, username);
+
+        AppUser retrievedUser2 = userService.getUserByUsername(username2);
+        assertThatThrownBy(() -> userService.getUserByUsername(username))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(NO_SUCH_USER);
+        assertThat(retrievedUser2.getFollowedBy().isEmpty()).isTrue();
+    }
+
+
     @AfterAll
     public static void stop() {
         wireMockServer.stop();
