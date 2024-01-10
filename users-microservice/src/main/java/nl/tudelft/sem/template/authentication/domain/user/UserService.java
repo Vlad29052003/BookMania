@@ -302,15 +302,7 @@ public class UserService {
         AppUser requester = optionalRequester.get();
 
         userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, requester.getId()));
-        for (AppUser followedUser : new ArrayList<>(user.getFollows())) {
-            user.unfollow(followedUser);
-        }
-
-        for (AppUser followingUser : new ArrayList<>(user.getFollowedBy())) {
-            followingUser.unfollow(user);
-            userRepository.saveAndFlush(followingUser);
-        }
-        userRepository.saveAndFlush(user);
+        userRepository.deleteConnectionsByUserId(user.getId().toString());
         userRepository.delete(user);
     }
 
