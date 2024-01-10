@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -301,7 +302,15 @@ public class UserService {
         AppUser requester = optionalRequester.get();
 
         userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, requester.getId()));
+        for (AppUser followedUser : new ArrayList<>(user.getFollows())) {
+            user.unfollow(followedUser);
+        }
 
+        for (AppUser followingUser : new ArrayList<>(user.getFollowedBy())) {
+            followingUser.unfollow(user);
+            userRepository.saveAndFlush(followingUser);
+        }
+        userRepository.saveAndFlush(user);
         userRepository.delete(user);
     }
 

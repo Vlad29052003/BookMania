@@ -26,4 +26,5 @@ public interface UserRepository extends JpaRepository<AppUser, UUID> {
     @Modifying
     @Query("UPDATE AppUser u SET u.favouriteBook = null WHERE u.favouriteBook.id = :bookId")
     void removeBookFromUsersFavorites(@Param("bookId") UUID bookId);
+
 }
