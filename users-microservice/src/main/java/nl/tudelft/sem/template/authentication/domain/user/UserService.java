@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -300,7 +302,7 @@ public class UserService {
         AppUser requester = optionalRequester.get();
 
         userEventsListener.onUserWasDeleted(new UserWasDeletedEvent(user, requester.getId()));
-
+        userRepository.deleteConnectionsByUserId(user.getId().toString());
         userRepository.delete(user);
     }
 
@@ -337,5 +339,46 @@ public class UserService {
 
         AppUser user = optionalAppUser.get();
         return new UserModel(user);
+    }
+
+
+    private Pair<AppUser, AppUser> extractUsersFromUsernames(Username a, Username b) {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(a);
+        Optional<AppUser> optionalAppUser2 = userRepository.findByUsername(b);
+        if (optionalAppUser.isEmpty() || optionalAppUser2.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
+        }
+
+        AppUser user = optionalAppUser.get();
+        AppUser userToFollow = optionalAppUser2.get();
+        return Pair.of(user, userToFollow);
+    }
+
+    /**
+     * Follows a user.
+     *
+     * @param username the username of the user that wants to follow.
+     * @param toFollow the username of the user that should be followed.
+     */
+    @Transactional
+    public void followUser(Username username, Username toFollow) {
+        Pair<AppUser, AppUser> users = extractUsersFromUsernames(username, toFollow);
+        users.getFirst().follow(users.getSecond());
+        userRepository.saveAndFlush(users.getFirst());
+        userRepository.saveAndFlush(users.getSecond());
+    }
+
+    /**
+     * Unfollows a user.
+     *
+     * @param username   the username of the user that wants to unfollow.
+     * @param toUnfollow the username of the user that should be unfollowed.
+     */
+    @Transactional
+    public void unfollowUser(Username username, Username toUnfollow) {
+        Pair<AppUser, AppUser> users = extractUsersFromUsernames(username, toUnfollow);
+        users.getFirst().unfollow(users.getSecond());
+        userRepository.saveAndFlush(users.getFirst());
+        userRepository.saveAndFlush(users.getSecond());
     }
 }
