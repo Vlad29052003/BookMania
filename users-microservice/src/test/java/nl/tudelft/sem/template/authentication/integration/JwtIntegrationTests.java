@@ -34,8 +34,8 @@ import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -165,16 +165,16 @@ public class JwtIntegrationTests {
         userRepository.save(appUser);
         UUID id = userRepository.findAll().get(0).getId();
 
-        TokenValidationResponse expected = new TokenValidationResponse();
+        ValidationTokenResponse expected = new ValidationTokenResponse();
         expected.setId(id);
         expected.setAuthority(Authority.REGULAR_USER);
 
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + jwtToken));
 
-        TokenValidationResponse response = JsonUtil
+        ValidationTokenResponse response = JsonUtil
                 .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
-                        TokenValidationResponse.class);
+                        ValidationTokenResponse.class);
 
         resultActions.andExpect(status().isOk());
 
@@ -288,16 +288,16 @@ public class JwtIntegrationTests {
 
         UUID id = userRepository.findAll().get(0).getId();
 
-        TokenValidationResponse expected = new TokenValidationResponse();
+        ValidationTokenResponse expected = new ValidationTokenResponse();
         expected.setId(id);
         expected.setAuthority(Authority.REGULAR_USER);
 
         ResultActions resultActions = mockMvc.perform(get("/c/validate-token")
                 .header("Authorization", "Bearer " + authenticationResponse.getToken()));
 
-        TokenValidationResponse response = JsonUtil
+        ValidationTokenResponse response = JsonUtil
                 .deserialize(resultActions.andReturn().getResponse().getContentAsString(),
-                        TokenValidationResponse.class);
+                        ValidationTokenResponse.class);
 
         resultActions.andExpect(status().isOk());
 

@@ -117,6 +117,10 @@ public class AppUser extends HasEvents {
     @Column(name = "private")
     private boolean isPrivate;
 
+    @Setter
+    @Column(name = "two_factor_auth")
+    private boolean is2faEnabled;
+
     private static final Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     /**
@@ -133,7 +137,6 @@ public class AppUser extends HasEvents {
         this.follows = new ArrayList<>();
         this.followedBy = new ArrayList<>();
         this.authority = Authority.REGULAR_USER;
-        this.isPrivate = false;
     }
 
     /**

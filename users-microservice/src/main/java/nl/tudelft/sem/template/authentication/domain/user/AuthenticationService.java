@@ -8,7 +8,7 @@ import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServi
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -97,13 +97,13 @@ public class AuthenticationService {
      *
      * @return a data object containing the authority
      */
-    public TokenValidationResponse getAuthority(Username username) {
+    public ValidationTokenResponse getAuthority(Username username) {
         Optional<AppUser> appUserOptional = userRepository
                 .findByUsername(username);
         if (appUserOptional.isEmpty()) {
             throw new UsernameNotFoundException(NO_SUCH_USER);
         }
-        return new TokenValidationResponse(appUserOptional.get().getId(), appUserOptional.get().getAuthority());
+        return new ValidationTokenResponse(appUserOptional.get().getId(), appUserOptional.get().getAuthority());
     }
 
     /**

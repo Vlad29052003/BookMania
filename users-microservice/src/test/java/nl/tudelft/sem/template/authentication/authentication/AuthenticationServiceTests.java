@@ -36,7 +36,7 @@ import nl.tudelft.sem.template.authentication.domain.user.UsernameAlreadyInUseEx
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
-import nl.tudelft.sem.template.authentication.models.TokenValidationResponse;
+import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +74,7 @@ public class AuthenticationServiceTests {
     private transient RegistrationRequestModel registrationRequest;
     private transient AuthenticationRequestModel authenticationRequest;
     private transient AuthenticationResponseModel authenticationResponse;
-    private transient TokenValidationResponse tokenValidationResponse;
+    private transient ValidationTokenResponse validationTokenResponse;
     private transient UserRepository userRepository;
     private final transient String token = "Bearer token";
 
@@ -141,8 +141,8 @@ public class AuthenticationServiceTests {
         authenticationResponse = new AuthenticationResponseModel();
         authenticationResponse.setToken(token);
 
-        tokenValidationResponse = new TokenValidationResponse();
-        tokenValidationResponse.setId(id);
+        validationTokenResponse = new ValidationTokenResponse();
+        validationTokenResponse.setId(id);
     }
 
     @Test
@@ -218,7 +218,7 @@ public class AuthenticationServiceTests {
         when(jwtService.extractUsername("token")).thenReturn(userDetails.getUsername());
         when(userRepository.findByUsername(appUser.getUsername())).thenReturn(Optional.of(appUser));
 
-        assertEquals(authenticationService.getAuthority(new Username("user")), tokenValidationResponse);
+        assertEquals(authenticationService.getAuthority(new Username("user")), validationTokenResponse);
     }
 
     @Test

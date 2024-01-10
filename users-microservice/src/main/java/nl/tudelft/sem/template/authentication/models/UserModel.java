@@ -21,14 +21,11 @@ public class UserModel {
     private String location;
     private List<Genre> favouriteGenres;
     private Book favouriteBook;
-    private boolean isPrivate;
-
 
     /**
-     * Constructor for the UserModel Class that take an AppUser as input.
+     * Constructor for the UserModel Class that takes an AppUser as input.
      *
-     * @param user user for which the model instance is
-     *             to be made for
+     * @param user the AppUser for which the model is made
      */
     public UserModel(AppUser user) {
         this.username = user.getUsername().toString();
@@ -38,6 +35,5 @@ public class UserModel {
         this.location = user.getLocation();
         this.favouriteGenres = user.getFavouriteGenres();
         this.favouriteBook = user.getFavouriteBook();
-        this.isPrivate = user.isPrivate();
     }
 }
