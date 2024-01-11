@@ -38,18 +38,15 @@ class HasEventsTest {
     @Transient
     public void recordThatViaBook() {
         Book book = new Book("title", null, null, "", 1);
-        UUID id = UUID.randomUUID();
 
         book.recordBookWasCreated();
         book.recordBookWasEdited();
-        book.recordBookWasDeleted(id);
 
         List<Object> domainEvents = new ArrayList<>();
         domainEvents.add(new BookWasCreatedEvent(book));
         domainEvents.add(new BookWasEditedEvent(book));
-        domainEvents.add(new BookWasDeletedEvent(book, id));
 
-        Assertions.assertEquals(3, book.releaseEvents().size());
+        Assertions.assertEquals(2, book.releaseEvents().size());
         Assertions.assertEquals(domainEvents, book.releaseEvents());
     }
 

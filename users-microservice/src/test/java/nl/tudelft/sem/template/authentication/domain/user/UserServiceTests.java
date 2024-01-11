@@ -5,7 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -196,7 +196,7 @@ public class UserServiceTests {
         String newUsername = "NewUsername";
         assertThatThrownBy(() -> userService.updateUsername(username, newUsername))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -228,7 +228,7 @@ public class UserServiceTests {
         String newEmail = "goodExample@gmail.com";
         assertThatThrownBy(() -> userService.updateEmail(username, newEmail))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -258,7 +258,7 @@ public class UserServiceTests {
         HashedPassword newPassword = new HashedPassword("NewPass123!");
         assertThatThrownBy(() -> userService.updatePassword(username, newPassword))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(UserService.NO_SUCH_USER);
+                .hasMessage(NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);

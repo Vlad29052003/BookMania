@@ -169,11 +169,11 @@ public class UserController {
     @PatchMapping("/isDeactivated")
     public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel) {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
-                                                .get(0).getAuthority();
+                .get(0).getAuthority();
         try {
             userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
-                                            banUserRequestModel.isBanned(),
-                                            authority);
+                    banUserRequestModel.isBanned(),
+                    authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

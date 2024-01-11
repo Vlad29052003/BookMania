@@ -94,7 +94,7 @@ public class BookController {
     /**
      * Deletes a book from the overall collection.
      *
-     * @param bookId      the id of the book to be deleted
+     * @param bookId the id of the book to be deleted
      * @return the status of the operation
      */
     @DeleteMapping("/{bookId}")

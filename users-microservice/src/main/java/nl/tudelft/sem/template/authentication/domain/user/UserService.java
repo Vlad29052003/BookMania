@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,9 +29,7 @@ public class UserService {
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
     private final transient RoleChangeRepository roleChangeRepository;
-
     private final transient UserEventsListener userEventsListener;
-    public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
      * Instantiates a new UserService.
