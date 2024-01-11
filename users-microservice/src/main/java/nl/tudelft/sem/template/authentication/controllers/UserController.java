@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChange;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -174,6 +174,18 @@ public class UserController {
             userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
                                             banUserRequestModel.isBanned(),
                                             authority);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/authority")
+    public ResponseEntity<?> updateAuthority(@RequestBody RoleChange roleChange) {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                .get(0).getAuthority();
+        try {
+            userService.updateAuthority(new Username(roleChange.getUsername()), roleChange.getNewRole(), authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
