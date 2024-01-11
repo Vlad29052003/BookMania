@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.authentication.handlers;
 
-import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
 import java.util.Optional;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;

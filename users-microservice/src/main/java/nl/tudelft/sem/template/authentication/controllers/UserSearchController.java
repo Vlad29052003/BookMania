@@ -26,7 +26,7 @@ public class UserSearchController {
     /**
      * Instantiates a new UsersController.
      *
-     * @param lookupService         the user lookup service
+     * @param lookupService the user lookup service
      */
     @Autowired
     public UserSearchController(UserLookupService lookupService) {
@@ -52,7 +52,8 @@ public class UserSearchController {
         }
     }
 
-    /** Endpoint for user searching by favourite book.
+    /**
+     * Endpoint for user searching by favourite book.
      *
      * @param bookId - The bookId query parameter.
      * @return - the users containing the given favourite book
@@ -69,7 +70,8 @@ public class UserSearchController {
         }
     }
 
-    /** Endpoint for user searching by favourite genres.
+    /**
+     * Endpoint for user searching by favourite genres.
      *
      * @param genres - The genres query parameter.
      * @return - The users containing the given favourite genres

@@ -115,7 +115,7 @@ public class BookEventsListenerTests {
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-            bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book)));
+                bookEventsListener.onBookWasCreated(new BookWasCreatedEvent(book)));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
@@ -164,7 +164,7 @@ public class BookEventsListenerTests {
         outputStreamCaptor.reset();
 
         assertThrows(RuntimeException.class, () ->
-            bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book)));
+                bookEventsListener.onBookWasEdited(new BookWasEditedEvent(book)));
 
         assertThat(outputStreamCaptor.toString().trim())
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");

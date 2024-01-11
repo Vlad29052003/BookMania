@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
-import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.springframework.beans.factory.annotation.Autowired;
