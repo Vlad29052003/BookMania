@@ -9,7 +9,6 @@ import static nl.tudelft.sem.template.authentication.application.Constants.NO_SU
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -17,7 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
@@ -27,6 +25,8 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
+import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChange;
+import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChangeRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,6 +57,9 @@ public class UserServiceTests {
 
     @Autowired
     private transient ReportRepository reportRepository;
+
+    @Autowired
+    private transient RoleChangeRepository roleChangeRepository;
     private static ByteArrayOutputStream outputStreamCaptor;
 
     private static WireMockServer wireMockServer;
@@ -361,6 +364,36 @@ public class UserServiceTests {
                 () -> userService.updateBannedStatus(username, false, "ADMIN"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(e.getMessage()).isEqualTo("400 BAD_REQUEST \"User is already not banned!\"");
+    }
+
+    @Test
+    @Transactional
+    public void testUpdateAuthority() {
+        Username username = new Username("user");
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> userService.updateAuthority(username, Authority.AUTHOR, "REGULAR_USER"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        String email = "user@user.com";
+        HashedPassword hashedPassword = new HashedPassword("pass");
+        AppUser user = new AppUser(username, email, hashedPassword);
+        userRepository.save(user);
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        RoleChange roleChange = new RoleChange(username.getUsernameValue(), Authority.AUTHOR, "123-456");
+        roleChangeRepository.save(roleChange);
+
+        userService.updateAuthority(username, Authority.AUTHOR, "ADMIN");
+        assertThat(roleChangeRepository.findAll()).isEmpty();
+        assertThat(userRepository.findByUsername(username)).isPresent();
+        assertThat(userRepository.findByUsername(username).get().getAuthority()).isEqualTo(Authority.AUTHOR);
     }
 
     @Test

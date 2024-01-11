@@ -10,6 +10,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
+import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChangeRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.util.Pair;
@@ -27,6 +28,7 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
+    private final transient RoleChangeRepository roleChangeRepository;
     private final transient UserEventsListener userEventsListener;
 
     /**
@@ -38,10 +40,12 @@ public class UserService {
      */
     public UserService(UserRepository userRepository,
                        ReportRepository reportRepository,
-                       BookRepository bookRepository, UserEventsListener userEventsListener) {
+                       BookRepository bookRepository,
+                       RoleChangeRepository roleChangeRepository, UserEventsListener userEventsListener) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.bookRepository = bookRepository;
+        this.roleChangeRepository = roleChangeRepository;
         this.userEventsListener = userEventsListener;
     }
 
@@ -212,6 +216,35 @@ public class UserService {
         user.setDeactivated(true);
         reportRepository.deleteByUserId(user.getId().toString());
         userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * Update the authority of a user.
+     *
+     * @param username user to be updated.
+     * @param newAuthority new authority of the user.
+     * @param authority authority of user making the request (needs to be admin).
+     */
+    @Transactional
+    public void updateAuthority(Username username, Authority newAuthority, String authority) {
+        if (!authority.equals(Authority.ADMIN.toString())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can change the authority of a user!");
+        }
+
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
+        if (optionalAppUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist!");
+        }
+
+        if (roleChangeRepository.findByUsername(username.getUsernameValue()).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User did not request a role change!");
+        }
+
+        AppUser user = optionalAppUser.get();
+        user.setAuthority(newAuthority);
+        userRepository.saveAndFlush(user);
+
+        roleChangeRepository.deleteByUsername(user.getUsername().getUsernameValue());
     }
 
     /**

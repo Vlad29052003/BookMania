@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.UserController;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChange;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
@@ -152,7 +153,17 @@ public class UserControllerTests {
         banUserRequestModel.setBanned(true);
         assertThat(userController.updateBannedStatus(banUserRequestModel))
                 .isEqualTo(ResponseEntity.ok().build());
-        verify(userService, times(1)).updateBannedStatus(username, true, Authority.REGULAR_USER.toString());
+        verify(userService, times(1))
+                .updateBannedStatus(username, true, Authority.REGULAR_USER.toString());
+    }
+
+    @Test
+    public void testUpdateAuthority() {
+        RoleChange roleChange = new RoleChange(username.toString(), Authority.AUTHOR, "123-456");
+        assertThat(userController.updateAuthority(roleChange))
+                .isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1))
+                .updateAuthority(username, Authority.AUTHOR, Authority.REGULAR_USER.toString());
     }
 
     @Test
