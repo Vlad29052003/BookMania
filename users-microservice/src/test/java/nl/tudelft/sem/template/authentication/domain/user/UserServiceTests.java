@@ -370,8 +370,6 @@ public class UserServiceTests {
     @Transactional
     public void testUpdateAuthority() {
         Username username = new Username("user");
-        String email = "user@user.com";
-        HashedPassword hashedPassword = new HashedPassword("pass");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                 () -> userService.updateAuthority(username, Authority.AUTHOR, "REGULAR_USER"));
@@ -381,6 +379,8 @@ public class UserServiceTests {
                 () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
 
+        String email = "user@user.com";
+        HashedPassword hashedPassword = new HashedPassword("pass");
         AppUser user = new AppUser(username, email, hashedPassword);
         userRepository.save(user);
         e = assertThrows(ResponseStatusException.class,

@@ -180,6 +180,12 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Update a user's authority.
+     *
+     * @param roleChange role change request of the user.
+     * @return 200 OK if the authority was changed successfully; errors otherwise.
+     */
     @PatchMapping("/authority")
     public ResponseEntity<?> updateAuthority(@RequestBody RoleChange roleChange) {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())

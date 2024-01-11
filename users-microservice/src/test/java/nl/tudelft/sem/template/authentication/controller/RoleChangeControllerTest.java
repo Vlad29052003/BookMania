@@ -1,5 +1,13 @@
 package nl.tudelft.sem.template.authentication.controller;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
 import nl.tudelft.sem.template.authentication.controllers.RoleChangeController;
 import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChange;
 import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChangeService;
@@ -13,12 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.List;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
-
 public class RoleChangeControllerTest {
 
     private transient RoleChangeService roleChangeService;
@@ -27,6 +29,9 @@ public class RoleChangeControllerTest {
     private transient Username username;
     private transient String authority;
 
+    /**
+     * Set up the testing environment.
+     */
     @BeforeEach
     public void setUp() {
         roleChangeService = mock(RoleChangeService.class);

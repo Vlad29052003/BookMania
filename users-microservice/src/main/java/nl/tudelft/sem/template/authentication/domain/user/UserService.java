@@ -220,6 +220,7 @@ public class UserService {
 
     /**
      * Update the authority of a user.
+     *
      * @param username user to be updated.
      * @param newAuthority new authority of the user.
      * @param authority authority of user making the request (needs to be admin).
