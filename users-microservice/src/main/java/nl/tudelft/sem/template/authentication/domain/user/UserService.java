@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.user;
 
-import java.util.ArrayList;
+import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +14,6 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +27,7 @@ public class UserService {
     private final transient UserRepository userRepository;
     private final transient ReportRepository reportRepository;
     private final transient BookRepository bookRepository;
-
     private final transient UserEventsListener userEventsListener;
-    public static final String NO_SUCH_USER = "User does not exist!";
 
     /**
      * Instantiates a new UserService.

@@ -21,7 +21,7 @@ public class ReportService {
      * Create a ReportService.
      *
      * @param reportRepository report repository.
-     * @param userRepository user repository.
+     * @param userRepository   user repository.
      */
     @Autowired
     public ReportService(ReportRepository reportRepository, UserRepository userRepository) {
@@ -45,7 +45,7 @@ public class ReportService {
     /**
      * Adds a new report to the database.
      *
-     * @param report report to be added.
+     * @param report      report to be added.
      * @param madeRequest username that made the report.
      */
     public void addReport(Report report, Username madeRequest) {
@@ -61,7 +61,7 @@ public class ReportService {
     /**
      * Removes a report from the database.
      *
-     * @param id id of the report.
+     * @param id        id of the report.
      * @param authority authority of user that made the request.
      */
     public void remove(String id, String authority) {

@@ -39,7 +39,7 @@ public class ReportController {
     @GetMapping("")
     public ResponseEntity<?> getAllReports() {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
-                            .get(0).getAuthority();
+                .get(0).getAuthority();
         try {
             return ResponseEntity.ok(reportService.getAllReports(authority));
         } catch (ResponseStatusException e) {
@@ -73,7 +73,7 @@ public class ReportController {
     @DeleteMapping("{reportId}")
     public ResponseEntity<?> deleteReport(@PathVariable String reportId) {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
-                            .get(0).getAuthority();
+                .get(0).getAuthority();
         try {
             reportService.remove(reportId, authority);
         } catch (ResponseStatusException e) {

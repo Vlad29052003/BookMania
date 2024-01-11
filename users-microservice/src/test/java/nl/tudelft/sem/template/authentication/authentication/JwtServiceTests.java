@@ -64,7 +64,7 @@ public class JwtServiceTests {
         when(timeProvider2.getCurrentTime()).thenReturn(mockedTime2);
         String token = jwtTokenGenerator.generateToken(user);
 
-        assertThat(jwtService.extractAuthorization(token)).isEqualTo(Authority.AUTHOR);
+        assertThat(jwtService.extractUsername(token)).isEqualTo(user.getUsername());
     }
 
     @Test
