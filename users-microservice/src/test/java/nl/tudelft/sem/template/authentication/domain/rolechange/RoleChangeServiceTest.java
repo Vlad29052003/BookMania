@@ -6,7 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.domain.user.*;
+import nl.tudelft.sem.template.authentication.domain.user.AppUser;
+import nl.tudelft.sem.template.authentication.domain.user.Authority;
+import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
+import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
+import nl.tudelft.sem.template.authentication.domain.user.Username;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +37,9 @@ public class RoleChangeServiceTest {
     private AppUser user;
     private RoleChange roleChange;
 
+    /**
+     * Set up the testing environment.
+     */
     @BeforeEach
     public void setUp() {
         user = new AppUser(new Username("simona"), "simona@sem.nl", new HashedPassword("iwanttobeanauthor"));
