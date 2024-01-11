@@ -225,6 +225,7 @@ public class UserService {
      * @param newAuthority new authority of the user.
      * @param authority authority of user making the request (needs to be admin).
      */
+    @Transactional
     public void updateAuthority(Username username, Authority newAuthority, String authority) {
         if (!authority.equals(Authority.ADMIN.toString())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can change the authority of a user!");
