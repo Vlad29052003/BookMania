@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.controllers;
 import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChange;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.EmailAlreadyInUseException;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
@@ -168,17 +169,37 @@ public class UserController {
     @PatchMapping("/isDeactivated")
     public ResponseEntity<?> updateBannedStatus(@RequestBody BanUserRequestModel banUserRequestModel) {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
-                                                .get(0).getAuthority();
+                .get(0).getAuthority();
         try {
             userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
-                                            banUserRequestModel.isBanned(),
-                                            authority);
+                    banUserRequestModel.isBanned(),
+                    authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
         return ResponseEntity.ok().build();
     }
-    
+
+    /**
+     * Update a user's authority.
+     *
+     * @param roleChange role change request of the user.
+     * @return 200 OK if the authority was changed successfully; errors otherwise.
+     */
+    @PatchMapping("/authority")
+    public ResponseEntity<?> updateAuthority(@RequestBody RoleChange roleChange) {
+        String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                .get(0).getAuthority();
+        try {
+            userService.updateAuthority(new Username(roleChange.getUsername()), roleChange.getNewRole(), authority);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+
+
     /**
      * Endpoint for updating the username.
      *
