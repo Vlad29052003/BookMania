@@ -5,7 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
+import static nl.tudelft.sem.template.authentication.domain.user.UserService.NO_SUCH_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,8 +25,6 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.Report;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.report.ReportType;
-import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChange;
-import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChangeRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,9 +55,6 @@ public class UserServiceTests {
 
     @Autowired
     private transient ReportRepository reportRepository;
-
-    @Autowired
-    private transient RoleChangeRepository roleChangeRepository;
     private static ByteArrayOutputStream outputStreamCaptor;
 
     private static WireMockServer wireMockServer;
@@ -196,7 +191,7 @@ public class UserServiceTests {
         String newUsername = "NewUsername";
         assertThatThrownBy(() -> userService.updateUsername(username, newUsername))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(NO_SUCH_USER);
+                .hasMessage(UserService.NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -228,7 +223,7 @@ public class UserServiceTests {
         String newEmail = "goodExample@gmail.com";
         assertThatThrownBy(() -> userService.updateEmail(username, newEmail))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(NO_SUCH_USER);
+                .hasMessage(UserService.NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -258,7 +253,7 @@ public class UserServiceTests {
         HashedPassword newPassword = new HashedPassword("NewPass123!");
         assertThatThrownBy(() -> userService.updatePassword(username, newPassword))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage(NO_SUCH_USER);
+                .hasMessage(UserService.NO_SUCH_USER);
 
         AppUser user = new AppUser(username, email, password);
         userRepository.save(user);
@@ -368,36 +363,6 @@ public class UserServiceTests {
 
     @Test
     @Transactional
-    public void testUpdateAuthority() {
-        Username username = new Username("user");
-
-        ResponseStatusException e = assertThrows(ResponseStatusException.class,
-                () -> userService.updateAuthority(username, Authority.AUTHOR, "REGULAR_USER"));
-        assertThat(e.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
-
-        e = assertThrows(ResponseStatusException.class,
-                () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
-        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        String email = "user@user.com";
-        HashedPassword hashedPassword = new HashedPassword("pass");
-        AppUser user = new AppUser(username, email, hashedPassword);
-        userRepository.save(user);
-        e = assertThrows(ResponseStatusException.class,
-                () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
-        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        RoleChange roleChange = new RoleChange(username.getUsernameValue(), Authority.AUTHOR, "123-456");
-        roleChangeRepository.save(roleChange);
-
-        userService.updateAuthority(username, Authority.AUTHOR, "ADMIN");
-        assertThat(roleChangeRepository.findAll()).isEmpty();
-        assertThat(userRepository.findByUsername(username)).isPresent();
-        assertThat(userRepository.findByUsername(username).get().getAuthority()).isEqualTo(Authority.AUTHOR);
-    }
-
-    @Test
-    @Transactional
     public void testDeleteUser() {
         Username username = new Username("username");
         String email = "test@email.com";
@@ -448,13 +413,11 @@ public class UserServiceTests {
     }
 
     @Test
-    @Transactional
     public void testUpdatePrivacy() {
         Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
-        String newName = "Name";
-        assertThatThrownBy(() -> userService.updateName(username, newName))
+        assertThatThrownBy(() -> userService.updatePrivacy(username, true))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(NO_SUCH_USER);
 
@@ -467,6 +430,26 @@ public class UserServiceTests {
         userService.updatePrivacy(username, true);
         retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.isPrivate()).isTrue();
+    }
+
+    @Test
+    public void testUpdate2fa() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        assertThatThrownBy(() -> userService.update2fa(username, true))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.is2faEnabled()).isFalse();
+
+
+        userService.update2fa(username, true);
+        retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.is2faEnabled()).isTrue();
     }
 
     @Test
@@ -494,7 +477,6 @@ public class UserServiceTests {
         assertThatThrownBy(() -> userService.updatePrivacy(new Username("inexistentUsername"), true))
                 .isInstanceOf(UsernameNotFoundException.class).hasMessage(NO_SUCH_USER);
     }
-
 
     @Test
     public void testFollowUser() {
@@ -583,7 +565,6 @@ public class UserServiceTests {
                 .hasMessage(NO_SUCH_USER);
         assertThat(retrievedUser2.getFollowedBy().isEmpty()).isTrue();
     }
-
 
     @AfterAll
     public static void stop() {

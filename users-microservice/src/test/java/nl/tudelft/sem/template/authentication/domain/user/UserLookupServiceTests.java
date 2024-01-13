@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -69,6 +70,8 @@ public class UserLookupServiceTests {
 
     @Autowired
     private transient JwtUserDetailsService jwtUserDetailsService;
+
+    private final transient JavaMailSender emailSender = mock(JavaMailSender.class);
 
     private static WireMockServer wireMockServer;
     private transient RegistrationRequestModel registrationRequest;
@@ -108,7 +111,7 @@ public class UserLookupServiceTests {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
         when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService, emailSender);
 
         String email = "email@gmail.com";
         String username = "user";

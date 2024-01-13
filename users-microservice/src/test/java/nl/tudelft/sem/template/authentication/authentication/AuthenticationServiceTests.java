@@ -9,8 +9,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,6 +26,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
@@ -45,6 +49,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -76,6 +81,8 @@ public class AuthenticationServiceTests {
     private transient AuthenticationResponseModel authenticationResponse;
     private transient ValidationTokenResponse validationTokenResponse;
     private transient UserRepository userRepository;
+
+    private final transient JavaMailSender emailSender = mock(JavaMailSender.class);
     private final transient String token = "Bearer token";
 
     private static final String BOOKSHELF_PATH = "/a/user";
@@ -83,6 +90,8 @@ public class AuthenticationServiceTests {
     private static ByteArrayOutputStream outputStreamCaptor;
 
     private static WireMockServer wireMockServer;
+
+    private static final ConcurrentMap<String, Long> sessionMap = mock(ConcurrentMap.class);
 
     /**
      * Sets up for testing.
@@ -117,7 +126,7 @@ public class AuthenticationServiceTests {
         passwordHashingService = mock(PasswordHashingService.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService, emailSender);
 
         String email = "email@gmail.com";
         String username = "user";
@@ -136,7 +145,7 @@ public class AuthenticationServiceTests {
 
         authenticationRequest = new AuthenticationRequestModel();
         authenticationRequest.setPassword(password);
-        authenticationRequest.setUsername(email);
+        authenticationRequest.setUsername(username);
 
         authenticationResponse = new AuthenticationResponseModel();
         authenticationResponse.setToken(token);
@@ -191,9 +200,21 @@ public class AuthenticationServiceTests {
     @Test
     public void authenticateUser() {
         when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
+        when(userRepository.findByUsername(any(Username.class))).thenReturn(Optional.ofNullable(appUser));
         when(jwtTokenGenerator.generateToken(userDetails)).thenReturn(token);
 
         assertEquals(authenticationService.authenticateUser(authenticationRequest), authenticationResponse);
+    }
+
+    @Test
+    public void authenticateUserWith2fa() {
+        appUser.set2faEnabled(true);
+
+        when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
+        when(userRepository.findByUsername(any(Username.class))).thenReturn(Optional.ofNullable(appUser));
+        when(jwtTokenGenerator.generateToken(userDetails)).thenReturn(token);
+
+        assertNull(authenticationService.authenticateUser(authenticationRequest).getToken());
     }
 
     @Test
@@ -210,6 +231,22 @@ public class AuthenticationServiceTests {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException(""));
 
         assertThrows(ResponseStatusException.class, () -> authenticationService.authenticateUser(authenticationRequest));
+    }
+
+    @Test
+    public void authenticateWith2faExpiredCode() {
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "EXPIRED_CODE")).when(sessionMap).forEach(any());
+
+        assertThrows(ResponseStatusException.class,
+                () -> authenticationService.authenticateWith2fa(authenticationRequest));
+    }
+
+    @Test
+    public void authenticateWith2faInvalidCredentials() {
+        doNothing().when(sessionMap).forEach(any());
+
+        assertThrows(ResponseStatusException.class,
+                () -> authenticationService.authenticateWith2fa(authenticationRequest));
     }
 
     @Test
