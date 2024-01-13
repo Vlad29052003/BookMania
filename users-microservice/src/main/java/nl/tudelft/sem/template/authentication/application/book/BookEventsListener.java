@@ -42,28 +42,27 @@ public class BookEventsListener {
     public void onBookWasCreated(BookWasCreatedEvent event) {
         // Handler code here
         Book book = event.getBook();
-
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BOOKSHELF_URI))
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
-                    .build();
-
-            HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != HttpStatus.OK.value()) {
-                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ResponseStatusException rse) {
-            // Since we do not have the other microservices locally yet, the http client will always throw an
-            // unauthorized exception. Thus, we will filter it out for now.
-
-            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
-                throw new ResponseStatusException(rse.getStatus());
-            }
-        }
-
+        //
+        //        try {
+        //            HttpRequest request = HttpRequest.newBuilder()
+        //                    .uri(URI.create(BOOKSHELF_URI))
+        //                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
+        //                    .build();
+        //
+        //            HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        //            if (response.statusCode() != HttpStatus.OK.value()) {
+        //                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+        //            }
+        //        } catch (IOException | InterruptedException e) {
+        //            throw new RuntimeException(e);
+        //        } catch (ResponseStatusException rse) {
+        //            // Since we do not have the other microservices locally yet, the http client will always throw an
+        //            // unauthorized exception. Thus, we will filter it out for now.
+        //
+        //            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+        //                throw new ResponseStatusException(rse.getStatus());
+        //            }
+        //        }
         System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
     }

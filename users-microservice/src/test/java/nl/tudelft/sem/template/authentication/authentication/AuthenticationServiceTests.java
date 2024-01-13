@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -76,6 +77,7 @@ public class AuthenticationServiceTests {
     private transient AuthenticationResponseModel authenticationResponse;
     private transient ValidationTokenResponse validationTokenResponse;
     private transient UserRepository userRepository;
+    private transient StatsRepository statsRepository;
     private final transient String token = "Bearer token";
 
     private static final String BOOKSHELF_PATH = "/a/user";
@@ -115,9 +117,11 @@ public class AuthenticationServiceTests {
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
+        statsRepository = mock(StatsRepository.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository,
+                statsRepository, passwordHashingService);
 
         String email = "email@gmail.com";
         String username = "user";

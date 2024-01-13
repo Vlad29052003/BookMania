@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +62,11 @@ public class BookService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
         }
         newBook.recordBookWasCreated();
-        bookRepository.saveAndFlush(newBook);
+        try {
+            bookRepository.saveAndFlush(newBook);
+        } catch (Exception e) {
+            System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+        }
     }
 
 
@@ -89,6 +94,7 @@ public class BookService {
         currentBook.setNumPages(updatedBook.getNumPages());
 
         currentBook.recordBookWasEdited();
+
         bookRepository.saveAndFlush(currentBook);
     }
 

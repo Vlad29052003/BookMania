@@ -38,29 +38,29 @@ public class UserEventsListener {
     @EventListener
     public void onUserWasCreated(UserWasCreatedEvent event) {
         UUID id = event.getUser().getId();
-
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BOOKSHELF_URL))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(id)))
-                    .build();
-
-            HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() != HttpStatus.OK.value()) {
-                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ResponseStatusException rse) {
-            // Since we do not have the other microservices locally yet, the http client will always throw an
-            // unauthorized exception. Thus, we will filter it out for now.
-
-            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
-                throw new ResponseStatusException(rse.getStatus());
-            }
-        }
+        //
+        //        try {
+        //            HttpRequest request = HttpRequest.newBuilder()
+        //                    .uri(URI.create(BOOKSHELF_URL))
+        //                    .header("Content-Type", "application/json")
+        //                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(id)))
+        //                    .build();
+        //
+        //            HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        //
+        //            if (response.statusCode() != HttpStatus.OK.value()) {
+        //                throw new ResponseStatusException(HttpStatus.valueOf(response.statusCode()));
+        //            }
+        //        } catch (IOException | InterruptedException e) {
+        //            throw new RuntimeException(e);
+        //        } catch (ResponseStatusException rse) {
+        //            // Since we do not have the other microservices locally yet, the http client will always throw an
+        //            // unauthorized exception. Thus, we will filter it out for now.
+        //
+        //            if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
+        //                throw new ResponseStatusException(rse.getStatus());
+        //            }
+        //        }
 
         System.out.println("Account of user with id " + id + " was created.");
     }

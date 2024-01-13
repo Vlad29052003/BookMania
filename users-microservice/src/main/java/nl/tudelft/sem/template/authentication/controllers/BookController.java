@@ -59,6 +59,7 @@ public class BookController {
             commandChain.setAddBookStrategy();
             Book newBook = new Book(createBookRequestModel);
             Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+            System.out.println(username.getUsernameValue());
             Authority authority = (Authority) SecurityContextHolder.getContext().getAuthentication()
                     .getAuthorities().iterator().next();
             commandChain.handle(username, authority, newBook);

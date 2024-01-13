@@ -20,6 +20,7 @@ import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServi
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -57,6 +58,9 @@ public class UserLookupServiceTests {
 
     @Autowired
     private transient UserRepository userRepository;
+
+    @Autowired
+    private transient StatsRepository statsRepository;
 
     @Autowired
     private transient BookRepository bookRepository;
@@ -108,7 +112,8 @@ public class UserLookupServiceTests {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
         when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository,
+                statsRepository, passwordHashingService);
 
         String email = "email@gmail.com";
         String username = "user";
