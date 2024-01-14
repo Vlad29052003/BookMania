@@ -115,4 +115,11 @@ public class UserEntityTests {
         user1.unfollow(user2);
         assertThat(user1.getFollows()).isEqualTo(new ArrayList<>());
     }
+
+    @Test
+    public void testHashedPassword() {
+        HashedPassword hashedPassword = new HashedPassword("hash");
+
+        assertThat(hashedPassword.toString()).isEqualTo("hash");
+    }
 }

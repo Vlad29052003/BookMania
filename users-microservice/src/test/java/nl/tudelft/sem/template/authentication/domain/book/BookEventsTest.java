@@ -92,6 +92,12 @@ class BookEventsTest {
 
         assertThat(bookEvent).isEqualTo(bookEvent);
 
+        BookWasDeletedEvent bookEvent3 = new BookWasDeletedEvent(book, id);
+        BookWasDeletedEvent bookEvent4 = new BookWasDeletedEvent(new Book(), id);
+
+        assertThat(bookEvent).isEqualTo(bookEvent3);
+        assertThat(bookEvent).isNotEqualTo(bookEvent4);
+
         assertEquals(Objects.hash(book, id), bookEvent.hashCode());
     }
 }

@@ -21,5 +21,6 @@ public class JwtAuthenticationEntryPointTests {
         jwtAuthenticationEntryPoint.commence(request, response, null);
 
         verify(response, times(1)).sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+        verify(response, times(1)).addHeader("WWW-Authenticate", "Bearer");
     }
 }
