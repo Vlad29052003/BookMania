@@ -8,10 +8,11 @@ import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @DataJpaTest
 public class RoleChangeEntityTest {
-
     private transient RoleChange change1;
     private transient RoleChange change2;
     private transient RoleChange change3;

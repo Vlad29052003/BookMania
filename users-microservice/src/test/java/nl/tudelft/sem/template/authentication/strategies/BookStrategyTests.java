@@ -6,7 +6,9 @@ import static org.mockito.Mockito.mock;
 import nl.tudelft.sem.template.authentication.domain.book.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 public class BookStrategyTests {
     private transient AddBookStrategy addBookStrategy;
     private transient EditBookStrategy editBookStrategy;

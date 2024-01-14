@@ -18,7 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 public class JwtTokenGeneratorTests {
     private transient JwtTokenGenerator jwtTokenGenerator;
     private transient TimeProvider timeProvider;
