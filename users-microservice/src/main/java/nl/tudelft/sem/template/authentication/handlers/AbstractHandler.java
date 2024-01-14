@@ -9,6 +9,7 @@ import nl.tudelft.sem.template.authentication.strategies.Strategy;
 abstract class AbstractHandler implements Handler {
     @Getter
     private transient UserRepository userRepository;
+    @Getter
     private transient Handler nextHandler;
     @Getter
     @Setter

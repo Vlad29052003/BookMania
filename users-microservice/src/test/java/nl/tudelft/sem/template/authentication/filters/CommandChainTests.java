@@ -26,6 +26,12 @@ public class CommandChainTests {
     private transient CommandChain commandChain;
 
     @Test
+    public void testChainedCorrectly() {
+        assertThat(commandChain.getCheckUserExistenceHandler().getNextHandler()).isEqualTo(commandChain.getCheckAuthorityHandler());
+        assertThat(commandChain.getCheckAuthorityHandler().getNextHandler()).isEqualTo(commandChain.getCheckAuthorHandler());
+    }
+
+    @Test
     public void testSetAddStrategy() {
         commandChain.setAddBookStrategy();
 
