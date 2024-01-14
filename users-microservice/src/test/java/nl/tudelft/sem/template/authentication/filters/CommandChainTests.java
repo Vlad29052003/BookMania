@@ -27,8 +27,10 @@ public class CommandChainTests {
 
     @Test
     public void testChainedCorrectly() {
-        assertThat(commandChain.getCheckUserExistenceHandler().getNextHandler()).isEqualTo(commandChain.getCheckAuthorityHandler());
-        assertThat(commandChain.getCheckAuthorityHandler().getNextHandler()).isEqualTo(commandChain.getCheckAuthorHandler());
+        assertThat(commandChain.getCheckUserExistenceHandler().getNextHandler())
+                .isEqualTo(commandChain.getCheckAuthorityHandler());
+        assertThat(commandChain.getCheckAuthorityHandler().getNextHandler())
+                .isEqualTo(commandChain.getCheckAuthorHandler());
     }
 
     @Test

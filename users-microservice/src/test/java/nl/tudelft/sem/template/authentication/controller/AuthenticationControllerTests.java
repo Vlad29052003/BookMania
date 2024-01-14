@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.controller;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -114,5 +116,15 @@ public class AuthenticationControllerTests {
 
         assertEquals(authenticationController.verifyJwt(),
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!"));
+    }
+
+    @Test
+    public void testErrormessage() {
+        String errorMessage = "password unauthorized";
+        HttpStatus errorStatus = HttpStatus.UNAUTHORIZED;
+        doThrow(new ResponseStatusException(errorStatus, errorMessage))
+                .when(authenticationService).registerUser(any());
+        assertThat(authenticationController.register(new RegistrationRequestModel()))
+                .isEqualTo(new ResponseEntity<>(errorStatus + " \"" + errorMessage + "\"", errorStatus));
     }
 }
