@@ -197,7 +197,9 @@ public class UserController {
         }
         return ResponseEntity.ok().build();
     }
-    
+
+
+
     /**
      * Endpoint for updating the username.
      *
@@ -289,6 +291,20 @@ public class UserController {
     public ResponseEntity<Void> updatePrivacy(@RequestBody String isPrivate) {
         Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
         userService.updatePrivacy(username, Boolean.parseBoolean(isPrivate));
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint for updating a user's two-factor authentication settings.
+     *
+     * @param is2faEnabled new 2fa status
+     * @return a ResponseEntity containing the OK response
+     */
+    @PatchMapping("/is2faEnabled")
+    public ResponseEntity<Void> update2fa(@RequestBody String is2faEnabled) {
+        Username username = new Username(SecurityContextHolder.getContext().getAuthentication().getName());
+        userService.update2fa(username, Boolean.parseBoolean(is2faEnabled));
 
         return ResponseEntity.ok().build();
     }

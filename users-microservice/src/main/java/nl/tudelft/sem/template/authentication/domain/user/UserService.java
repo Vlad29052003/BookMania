@@ -447,4 +447,23 @@ public class UserService {
                 .map(UserModel::new)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Updates the two-factor authentication status of a user.
+     *
+     * @param username  the username
+     * @param is2faEnabled new 2fa status
+     * @throws UsernameNotFoundException if the given username doesn't exist
+     */
+    public void update2fa(Username username, boolean is2faEnabled) {
+        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
+        if (optionalAppUser.isEmpty()) {
+            throw new UsernameNotFoundException(NO_SUCH_USER);
+        }
+
+        AppUser user = optionalAppUser.get();
+        user.set2faEnabled(is2faEnabled);
+
+        userRepository.saveAndFlush(user);
+    }
 }

@@ -2,7 +2,13 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
+import java.time.Instant;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
@@ -11,6 +17,8 @@ import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.ValidationTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -22,11 +30,16 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthenticationService {
+
     private final transient AuthenticationManager authenticationManager;
     private final transient JwtTokenGenerator jwtTokenGenerator;
     private final transient JwtUserDetailsService jwtUserDetailsService;
     private final transient UserRepository userRepository;
     private final transient PasswordHashingService passwordHashingService;
+    private final transient JavaMailSender emailSender;
+    private static final int codeValiditySeconds = 60;
+    private static final String usernameCodeSeparator = "~";
+    private static final ConcurrentMap<String, Long> sessionMap = new ConcurrentHashMap<>();
 
     /**
      * Creates an AuthenticationService service.
@@ -41,12 +54,28 @@ public class AuthenticationService {
                                  JwtTokenGenerator jwtTokenGenerator,
                                  JwtUserDetailsService jwtUserDetailsService,
                                  UserRepository userRepository,
-                                 PasswordHashingService passwordHashingService) {
+                                 PasswordHashingService passwordHashingService,
+                                 JavaMailSender emailSender) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenGenerator = jwtTokenGenerator;
         this.jwtUserDetailsService = jwtUserDetailsService;
         this.userRepository = userRepository;
         this.passwordHashingService = passwordHashingService;
+        this.emailSender = emailSender;
+    }
+
+    static {
+        Timer sessionMapManager = new Timer();
+        sessionMapManager.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                sessionMap.entrySet().removeIf(userCode -> {
+                    long codeTimestamp = userCode.getValue();
+                    long timespan = Instant.now().toEpochMilli() - codeTimestamp;
+                    return timespan > codeValiditySeconds * 1000;
+                });
+            }
+        }, 0, codeValiditySeconds * 1000);
     }
 
     /**
@@ -88,8 +117,48 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
         }
 
-        final String jwtToken = jwtTokenGenerator.generateToken(userDetails);
-        return new AuthenticationResponseModel(jwtToken);
+        String token = null;
+        AppUser user = userRepository.findByUsername(new Username(authenticationRequest.getUsername())).get();
+        if (user.is2faEnabled()) {
+            long timestamp = Instant.now().toEpochMilli();
+            sessionMap.put(user.getUsername().getUsernameValue() + usernameCodeSeparator + timestamp, timestamp);
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(user.getEmail());
+            email.setSubject("BookMania Authentication Code");
+            email.setText("Your authentication code is: " + timestamp % 1000000 + ".\nIt is valid for "
+                    + codeValiditySeconds + " seconds. Afterwards you will need to request another.");
+            emailSender.send(email);
+        } else {
+            token = jwtTokenGenerator.generateToken(userDetails);
+        }
+        return new AuthenticationResponseModel(token);
+    }
+
+    /**
+     * Authenticate a user with two-factor authentication.
+     *
+     * @param authenticationRequestModel an object containing the username and the 2fa code
+     * @return the JWT token
+     * @throws ResponseStatusException if the authentication fails
+     */
+    public AuthenticationResponseModel authenticateWith2fa(AuthenticationRequestModel authenticationRequestModel) {
+        String username = authenticationRequestModel.getUsername();
+        AtomicReference<AuthenticationResponseModel> token = new AtomicReference<>(null);
+        sessionMap.forEach((userCode, value) -> {
+            if (userCode.startsWith(username)
+                    && userCode.endsWith(authenticationRequestModel.getPassword())
+                    && token.get() == null) {
+                if (Instant.now().toEpochMilli() - value > codeValiditySeconds * 1000) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "EXPIRED_CODE");
+                }
+                UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
+                token.set(new AuthenticationResponseModel(jwtTokenGenerator.generateToken(userDetails)));
+            }
+        });
+        if (token.get() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
+        }
+        return token.get();
     }
 
     /**
