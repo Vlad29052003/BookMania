@@ -2,9 +2,12 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
@@ -12,6 +15,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChangeRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
+import nl.tudelft.sem.template.authentication.models.UserProfile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
@@ -411,5 +415,41 @@ public class UserService {
         users.getFirst().unfollow(users.getSecond());
         userRepository.saveAndFlush(users.getFirst());
         userRepository.saveAndFlush(users.getSecond());
+    }
+
+    /**
+     * Get a user's followers.
+     *
+     * @param username user whose followers we wish to see.
+     * @return a list of the user's followers.
+     */
+    public List<UserModel> getFollowers(String username) {
+        Optional<AppUser> optionalUser = userRepository.findByUsername(new Username(username));
+        if (optionalUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
+        }
+
+        AppUser user = optionalUser.get();
+        return user.getFollowedBy().stream()
+                .map(UserModel::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get a list of users that are followed by a specific user.
+     *
+     * @param username the specific user.
+     * @return a list of users that are followed by this user.
+     */
+    public List<UserModel> getFollowing(String username) {
+        Optional<AppUser> optionalUser = userRepository.findByUsername(new Username(username));
+        if (optionalUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
+        }
+
+        AppUser user = optionalUser.get();
+        return user.getFollows().stream()
+                .map(UserModel::new)
+                .collect(Collectors.toList());
     }
 }
