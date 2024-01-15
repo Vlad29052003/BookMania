@@ -2,6 +2,8 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +37,6 @@ public class UserLookupServiceTests {
     private transient UserRepository userRepository;
     @Autowired
     private transient BookRepository bookRepository;
-    @Autowired
-    private transient PasswordHashingService passwordHashingService;
     private transient AppUser user1;
     private transient AppUser user2;
     private transient Book book;
@@ -46,12 +46,15 @@ public class UserLookupServiceTests {
      */
     @BeforeEach
     public void setUp() {
-        Username username = new Username("user");
+        PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
+        when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
+
+        Username username1 = new Username("user");
         String email = "email@gmail.com";
         HashedPassword password = passwordHashingService.hash(new Password("someHash1!"));
-        user1 = new AppUser(username, email, password);
+        user1 = new AppUser(username1, email, password);
         userRepository.saveAndFlush(user1);
-        user1 = userRepository.findByUsername(username).get();
+        user1 = userRepository.findByUsername(username1).get();
 
         String email2 = "email2@gmail.com";
         Username username2 = new Username("andrei");

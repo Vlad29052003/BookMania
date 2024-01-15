@@ -551,7 +551,6 @@ public class UserControllerTests {
     }
 
     @Test
-    @Transactional
     public void testUpdateUserPrivacy() throws Exception {
         final Username testUser = new Username("SomeUser");
         final String email = "test@email.com";
@@ -575,6 +574,32 @@ public class UserControllerTests {
 
         assertThat(userModel).isPresent();
         assertThat(userModel.get().isPrivate()).isTrue();
+    }
+
+    @Test
+    public void testUpdate2fa() throws Exception {
+        final Username testUser = new Username("SomeUser");
+        final String email = "test@email.com";
+        final HashedPassword testHashedPassword = new HashedPassword("hashedTestPassword");
+        final AppUser user = new AppUser(testUser, email, testHashedPassword);
+        user.setAuthority(Authority.REGULAR_USER);
+        Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
+        final String token = jwtTokenGenerator.generateToken(new User(testUser.toString(),
+                testHashedPassword.toString(), roles));
+        userRepository.save(user);
+
+        ResultActions resultActions = mockMvc.perform(
+                patch("/c/users/is2faEnabled")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("true")
+                        .header("Authorization", "Bearer " + token));
+
+        resultActions.andExpect(status().isOk());
+        Optional<AppUser> userModel = userRepository.findByUsername(testUser);
+
+        assertThat(userModel).isPresent();
+        assertThat(userModel.get().is2faEnabled()).isTrue();
     }
 
     @AfterAll

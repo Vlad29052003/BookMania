@@ -62,6 +62,8 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/org.wiremock/wiremock-standalone
 	testImplementation 'org.wiremock:wiremock-standalone:3.2.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 test {
