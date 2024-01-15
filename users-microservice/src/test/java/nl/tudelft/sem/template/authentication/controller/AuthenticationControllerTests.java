@@ -83,6 +83,31 @@ public class AuthenticationControllerTests {
     }
 
     @Test
+    public void authenticationRequestWith2fa() {
+        AuthenticationRequestModel request = new AuthenticationRequestModel();
+        request.setUsername("username");
+        request.setPassword("Password123!");
+        AuthenticationResponseModel response = new AuthenticationResponseModel();
+        response.setToken("token");
+
+        when(authenticationService.authenticateWith2fa(request)).thenReturn(response);
+
+        assertEquals(authenticationController.authenticateWith2fa(request), ResponseEntity.ok(response));
+    }
+
+    @Test
+    public void authenticationRequestWith2faThrowsError() {
+        AuthenticationRequestModel request = new AuthenticationRequestModel();
+        request.setUsername("usernameS");
+        request.setPassword("Password123!");
+
+        when(authenticationService.authenticateWith2fa(request))
+                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "EXPIRED_CODE"));
+
+        assertEquals(authenticationController.authenticateWith2fa(request).getStatusCodeValue(), 401);
+    }
+
+    @Test
     public void validateToken() {
         Authentication authenticationMock = mock(Authentication.class);
         when(authenticationMock.getName()).thenReturn("user");
