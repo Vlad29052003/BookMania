@@ -136,6 +136,7 @@ public class AuthenticationService {
             userRepository.save(user);
 
             AppUser user2 = userRepository.findByUsername(username).get();
+
             statsRepository.save(new Stats(user2.getId(), 0));
 
             return user;
