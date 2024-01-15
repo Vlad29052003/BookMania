@@ -420,8 +420,12 @@ public class UserService {
      * @param username user whose followers we wish to see.
      * @return a list of the user's followers.
      */
-    public List<UserModel> getFollowers(String username) {
-        AppUser user = getUserByUsername(new Username(username));
+    public List<UserModel> getFollowers(String username) throws ResponseStatusException {
+        Optional<AppUser> optionalUser = userRepository.findByUsername(new Username(username));
+        if (optionalUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
+        }
+        AppUser user = optionalUser.get();
         return user.getFollowedBy().stream()
                 .map(UserModel::new)
                 .collect(Collectors.toList());
@@ -433,8 +437,12 @@ public class UserService {
      * @param username the specific user.
      * @return a list of users that are followed by this user.
      */
-    public List<UserModel> getFollowing(String username) {
-        AppUser user = getUserByUsername(new Username(username));
+    public List<UserModel> getFollowing(String username) throws ResponseStatusException {
+        Optional<AppUser> optionalUser = userRepository.findByUsername(new Username(username));
+        if (optionalUser.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_SUCH_USER);
+        }
+        AppUser user = optionalUser.get();
         return user.getFollows().stream()
                 .map(UserModel::new)
                 .collect(Collectors.toList());

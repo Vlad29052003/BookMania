@@ -7,7 +7,12 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/c/connections")
@@ -72,14 +77,7 @@ public class ConnectionsController {
         if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             return ResponseEntity.status(401).build();
         }
-
-        List<UserModel> followers;
-        try {
-            followers = userService.getFollowers(username);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        List<UserModel> followers = userService.getFollowers(username);
         return ResponseEntity.ok(followers);
     }
 
@@ -94,14 +92,7 @@ public class ConnectionsController {
         if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             return ResponseEntity.status(401).build();
         }
-
-        List<UserModel> follows;
-        try {
-            follows = userService.getFollowing(username);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        List<UserModel> follows = userService.getFollowing(username);
         return ResponseEntity.ok(follows);
     }
 }

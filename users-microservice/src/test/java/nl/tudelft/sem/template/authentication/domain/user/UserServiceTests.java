@@ -586,17 +586,21 @@ public class UserServiceTests {
 
     @Test
     public void testGetFollowersAndFollowing() {
-        Username username1 = new Username("user1");
-        Username username2 = new Username("user2");
-        AppUser user1 = new AppUser(username1, "user1@email.com", new HashedPassword("pass1"));
-        AppUser user2 = new AppUser(username2, "user2@email.com", new HashedPassword("pass2"));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> userService.getFollowers("user1"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.getFollowing("user1"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        AppUser user1 = new AppUser(new Username("user1"), "user1@email.com", new HashedPassword("pass1"));
+        AppUser user2 = new AppUser(new Username("user2"), "user2@email.com", new HashedPassword("pass2"));
         userRepository.save(user1);
         userRepository.save(user2);
-
         assertThat(userService.getFollowers("user2")).isEqualTo(new ArrayList<>());
         assertThat(userService.getFollowing("user1")).isEqualTo(new ArrayList<>());
 
-        userService.followUser(username1, username2);
+        userService.followUser(user1.getUsername(), user2.getUsername());
         assertThat(userService.getFollowers("user2")).isNotEqualTo(new ArrayList<>());
         assertThat(userService.getFollowing("user1")).isNotEqualTo(new ArrayList<>());
     }
