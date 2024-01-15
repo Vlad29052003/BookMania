@@ -34,7 +34,7 @@ public class Stats {
     @Type(type = "uuid-char")
     private UUID id;
 
-
+    @Getter
     @Setter
     @Column(name = "numberOfLogins", nullable = false)
     private int numberOfLogins;

@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
+import java.util.Arrays;
 import java.util.Optional;
 import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
