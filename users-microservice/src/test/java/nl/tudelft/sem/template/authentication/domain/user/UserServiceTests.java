@@ -584,6 +584,22 @@ public class UserServiceTests {
         assertThat(retrievedUser2.getFollowedBy().isEmpty()).isTrue();
     }
 
+    @Test
+    public void testGetFollowersAndFollowing() {
+        Username username1 = new Username("user1");
+        Username username2 = new Username("user2");
+        AppUser user1 = new AppUser(username1, "user1@email.com", new HashedPassword("pass1"));
+        AppUser user2 = new AppUser(username2, "user2@email.com", new HashedPassword("pass2"));
+        userRepository.save(user1);
+        userRepository.save(user2);
+
+        assertThat(userService.getFollowers("user2")).isEqualTo(new ArrayList<>());
+        assertThat(userService.getFollowing("user1")).isEqualTo(new ArrayList<>());
+
+        userService.followUser(username1, username2);
+        assertThat(userService.getFollowers("user2")).isNotEqualTo(new ArrayList<>());
+        assertThat(userService.getFollowing("user1")).isNotEqualTo(new ArrayList<>());
+    }
 
     @AfterAll
     public static void stop() {

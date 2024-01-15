@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.authentication.controllers.ConnectionsController;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
@@ -39,6 +40,7 @@ public class ConnectionsControllerTests {
         this.connectionsController = new ConnectionsController(userService);
         Authentication authenticationMock = mock(Authentication.class);
         when(authenticationMock.getName()).thenReturn("user");
+        when(authenticationMock.isAuthenticated()).thenReturn(true);
         doReturn(List.of(Authority.REGULAR_USER)).when(authenticationMock).getAuthorities();
         SecurityContext securityContextMock = mock(SecurityContext.class);
         when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
@@ -70,5 +72,23 @@ public class ConnectionsControllerTests {
         assertThat(connectionsController.unfollowUser(userToUnfollow))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1)).unfollowUser(username, new Username(userToUnfollow));
+    }
+
+    @Test
+    public void testGetFollowers() {
+        String testUser = "testUser";
+
+        assertThat(connectionsController.getFollowers(testUser))
+                .isEqualTo(ResponseEntity.ok(new ArrayList<>()));
+        verify(userService, times(1)).getFollowers(testUser);
+    }
+
+    @Test
+    public void testGetFollowing() {
+        String testUser = "testUser";
+
+        assertThat(connectionsController.getFollowing(testUser))
+                .isEqualTo(ResponseEntity.ok(new ArrayList<>()));
+        verify(userService, times(1)).getFollowing(testUser);
     }
 }
