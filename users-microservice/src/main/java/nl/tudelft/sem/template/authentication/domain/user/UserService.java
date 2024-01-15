@@ -2,12 +2,10 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
@@ -15,7 +13,6 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.report.ReportRepository;
 import nl.tudelft.sem.template.authentication.domain.rolechange.RoleChangeRepository;
 import nl.tudelft.sem.template.authentication.models.UserModel;
-import nl.tudelft.sem.template.authentication.models.UserProfile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;

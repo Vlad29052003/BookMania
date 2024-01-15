@@ -6,7 +6,6 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class ConnectionsController {
             return ResponseEntity.status(401).build();
         }
 
-        List<UserModel> followers = new ArrayList<>();
+        List<UserModel> followers;
         try {
             followers = userService.getFollowers(username);
         } catch (Exception e) {
@@ -98,7 +97,7 @@ public class ConnectionsController {
             return ResponseEntity.status(401).build();
         }
 
-        List<UserModel> follows = new ArrayList<>();
+        List<UserModel> follows;
         try {
             follows = userService.getFollowing(username);
         } catch (Exception e) {
