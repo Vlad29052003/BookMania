@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -22,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationController {
 
     private final transient AuthenticationService authenticationService;
+    private final transient String twoFactorAuth = "/2fa";
 
     /**
      * Instantiates a new UsersController.
@@ -46,11 +49,7 @@ public class AuthenticationController {
         try {
             authenticationService.registerUser(request);
         } catch (ResponseStatusException e) {
-            if (Objects.requireNonNull(e.getMessage()).contains("password")) {
-                return new ResponseEntity<>(e.getMessage(), e.getStatus());
-            } else {
-                return new ResponseEntity<>("Username or email already in use!", e.getStatus());
-            }
+            return new ResponseEntity<>("Username or email already in use!", e.getStatus());
         }
         return ResponseEntity.ok().build();
     }
@@ -59,14 +58,35 @@ public class AuthenticationController {
      * Endpoint for authentication.
      *
      * @param request The login model.
-     * @return JWT token if the login is successful.
+     * @return JWT token if the login is successful or 302 if the user has 2fa enabled.
      * @throws ResponseStatusException if the user does not exist or the password is incorrect.
      */
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody AuthenticationRequestModel request) throws ResponseStatusException {
         try {
             AuthenticationResponseModel authenticationResponseModel = authenticationService.authenticateUser(request);
+            if (authenticationResponseModel.getToken() == null) {
+                return ResponseEntity.status(HttpStatus.FOUND).header("Location",
+                        ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
+                                .getRequest().getRequestURL() + twoFactorAuth).build();
+            }
             return ResponseEntity.ok(authenticationResponseModel);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+    }
+
+    /**
+     * Endpoint for authentication with two-factor.
+     *
+     * @param request The 2fa code (in the password field) with the associated username.
+     * @return JWT token if the code is correct.
+     */
+    @PostMapping("/authenticate" + twoFactorAuth)
+    public ResponseEntity<?> authenticateWith2fa(@RequestBody AuthenticationRequestModel request)
+            throws ResponseStatusException {
+        try {
+            return ResponseEntity.ok(authenticationService.authenticateWith2fa(request));
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

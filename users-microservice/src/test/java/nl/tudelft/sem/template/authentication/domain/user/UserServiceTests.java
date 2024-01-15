@@ -448,13 +448,11 @@ public class UserServiceTests {
     }
 
     @Test
-    @Transactional
     public void testUpdatePrivacy() {
         Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
-        String newName = "Name";
-        assertThatThrownBy(() -> userService.updateName(username, newName))
+        assertThatThrownBy(() -> userService.updatePrivacy(username, true))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(NO_SUCH_USER);
 
@@ -467,6 +465,26 @@ public class UserServiceTests {
         userService.updatePrivacy(username, true);
         retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.isPrivate()).isTrue();
+    }
+
+    @Test
+    public void testUpdate2fa() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        assertThatThrownBy(() -> userService.update2fa(username, true))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.is2faEnabled()).isFalse();
+
+
+        userService.update2fa(username, true);
+        retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.is2faEnabled()).isTrue();
     }
 
     @Test
@@ -494,7 +512,6 @@ public class UserServiceTests {
         assertThatThrownBy(() -> userService.updatePrivacy(new Username("inexistentUsername"), true))
                 .isInstanceOf(UsernameNotFoundException.class).hasMessage(NO_SUCH_USER);
     }
-
 
     @Test
     public void testFollowUser() {
@@ -603,7 +620,6 @@ public class UserServiceTests {
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"User does not exist!\"");
     }
-
 
     @AfterAll
     public static void stop() {
