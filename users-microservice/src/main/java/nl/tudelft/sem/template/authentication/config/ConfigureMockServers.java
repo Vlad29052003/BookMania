@@ -38,8 +38,7 @@ public class ConfigureMockServers {
         configureFor("localhost", 8080);
         stubFor(any(urlPathMatching(".*"))
                 .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody("Mocked Response for Bookshelf API")));
+                        .withStatus(200)));
     }
 
     private void startReviewMockServer() {
@@ -49,8 +48,7 @@ public class ConfigureMockServers {
         configureFor("localhost", 8082);
         stubFor(any(urlPathMatching(".*"))
                 .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody("Mocked Response for Review API")));
+                        .withStatus(200)));
     }
 
     private void stopMockServer(WireMockServer mockServer) {

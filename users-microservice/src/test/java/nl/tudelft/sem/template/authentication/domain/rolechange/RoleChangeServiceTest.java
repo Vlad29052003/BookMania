@@ -75,6 +75,25 @@ public class RoleChangeServiceTest {
     @Test
     public void addReportBadRequestTest() {
         userRepository.save(user);
+        roleChange.setNewRole(null);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> roleChangeService.addRequest(user.getUsername(), roleChange));
+        assertEquals(e.getStatus(), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void addReportBadRequestTest2() {
+        userRepository.save(user);
+        roleChange.setSsn(null);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> roleChangeService.addRequest(user.getUsername(), roleChange));
+        assertEquals(e.getStatus(), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void addReportBadRequestTest3() {
+
+        userRepository.save(user);
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                 () -> roleChangeService.addRequest(user.getUsername(), null));
         assertEquals(e.getStatus(), HttpStatus.BAD_REQUEST);

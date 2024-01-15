@@ -20,6 +20,7 @@ import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsServi
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -46,43 +48,30 @@ import org.springframework.web.server.ResponseStatusException;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class UserLookupIntegrationTests {
-
     @Autowired
     private transient UserLookupService userLookupService;
-
     @Autowired
     private transient UserService userService;
-
     @Autowired
     private transient AuthenticationService authenticationService;
-
     @Autowired
     private transient UserRepository userRepository;
-
     @Autowired
     private transient BookRepository bookRepository;
-
     @Autowired
     private transient AuthenticationManager authenticationManager;
-
     @Autowired
     private transient JwtTokenGenerator jwtTokenGenerator;
-
     @Autowired
     private transient JwtUserDetailsService jwtUserDetailsService;
-
     private static WireMockServer wireMockServer;
     private transient RegistrationRequestModel registrationRequest;
     private transient RegistrationRequestModel registrationRequest2;
-
+    private transient TimeProvider timeProvider;
     private transient Book book;
-
     private transient UUID bookId;
-
     private transient AppUser testUser;
-
     private transient AppUser testUser2;
-
     private static final String BOOKSHELF_PATH = "/a/user";
 
     /**
@@ -107,9 +96,11 @@ public class UserLookupIntegrationTests {
     @BeforeEach
     public void setUp() {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
+        JavaMailSender mailSender = mock(JavaMailSender.class);
+        timeProvider = mock(TimeProvider.class);
         when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService, mailSender, timeProvider);
 
         String email = "email@gmail.com";
         String username = "user";

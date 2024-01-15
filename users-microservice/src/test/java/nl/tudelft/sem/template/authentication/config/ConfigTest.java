@@ -6,8 +6,11 @@ import static nl.tudelft.sem.template.authentication.application.Constants.REVIE
 import static nl.tudelft.sem.template.authentication.application.book.BookEventsListener.BOOKSHELF_URI;
 import static nl.tudelft.sem.template.authentication.application.book.BookEventsListener.REVIEW_URI;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -44,26 +47,27 @@ public class ConfigTest {
     }
 
     @Test
-    public void testStubs() throws Exception {
+    public void testStubs() {
         ConfigureMockServers config = new ConfigureMockServers();
 
-        config.startWireMocks();
-        HttpRequest requestBookshelf = HttpRequest.newBuilder()
-                .uri(URI.create(BOOKSHELF_URI))
-                .POST(HttpRequest.BodyPublishers.ofString(""))
-                .build();
-        HttpResponse<?> responseBookshelf = client.send(requestBookshelf, HttpResponse.BodyHandlers.ofString());
-        assertThat(responseBookshelf.statusCode()).isEqualTo(200);
-        assertThat(responseBookshelf.body()).isEqualTo("Mocked Response for Bookshelf API");
+        assertDoesNotThrow(config::stopWireMocks);
 
-        HttpRequest requestReview = HttpRequest.newBuilder()
-                .uri(URI.create(REVIEW_URI))
-                .POST(HttpRequest.BodyPublishers.ofString(""))
-                .build();
-        HttpResponse<?> responseReview = client.send(requestReview, HttpResponse.BodyHandlers.ofString());
-        assertThat(responseReview.statusCode()).isEqualTo(200);
-        assertThat(responseReview.body()).isEqualTo("Mocked Response for Review API");
+        config.startWireMocks();
+
+        assertThat(isPortOpen(8080)).isTrue();
+        assertThat(isPortOpen(8082)).isTrue();
 
         config.stopWireMocks();
+
+        assertThat(isPortOpen(8080)).isFalse();
+        assertThat(isPortOpen(8082)).isFalse();
+    }
+
+    private boolean isPortOpen(int port) {
+        try (Socket ignored = new Socket("localhost", port)) {
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

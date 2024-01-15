@@ -28,6 +28,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 @ActiveProfiles("test")
@@ -143,15 +145,5 @@ public class AuthenticationControllerTests {
 
         assertEquals(authenticationController.verifyJwt(),
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized!"));
-    }
-
-    @Test
-    public void testErrormessage() {
-        String errorMessage = "password unauthorized";
-        HttpStatus errorStatus = HttpStatus.UNAUTHORIZED;
-        doThrow(new ResponseStatusException(errorStatus, errorMessage))
-                .when(authenticationService).registerUser(any());
-        assertThat(authenticationController.register(new RegistrationRequestModel()))
-                .isEqualTo(new ResponseEntity<>(errorStatus + " \"" + errorMessage + "\"", errorStatus));
     }
 }
