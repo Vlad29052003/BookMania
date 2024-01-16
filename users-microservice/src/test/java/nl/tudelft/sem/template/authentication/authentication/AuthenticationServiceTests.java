@@ -26,14 +26,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
-import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -132,10 +130,8 @@ public class AuthenticationServiceTests {
         statsRepository = mock(StatsRepository.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService,
-                emailSender, timeProvider);
-                jwtTokenGenerator, jwtUserDetailsService, userRepository,
-                statsRepository, passwordHashingService);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, statsRepository,
+                passwordHashingService, emailSender, timeProvider);
 
         String email = "email@gmail.com";
         String username = "user";

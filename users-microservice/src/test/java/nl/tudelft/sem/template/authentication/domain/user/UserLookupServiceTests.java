@@ -40,8 +40,6 @@ public class UserLookupServiceTests {
     @Autowired
     private transient UserRepository userRepository;
 
-    @Autowired
-    private transient StatsRepository statsRepository;
 
     @Autowired
     private transient BookRepository bookRepository;
@@ -56,9 +54,6 @@ public class UserLookupServiceTests {
     public void setUp() {
         PasswordHashingService passwordHashingService = mock(PasswordHashingService.class);
         when(passwordHashingService.hash(new Password("someOtherHash1!"))).thenReturn(new HashedPassword("someHash"));
-        authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository,
-                statsRepository, passwordHashingService);
 
         Username username1 = new Username("user");
         String email = "email@gmail.com";

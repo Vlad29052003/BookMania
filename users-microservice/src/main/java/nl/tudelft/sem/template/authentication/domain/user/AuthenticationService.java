@@ -2,20 +2,20 @@ package nl.tudelft.sem.template.authentication.domain.user;
 
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
-import java.util.Arrays;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Optional;
-import javax.transaction.Transactional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
+import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.stats.Stats;
 import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
-import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -63,7 +63,6 @@ public class AuthenticationService {
                                  JwtUserDetailsService jwtUserDetailsService,
                                  UserRepository userRepository,
                                  StatsRepository statsRepository,
-                                 PasswordHashingService passwordHashingService) {
                                  PasswordHashingService passwordHashingService,
                                  JavaMailSender emailSender,
                                  TimeProvider timeProvider) {
@@ -135,8 +134,6 @@ public class AuthenticationService {
 
         final String jwtToken = jwtTokenGenerator.generateToken(userDetails);
         AppUser user2 = userRepository.findByUsername(new Username(userDetails.getUsername())).get();
-        statsRepository.increaseStatsOnLogin(user2.getId());
-        return new AuthenticationResponseModel(jwtToken);
         String token = null;
         AppUser user = userRepository.findByUsername(new Username(authenticationRequest.getUsername())).get();
         if (user.is2faEnabled()) {
@@ -151,6 +148,7 @@ public class AuthenticationService {
         } else {
             token = jwtTokenGenerator.generateToken(userDetails);
         }
+        statsRepository.increaseStatsOnLogin(user2.getId());
         return new AuthenticationResponseModel(token);
     }
 
