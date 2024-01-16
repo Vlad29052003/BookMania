@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.authentication.controllers;
 
-import java.util.Arrays;
+
 import nl.tudelft.sem.template.authentication.domain.stats.StatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
