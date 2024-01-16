@@ -618,8 +618,13 @@ public class UserServiceTests {
         assertThat(userService.getFollowing("user1")).isEqualTo(new ArrayList<>());
 
         userService.followUser(user1.getUsername(), user2.getUsername());
-        assertThat(userService.getFollowers("user2")).isNotEqualTo(new ArrayList<>());
-        assertThat(userService.getFollowing("user1")).isNotEqualTo(new ArrayList<>());
+        List<UserModel> followersUser2 = userService.getFollowers("user2");
+        assertThat(followersUser2.size()).isEqualTo(1);
+        assertThat(followersUser2.get(0).getUsername()).isEqualTo("user1");
+
+        List<UserModel> followingUser1 = userService.getFollowing("user1");
+        assertThat(followingUser1.size()).isEqualTo(1);
+        assertThat(followingUser1.get(0).getUsername()).isEqualTo("user2");
     }
 
     @AfterAll
