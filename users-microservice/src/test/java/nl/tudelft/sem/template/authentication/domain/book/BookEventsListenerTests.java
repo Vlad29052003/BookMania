@@ -78,7 +78,7 @@ public class BookEventsListenerTests {
         System.setOut(new PrintStream(outputStreamCaptor));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
-        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
+        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/bookshelf_service/catalog";
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
     }
 
