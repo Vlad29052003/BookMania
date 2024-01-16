@@ -14,6 +14,9 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles({"test"})
 
 public class StatsServiceTests {
 

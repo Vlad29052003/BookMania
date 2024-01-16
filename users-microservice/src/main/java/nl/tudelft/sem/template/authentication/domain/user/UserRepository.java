@@ -36,11 +36,12 @@ public interface UserRepository extends JpaRepository<AppUser, UUID> {
     @Query(value = "DELETE FROM user_connections WHERE follower_id = :userId OR followed_id = :userId", nativeQuery = true)
     void deleteConnectionsByUserId(@Param("userId") String userId);
 
-    @Query(value = "SELECT book_id FROM users GROUP BY book_id ORDER BY COUNT(book_id) DESC LIMIT 5", nativeQuery = true)
+    @Query(value = "SELECT book_id FROM users WHERE book_id IS NOT NULL "
+            + "GROUP BY book_id ORDER BY COUNT(book_id) DESC LIMIT 3", nativeQuery = true)
     List<UUID> getMostPopularBooks();
 
-    @Query(value = "SELECT genre FROM user_favourite_genres GROUP BY "
-            + "genre ORDER BY COUNT(genre) DESC LIMIT 5", nativeQuery = true)
+    @Query(value = "SELECT genre FROM user_favourite_genres WHERE genre IS NOT NULL GROUP BY "
+            + "genre ORDER BY COUNT(genre) DESC LIMIT 3", nativeQuery = true)
     List<Genre> getMostPopularGenres();
 
 

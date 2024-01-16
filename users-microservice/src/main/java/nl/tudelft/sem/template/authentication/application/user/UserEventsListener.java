@@ -56,7 +56,6 @@ public class UserEventsListener {
         } catch (ResponseStatusException rse) {
             // Since we do not have the other microservices locally yet, the http client will always throw an
             // unauthorized exception. Thus, we will filter it out for now.
-            System.out.println("unauth caught");
             if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
                 throw new ResponseStatusException(rse.getStatus());
             }

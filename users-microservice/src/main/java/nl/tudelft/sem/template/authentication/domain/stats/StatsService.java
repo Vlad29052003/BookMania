@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.stats;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,43 +42,37 @@ public class StatsService {
      * Get login statistics for a user (number of times they accessed /authenticate).
      *
      * @param userId the id of the user
+     * @return the number of times the user logged in
      */
     public int getLoginStats(String userId) {
-        return statsRepository.findById(UUID.fromString(userId)).get().getNumberOfLogins();
+        Optional<Stats> stats = statsRepository.findById(UUID.fromString(userId));
+        if (stats.isEmpty()) {
+            throw new NoSuchElementException("User not found");
+        }
+        return stats.get().getNumberOfLogins();
     }
 
     /**
-     * Get most popular book.
+     * Get the 3 most popular books by user favourites.
+     *
+     * @return the list of books
      */
     public List<Book> mostPopularBooks() {
-        try {
-            return userRepository.getMostPopularBooks()
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .map(bookRepository::findById)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList());
+        return userRepository.getMostPopularBooks()
+                .stream()
+                .map(bookRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>();
     }
 
     /**
-     * Get most popular genres.
+     * Get the 3 most popular genres by user favourites.
+     *
+     * @return the list of genres
      */
     public List<Genre> mostPopularGenres() {
-        try {
-            return userRepository.getMostPopularGenres()
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>();
+        return userRepository.getMostPopularGenres();
     }
 }

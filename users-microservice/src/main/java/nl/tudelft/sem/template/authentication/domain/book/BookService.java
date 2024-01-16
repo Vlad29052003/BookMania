@@ -62,11 +62,7 @@ public class BookService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The book is already in the system!");
         }
         newBook.recordBookWasCreated();
-        try {
-            bookRepository.saveAndFlush(newBook);
-        } catch (Exception e) {
-            System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-        }
+        bookRepository.saveAndFlush(newBook);
     }
 
 

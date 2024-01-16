@@ -1,15 +1,11 @@
 package nl.tudelft.sem.template.authentication.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -20,22 +16,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
-import nl.tudelft.sem.template.authentication.domain.stats.Stats;
 import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
-import nl.tudelft.sem.template.authentication.domain.user.Password;
 import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
-import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
-import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,13 +42,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 @SpringBootTest
@@ -95,7 +86,6 @@ public class StatsIntegrationTests {
     private String userToken;
     private String adminToken;
     private Book book1;
-    private UUID book1Id;
     private static WireMockServer wireMockServer;
 
     private static final String BOOKSHELF_PATH = "/a/user";
@@ -110,8 +100,7 @@ public class StatsIntegrationTests {
      */
     private List<String> parseJsonBooks(String json) {
 
-        return List.of(json.substring(1, json.length() - 1).split("},"))
-                .stream()
+        return Stream.of(json.substring(1, json.length() - 1).split("},"))
                 .map(s -> s + "}")
                 .collect(Collectors.toList());
     }
@@ -187,7 +176,7 @@ public class StatsIntegrationTests {
                 .andExpect(status().isOk());
 
 
-        ResultActions resultActions = mockMvc.perform(get("/c/stats/mostPopularBooks")
+        ResultActions resultActions = mockMvc.perform(get("/c/stats/popularBooks")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
         List<String> books = parseJsonBooks(resultActions.andReturn().getResponse().getContentAsString());
@@ -207,7 +196,7 @@ public class StatsIntegrationTests {
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk());
 
-        ResultActions resultActions = mockMvc.perform(get("/c/stats/mostPopularGenres")
+        ResultActions resultActions = mockMvc.perform(get("/c/stats/popularGenres")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
         List<String> genres = parseJsonGenres(resultActions.andReturn().getResponse().getContentAsString());
@@ -232,21 +221,18 @@ public class StatsIntegrationTests {
                 .andExpect(status().isOk());
         mockMvc.perform(patch("/c/users/favouriteGenres")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("[\"CRIME\", \"DRAMA\", \"HISTORY\", \"BIOGRAPHY\","
-                                + " \"SCIENCE\"]")
+                        .content("[\"CRIME\", \"DRAMA\", \"HISTORY\"]")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
-        ResultActions resultActions = mockMvc.perform(get("/c/stats/mostPopularGenres")
+        ResultActions resultActions = mockMvc.perform(get("/c/stats/popularGenres")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
         List<String> genres = parseJsonGenres(resultActions.andReturn().getResponse().getContentAsString());
 
-        assertThat(genres.size()).isEqualTo(5);
+        assertThat(genres.size()).isEqualTo(3);
         assertThat(genres).anySatisfy(s -> assertThat(s.contains(Genre.CRIME.toString())).isTrue());
         assertThat(genres).anySatisfy(s -> assertThat(s.contains(Genre.DRAMA.toString())).isTrue());
         assertThat(genres).anySatisfy(s -> assertThat(s.contains(Genre.HISTORY.toString())).isTrue());
-        assertThat(genres).anySatisfy(s -> assertThat(s.contains(Genre.BIOGRAPHY.toString())).isTrue());
-        assertThat(genres).anySatisfy(s -> assertThat(s.contains(Genre.SCIENCE.toString())).isTrue());
     }
 
     @Test
@@ -254,7 +240,7 @@ public class StatsIntegrationTests {
         userRepository.save(normalUser);
         userRepository.save(admin);
 
-        ResultActions resultActions = mockMvc.perform(get("/c/stats/mostPopularGenres")
+        ResultActions resultActions = mockMvc.perform(get("/c/stats/popularGenres")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
         String genres = resultActions.andReturn().getResponse().getContentAsString();

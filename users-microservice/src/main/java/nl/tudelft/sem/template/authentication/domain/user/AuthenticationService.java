@@ -94,6 +94,8 @@ public class AuthenticationService {
         } catch (DisabledException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "USER_DISABLED");
         } catch (BadCredentialsException | UsernameNotFoundException e) {
+            System.out.println(e.getMessage());
+            System.out.println(Arrays.toString(e.getStackTrace()));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
         }
 

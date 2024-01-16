@@ -49,12 +49,11 @@ public class StatsController {
      *
      * @return the list of books
      */
-    @GetMapping("/mostPopularBooks")
+    @GetMapping("/popularBooks")
     public ResponseEntity<?> getMostPopularBooks() throws ResponseStatusException {
         try {
             return ResponseEntity.ok(statsService.mostPopularBooks());
         } catch (ResponseStatusException e) {
-            System.out.println(e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
@@ -64,12 +63,11 @@ public class StatsController {
      *
      * @return the list of genres
      */
-    @GetMapping("/mostPopularGenres")
+    @GetMapping("/popularGenres")
     public ResponseEntity<?> getMostPopularGenres() throws ResponseStatusException {
         try {
             return ResponseEntity.ok(statsService.mostPopularGenres());
         } catch (ResponseStatusException e) {
-            System.out.println(e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
