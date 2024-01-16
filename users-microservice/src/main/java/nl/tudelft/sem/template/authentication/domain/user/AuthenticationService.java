@@ -145,8 +145,8 @@ public class AuthenticationService {
             emailSender.send(email);
         } else {
             token = jwtTokenGenerator.generateToken(userDetails);
+            statsRepository.increaseStatsOnLogin(user2.getId());
         }
-        statsRepository.increaseStatsOnLogin(user2.getId());
         return new AuthenticationResponseModel(token);
     }
 
@@ -174,6 +174,8 @@ public class AuthenticationService {
         if (token.get() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
         }
+        statsRepository.increaseStatsOnLogin(userRepository.findByUsername(new Username(username))
+                .get().getId());
         return token.get();
     }
 
