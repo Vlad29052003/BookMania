@@ -370,28 +370,31 @@ public class UserServiceTests {
     @Test
     @Transactional
     public void testUpdateAuthority() {
-        Username username = new Username("user");
+        UUID userId = UUID.randomUUID();
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-                () -> userService.updateAuthority(username, Authority.AUTHOR, "REGULAR_USER"));
+                () -> userService.updateAuthority(userId, Authority.AUTHOR, "REGULAR_USER"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         e = assertThrows(ResponseStatusException.class,
-                () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
+                () -> userService.updateAuthority(userId, Authority.AUTHOR, "ADMIN"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
 
         String email = "user@user.com";
         HashedPassword hashedPassword = new HashedPassword("pass");
+        Username username = new Username("user");
         AppUser user = new AppUser(username, email, hashedPassword);
         userRepository.save(user);
+        user = userRepository.findAll().get(0);
+        UUID finalUserId = user.getId();
         e = assertThrows(ResponseStatusException.class,
-                () -> userService.updateAuthority(username, Authority.AUTHOR, "ADMIN"));
+                () -> userService.updateAuthority(finalUserId, Authority.AUTHOR, "ADMIN"));
         assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
 
-        RoleChange roleChange = new RoleChange(username.getUsernameValue(), Authority.AUTHOR, "123-456");
+        RoleChange roleChange = new RoleChange(user.getId(), Authority.AUTHOR, "123-456");
         roleChangeRepository.save(roleChange);
 
-        userService.updateAuthority(username, Authority.AUTHOR, "ADMIN");
+        userService.updateAuthority(finalUserId, Authority.AUTHOR, "ADMIN");
         assertThat(roleChangeRepository.findAll()).isEmpty();
         assertThat(userRepository.findByUsername(username)).isPresent();
         assertThat(userRepository.findByUsername(username).get().getAuthority()).isEqualTo(Authority.AUTHOR);

@@ -42,7 +42,8 @@ public class UserControllerTests {
     private transient PasswordHashingService passwordHashingService;
     private transient AppUser user;
     private transient UserProfile userProfile;
-    private Username username;
+    private transient Username username;
+    private transient UUID userId;
 
     /**
      * Sets up the testing environment.
@@ -61,6 +62,7 @@ public class UserControllerTests {
         SecurityContextHolder.setContext(securityContextMock);
 
         this.user = new AppUser(new Username("user"), "email@mail.com", new HashedPassword("hash"));
+        this.userId = UUID.randomUUID();
         when(userService.getUserByUsername(new Username("user"))).thenReturn(user);
 
         this.userProfile = new UserProfile(user);
@@ -165,11 +167,11 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateAuthority() {
-        RoleChange roleChange = new RoleChange(username.toString(), Authority.AUTHOR, "123-456");
+        RoleChange roleChange = new RoleChange(userId, Authority.AUTHOR, "123-456");
         assertThat(userController.updateAuthority(roleChange))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1))
-                .updateAuthority(username, Authority.AUTHOR, Authority.REGULAR_USER.toString());
+                .updateAuthority(userId, Authority.AUTHOR, Authority.REGULAR_USER.toString());
 
         String error = "error";
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;

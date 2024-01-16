@@ -191,7 +191,7 @@ public class UserController {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                 .get(0).getAuthority();
         try {
-            userService.updateAuthority(new Username(roleChange.getUsername()), roleChange.getNewRole(), authority);
+            userService.updateAuthority(roleChange.getUserId(), roleChange.getNewRole(), authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

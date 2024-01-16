@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -12,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 @Entity
@@ -24,14 +22,9 @@ import org.hibernate.annotations.Type;
 public class RoleChange {
 
     @Id
-    @Column(name = "rolechange_id", nullable = false)
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "user_id", nullable = false)
     @Type(type = "uuid-char")
-    private UUID id;
-
-    @Column(name = "username", nullable = false)
-    private String username;
+    private UUID userId;
 
     @Column(name = "newRole", nullable = false)
     private Authority newRole;
@@ -42,12 +35,12 @@ public class RoleChange {
     /**
      * Create a new RequestRoleChange.
      *
-     * @param username user that requests role change.
+     * @param userId the id of the user.
      * @param newRole role the user wishes to change to.
      * @param ssn ssn of the user, as proof of identity.
      */
-    public RoleChange(String username, Authority newRole, String ssn) {
-        this.username = username;
+    public RoleChange(UUID userId, Authority newRole, String ssn) {
+        this.userId = userId;
         this.newRole = newRole;
         this.ssn = ssn;
     }
@@ -61,11 +54,11 @@ public class RoleChange {
             return false;
         }
         RoleChange that = (RoleChange) o;
-        return this.id.equals(that.getId());
+        return this.userId.equals(that.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(userId);
     }
 }

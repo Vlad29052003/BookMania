@@ -38,6 +38,7 @@ public class RoleChangeServiceTest {
     private transient UserRepository userRepository;
     private AppUser user;
     private RoleChange roleChange;
+    private transient UUID userId;
 
     /**
      * Set up the testing environment.
@@ -45,9 +46,9 @@ public class RoleChangeServiceTest {
     @BeforeEach
     public void setUp() {
         user = new AppUser(new Username("simona"), "simona@sem.nl", new HashedPassword("iwanttobeanauthor"));
-        user.setId(UUID.randomUUID());
-        roleChange = new RoleChange("simona", Authority.AUTHOR, "123-456");
-        roleChange.setId(UUID.randomUUID());
+        userId = UUID.randomUUID();
+        user.setId(userId);
+        roleChange = new RoleChange(userId, Authority.AUTHOR, "123-456");
     }
 
     @Test
