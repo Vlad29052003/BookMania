@@ -66,7 +66,7 @@ public class UserServiceTests {
 
     private static WireMockServer wireMockServer;
 
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
 
     private static final String REVIEW_PATH = "/b/user";
 
@@ -83,7 +83,6 @@ public class UserServiceTests {
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
 
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080" + BOOKSHELF_PATH;
         UserEventsListener.REVIEW_URL = "http://localhost:8080" + REVIEW_PATH;
     }
 

@@ -91,7 +91,7 @@ public class AuthenticationServiceTests {
     private final transient TimeProvider timeProvider = mock(TimeProvider.class);
     private transient StatsRepository statsRepository;
     private final transient String token = "Bearer token";
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
     private static ByteArrayOutputStream outputStreamCaptor;
     private static WireMockServer wireMockServer;
     private static final ConcurrentMap<String, Long> sessionMap = mock(ConcurrentMap.class);
@@ -112,8 +112,6 @@ public class AuthenticationServiceTests {
 
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**

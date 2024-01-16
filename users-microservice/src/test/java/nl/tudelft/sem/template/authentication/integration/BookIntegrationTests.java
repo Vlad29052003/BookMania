@@ -71,11 +71,11 @@ public class BookIntegrationTests {
     private transient Book book2;
     private transient CreateBookRequestModel book1Request;
     private transient CreateBookRequestModel book3Request;
-    private static final String bookshelfPath = "/a/catalog";
+    private static final String bookshelfPath = "/bookshelf_service/catalog";
 
     private static final String reviewPath = "/b/book";
 
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
     private static WireMockServer mockServer;
     private UUID adminId;
 
@@ -98,10 +98,7 @@ public class BookIntegrationTests {
                 .willReturn(aResponse().withStatus(200)));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
-        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/a/catalog";
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**

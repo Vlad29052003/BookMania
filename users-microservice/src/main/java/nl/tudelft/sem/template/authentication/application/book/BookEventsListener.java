@@ -25,7 +25,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class BookEventsListener {
 
-    // Have everything on one port for now, since nothing on port 8080/8082 exist for now.
     public static String BOOKSHELF_URI = BOOKSHELF_SERVER + "/catalog";
     public static String REVIEW_URI = REVIEW_SERVER + "/book";
     private final transient HttpClient client = HttpClient.newHttpClient();
