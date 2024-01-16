@@ -604,6 +604,32 @@ public class UserServiceTests {
     }
 
     @Test
+    public void testGetFollowersAndFollowing() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> userService.getFollowers("user1"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        e = assertThrows(ResponseStatusException.class,
+                () -> userService.getFollowing("user1"));
+        assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        AppUser user1 = new AppUser(new Username("user1"), "user1@email.com", new HashedPassword("pass1"));
+        AppUser user2 = new AppUser(new Username("user2"), "user2@email.com", new HashedPassword("pass2"));
+        userRepository.save(user1);
+        userRepository.save(user2);
+        assertThat(userService.getFollowers("user2")).isEqualTo(new ArrayList<>());
+        assertThat(userService.getFollowing("user1")).isEqualTo(new ArrayList<>());
+
+        userService.followUser(user1.getUsername(), user2.getUsername());
+        List<UserModel> followersUser2 = userService.getFollowers("user2");
+        assertThat(followersUser2.size()).isEqualTo(1);
+        assertThat(followersUser2.get(0).getUsername()).isEqualTo("user1");
+
+        List<UserModel> followingUser1 = userService.getFollowing("user1");
+        assertThat(followingUser1.size()).isEqualTo(1);
+        assertThat(followingUser1.get(0).getUsername()).isEqualTo("user2");
+    }
+
+    @Test
     public void testFollowException() {
         Username username1 = new Username("User1");
         Username username2 = new Username("User2");
