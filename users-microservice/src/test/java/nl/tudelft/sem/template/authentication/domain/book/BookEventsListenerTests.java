@@ -47,7 +47,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class BookEventsListenerTests {
 
-    private static final String bookshelfPath = "/a/catalog";
+    private static final String bookshelfPath = "/bookshelf_service/catalog";
     private static final String reviewPath = "/b/book";
     private final transient BookEventsListener bookEventsListener = new BookEventsListener();
 
@@ -78,7 +78,6 @@ public class BookEventsListenerTests {
         System.setOut(new PrintStream(outputStreamCaptor));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
-        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/bookshelf_service/catalog";
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
     }
 

@@ -59,7 +59,7 @@ public class BookServiceTests {
     private transient String tokenAdmin;
     private transient String tokenNonAdmin;
     private transient String tokenAuthor;
-    private static final String bookshelfPathBooks = "/a/catalog";
+    private static final String bookshelfPathBooks = "/bookshelf_service/catalog";
     private static final String reviewPathBooks = "/b/book";
 
     private static final String BOOKSHELF_PATH_USERS = "/a/user";
@@ -89,7 +89,6 @@ public class BookServiceTests {
         System.setOut(new PrintStream(outputStreamCaptor));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
-        BookEventsListener.BOOKSHELF_URI = "http://localhost:8080/bookshelf_service/catalog";
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
 
         UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";

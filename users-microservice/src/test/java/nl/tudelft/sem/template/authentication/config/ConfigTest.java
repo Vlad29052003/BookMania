@@ -42,7 +42,7 @@ public class ConfigTest {
     @Test
     public void testConstantsSetCorrectly() {
         assertThat(NO_SUCH_USER).isEqualTo("User does not exist!");
-        assertThat(BOOKSHELF_SERVER).isEqualTo("http://localhost:8080/a");
+        assertThat(BOOKSHELF_SERVER).isEqualTo("http://localhost:8080/bookshelf_service");
         assertThat(REVIEW_SERVER).isEqualTo("http://localhost:8082/b");
     }
 
