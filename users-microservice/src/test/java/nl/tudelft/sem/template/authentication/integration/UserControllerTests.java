@@ -70,7 +70,7 @@ public class UserControllerTests {
 
     private static WireMockServer wireMockServer;
 
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
 
     private static final String REVIEW_PATH = "/b/user";
 
@@ -87,7 +87,6 @@ public class UserControllerTests {
 
         WireMock.configureFor("localhost", 8080);
 
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
         UserEventsListener.REVIEW_URL = "http://localhost:8080/b/user";
     }
 

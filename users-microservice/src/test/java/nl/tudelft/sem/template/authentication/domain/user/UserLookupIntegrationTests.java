@@ -72,7 +72,7 @@ public class UserLookupIntegrationTests {
     private transient UUID bookId;
     private transient AppUser testUser;
     private transient AppUser testUser2;
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
 
     /**
      * Sets up for testing.
@@ -86,8 +86,6 @@ public class UserLookupIntegrationTests {
 
         stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
                 .willReturn(WireMock.aResponse().withStatus(200)));
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**

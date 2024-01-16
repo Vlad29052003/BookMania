@@ -82,10 +82,8 @@ public class UsersTests {
 
         configureFor("localhost", 8080);
 
-        stubFor(WireMock.post(urlEqualTo("/a/user"))
+        stubFor(WireMock.post(urlEqualTo("/bookshelf_service/user"))
                 .willReturn(aResponse().withStatus(200)));
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     @Test

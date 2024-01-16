@@ -75,7 +75,7 @@ public class BookIntegrationTests {
 
     private static final String reviewPath = "/b/book";
 
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
     private static WireMockServer mockServer;
     private UUID adminId;
 
@@ -99,8 +99,6 @@ public class BookIntegrationTests {
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**

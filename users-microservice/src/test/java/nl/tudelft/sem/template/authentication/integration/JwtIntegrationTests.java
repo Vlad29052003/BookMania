@@ -86,7 +86,7 @@ public class JwtIntegrationTests {
     private transient String jwtExpiredToken;
     private transient String nullUsernameJwtToken;
 
-    private static final String BOOKSHELF_PATH = "/a/user";
+    private static final String BOOKSHELF_PATH = "/bookshelf_service/user";
 
     private static WireMockServer wireMockServer;
     private final transient ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
@@ -103,8 +103,6 @@ public class JwtIntegrationTests {
 
         stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
                 .willReturn(aResponse().withStatus(200)));
-
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
     }
 
     /**

@@ -39,7 +39,7 @@ public class UserEventsListenerTests {
     @Autowired
     private transient UserRepository userRepository;
 
-    private static final String BOOKSHELF_URI = "/a/user";
+    private static final String BOOKSHELF_URI = "/bookshelf_service/user";
 
     private static final String REVIEW_URI = "/b/user";
 
@@ -60,7 +60,6 @@ public class UserEventsListenerTests {
         outputCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputCaptor));
 
-        UserEventsListener.BOOKSHELF_URL = "http://localhost:8080/a/user";
         UserEventsListener.REVIEW_URL = "http://localhost:8080/b/user";
     }
 
