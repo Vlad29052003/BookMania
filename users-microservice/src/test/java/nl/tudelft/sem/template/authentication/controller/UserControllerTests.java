@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.controller;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,11 +27,15 @@ import nl.tudelft.sem.template.authentication.models.UserProfile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 public class UserControllerTests {
     private transient UserService userService;
     private transient UserController userController;
@@ -144,6 +149,7 @@ public class UserControllerTests {
         when(userService.getUserByUsername(usernameAdmin)).thenReturn(admin);
 
         assertThat(userController.deleteByAdmin(username.toString())).isEqualTo(ResponseEntity.ok().build());
+        verify(userService, times(1)).delete(username, username);
     }
 
     @Test
@@ -164,6 +170,13 @@ public class UserControllerTests {
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1))
                 .updateAuthority(username, Authority.AUTHOR, Authority.REGULAR_USER.toString());
+
+        String error = "error";
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        doThrow(new ResponseStatusException(httpStatus, error))
+                .when(userService).updateAuthority(any(), any(), any());
+        assertThat(userController.updateAuthority(roleChange))
+                .isEqualTo(new ResponseEntity<>(httpStatus + " \"" + error + "\"", httpStatus));
     }
 
     @Test

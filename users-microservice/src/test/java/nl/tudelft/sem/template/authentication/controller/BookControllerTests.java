@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -18,13 +20,16 @@ import nl.tudelft.sem.template.authentication.handlers.CommandChain;
 import nl.tudelft.sem.template.authentication.models.CreateBookRequestModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 public class BookControllerTests {
     private transient BookService bookService;
     private transient CommandChain commandChain;
@@ -51,7 +56,6 @@ public class BookControllerTests {
         createBookRequest.setDescription("des");
         createBookRequest.setNumPages(255);
         updatedBook = new Book();
-        String token = "Bearer token";
 
         Authentication authenticationMock = mock(Authentication.class);
         when(authenticationMock.getName()).thenReturn("user");
@@ -76,6 +80,7 @@ public class BookControllerTests {
     public void testCreate() {
         assertThat(bookController.addBook(createBookRequest))
                 .isEqualTo(ResponseEntity.ok().build());
+        verify(commandChain, times(1)).setAddBookStrategy();
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(commandChain)
@@ -88,6 +93,7 @@ public class BookControllerTests {
     public void testUpdate() {
         assertThat(bookController.updateBook(updatedBook))
                 .isEqualTo(ResponseEntity.ok().build());
+        verify(commandChain, times(1)).setEditBookStrategy();
 
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(commandChain)
@@ -97,12 +103,17 @@ public class BookControllerTests {
 
     @Test
     public void testDelete() {
+        ArgumentCaptor<Book> argumentCaptor = ArgumentCaptor.forClass(Book.class);
+
         assertThat(bookController.deleteBook(bookId.toString()))
                 .isEqualTo(ResponseEntity.ok().build());
 
+        verify(commandChain, times(1)).setDeleteBookStrategy();
+
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "The book does not exist!"))
                 .when(commandChain)
-                .handle(any(), any(), any());
+                .handle(any(), any(), argumentCaptor.capture());
         assertThat(bookController.deleteBook(bookId.toString()).getStatusCodeValue()).isEqualTo(404);
+        assertThat(argumentCaptor.getValue().getId()).isEqualTo(bookId);
     }
 }

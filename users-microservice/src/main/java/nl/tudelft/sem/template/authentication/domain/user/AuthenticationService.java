@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
+import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -37,6 +38,7 @@ public class AuthenticationService {
     private final transient UserRepository userRepository;
     private final transient PasswordHashingService passwordHashingService;
     private final transient JavaMailSender emailSender;
+    private final transient TimeProvider timeProvider;
     private static final int codeValiditySeconds = 60;
     private static final String usernameCodeSeparator = "~";
     private static final ConcurrentMap<String, Long> sessionMap = new ConcurrentHashMap<>();
@@ -55,13 +57,15 @@ public class AuthenticationService {
                                  JwtUserDetailsService jwtUserDetailsService,
                                  UserRepository userRepository,
                                  PasswordHashingService passwordHashingService,
-                                 JavaMailSender emailSender) {
+                                 JavaMailSender emailSender,
+                                 TimeProvider timeProvider) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenGenerator = jwtTokenGenerator;
         this.jwtUserDetailsService = jwtUserDetailsService;
         this.userRepository = userRepository;
         this.passwordHashingService = passwordHashingService;
         this.emailSender = emailSender;
+        this.timeProvider = timeProvider;
     }
 
     static {
@@ -120,7 +124,7 @@ public class AuthenticationService {
         String token = null;
         AppUser user = userRepository.findByUsername(new Username(authenticationRequest.getUsername())).get();
         if (user.is2faEnabled()) {
-            long timestamp = Instant.now().toEpochMilli();
+            long timestamp = timeProvider.getCurrentTime().toEpochMilli();
             sessionMap.put(user.getUsername().getUsernameValue() + usernameCodeSeparator + timestamp, timestamp);
             SimpleMailMessage email = new SimpleMailMessage();
             email.setTo(user.getEmail());
@@ -148,7 +152,7 @@ public class AuthenticationService {
             if (userCode.startsWith(username)
                     && userCode.endsWith(authenticationRequestModel.getPassword())
                     && token.get() == null) {
-                if (Instant.now().toEpochMilli() - value > codeValiditySeconds * 1000) {
+                if (timeProvider.getCurrentTime().toEpochMilli() - value > codeValiditySeconds * 1000) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "EXPIRED_CODE");
                 }
                 UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);

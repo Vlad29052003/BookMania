@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.authentication.authentication;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -23,11 +24,15 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
+import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -57,10 +62,12 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -81,16 +88,12 @@ public class AuthenticationServiceTests {
     private transient AuthenticationResponseModel authenticationResponse;
     private transient ValidationTokenResponse validationTokenResponse;
     private transient UserRepository userRepository;
-
     private final transient JavaMailSender emailSender = mock(JavaMailSender.class);
+    private final transient TimeProvider timeProvider = mock(TimeProvider.class);
     private final transient String token = "Bearer token";
-
     private static final String BOOKSHELF_PATH = "/a/user";
-
     private static ByteArrayOutputStream outputStreamCaptor;
-
     private static WireMockServer wireMockServer;
-
     private static final ConcurrentMap<String, Long> sessionMap = mock(ConcurrentMap.class);
 
     /**
@@ -126,7 +129,8 @@ public class AuthenticationServiceTests {
         passwordHashingService = mock(PasswordHashingService.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService, emailSender);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService,
+                emailSender, timeProvider);
 
         String email = "email@gmail.com";
         String username = "user";
@@ -208,6 +212,8 @@ public class AuthenticationServiceTests {
 
     @Test
     public void authenticateUserWith2fa() {
+        Instant mockedTime = Instant.parse("2021-12-31T13:25:34.00Z");
+        when(timeProvider.getCurrentTime()).thenReturn(mockedTime);
         appUser.set2faEnabled(true);
 
         when(jwtUserDetailsService.loadUserByUsername(authenticationRequest.getUsername())).thenReturn(userDetails);
@@ -247,6 +253,48 @@ public class AuthenticationServiceTests {
 
         assertThrows(ResponseStatusException.class,
                 () -> authenticationService.authenticateWith2fa(authenticationRequest));
+    }
+
+    @Test
+    public void testNotNullToken() {
+        Instant mockedTime = Instant.parse("2021-12-31T13:25:34.00Z");
+        when(timeProvider.getCurrentTime()).thenReturn(mockedTime);
+
+        when(jwtUserDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
+        appUser.set2faEnabled(true);
+        when(userRepository.findByUsername(new Username("user"))).thenReturn(Optional.of(appUser));
+        authenticationService.authenticateUser(authenticationRequest);
+
+        AppUser appUser1 = new AppUser(new Username("andrei"), "email@mail.com", new HashedPassword("hash"));
+        UserDetails userDetails1 = new User("andrei", "hash", List.of(Authority.REGULAR_USER));
+        when(jwtUserDetailsService.loadUserByUsername("andrei")).thenReturn(userDetails1);
+        appUser1.set2faEnabled(true);
+        when(userRepository.findByUsername(new Username("andrei"))).thenReturn(Optional.of(appUser1));
+        AuthenticationRequestModel authenticationRequest2 = new AuthenticationRequestModel();
+        authenticationRequest2.setUsername("andrei");
+        authenticationRequest2.setPassword("hash");
+        authenticationService.authenticateUser(authenticationRequest2);
+
+        long timestamp = timeProvider.getCurrentTime().toEpochMilli();
+        String code = String.valueOf(timestamp % 1000000);
+
+        authenticationRequest.setPassword(code);
+        String token = "generated token";
+        when(jwtTokenGenerator.generateToken(any())).thenReturn(token);
+        AuthenticationResponseModel response = authenticationService.authenticateWith2fa(authenticationRequest);
+        assertThat(response.getToken()).isEqualTo(token);
+
+        authenticationRequest.setUsername("other");
+        assertThatThrownBy(() -> authenticationService.authenticateWith2fa(authenticationRequest))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("401 UNAUTHORIZED \"INVALID_CREDENTIALS\"");
+
+        authenticationRequest.setUsername("user");
+        mockedTime = Instant.parse("2021-12-31T13:26:34.01Z");
+        when(timeProvider.getCurrentTime()).thenReturn(mockedTime);
+        assertThatThrownBy(() -> authenticationService.authenticateWith2fa(authenticationRequest))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("401 UNAUTHORIZED \"EXPIRED_CODE\"");
     }
 
     @Test
