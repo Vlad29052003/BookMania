@@ -1,8 +1,10 @@
 package nl.tudelft.sem.template.authentication.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -82,10 +84,10 @@ public class UserControllerTests {
         wireMockServer = new WireMockServer(new WireMockConfiguration().port(8080));
         wireMockServer.start();
 
-        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
-                .willReturn(aResponse().withStatus(200)));
-
         WireMock.configureFor("localhost", 8080);
+        stubFor(any(urlPathMatching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
 
         UserEventsListener.REVIEW_URL = "http://localhost:8080/b/user";
     }

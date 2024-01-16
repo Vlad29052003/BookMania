@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -90,12 +91,9 @@ public class BookIntegrationTests {
         mockServer.start();
 
         configureFor("localhost", 8080);
-        stubFor(WireMock.put(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.post(urlEqualTo(bookshelfPath))
-                .willReturn(aResponse().withStatus(200)));
-        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
-                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.any(urlPathMatching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
 
         // Since wiremock is configured on 8080, we assume everything is on the same port.
         BookEventsListener.REVIEW_URI = "http://localhost:8080/b/book";

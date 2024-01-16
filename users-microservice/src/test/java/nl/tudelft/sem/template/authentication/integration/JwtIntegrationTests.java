@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -101,8 +102,9 @@ public class JwtIntegrationTests {
 
         configureFor("localhost", 8080);
 
-        stubFor(WireMock.post(urlEqualTo(BOOKSHELF_PATH))
-                .willReturn(aResponse().withStatus(200)));
+        stubFor(WireMock.any(urlPathMatching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
     }
 
     /**
