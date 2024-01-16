@@ -10,7 +10,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @DataJpaTest
 public class UserEntityTests {
     private transient AppUser user1;
@@ -114,5 +116,12 @@ public class UserEntityTests {
         assertThat(user1.getFollows()).isEqualTo(List.of(user2));
         user1.unfollow(user2);
         assertThat(user1.getFollows()).isEqualTo(new ArrayList<>());
+    }
+
+    @Test
+    public void testHashedPassword() {
+        HashedPassword hashedPassword = new HashedPassword("hash");
+
+        assertThat(hashedPassword.toString()).isEqualTo("hash");
     }
 }

@@ -19,10 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -31,13 +33,10 @@ class ReportServiceTests {
 
     @Autowired
     private transient ReportService reportService;
-
     @Autowired
     private transient ReportRepository reportRepository;
-
     @Autowired
     private transient UserRepository userRepository;
-
     private AppUser madeReport;
     private AppUser isReported;
     private Report report;

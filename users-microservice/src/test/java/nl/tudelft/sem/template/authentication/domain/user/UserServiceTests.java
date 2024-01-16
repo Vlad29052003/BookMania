@@ -37,10 +37,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -448,13 +450,11 @@ public class UserServiceTests {
     }
 
     @Test
-    @Transactional
     public void testUpdatePrivacy() {
         Username username = new Username("username");
         String email = "test@email.com";
         HashedPassword password = new HashedPassword("pass123");
-        String newName = "Name";
-        assertThatThrownBy(() -> userService.updateName(username, newName))
+        assertThatThrownBy(() -> userService.updatePrivacy(username, true))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage(NO_SUCH_USER);
 
@@ -467,6 +467,26 @@ public class UserServiceTests {
         userService.updatePrivacy(username, true);
         retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.isPrivate()).isTrue();
+    }
+
+    @Test
+    public void testUpdate2fa() {
+        Username username = new Username("username");
+        String email = "test@email.com";
+        HashedPassword password = new HashedPassword("pass123");
+        assertThatThrownBy(() -> userService.update2fa(username, true))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage(NO_SUCH_USER);
+
+        AppUser user = new AppUser(username, email, password);
+        userRepository.save(user);
+        AppUser retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.is2faEnabled()).isFalse();
+
+
+        userService.update2fa(username, true);
+        retrievedUser = userService.getUserByUsername(username);
+        assertThat(retrievedUser.is2faEnabled()).isTrue();
     }
 
     @Test
@@ -494,7 +514,6 @@ public class UserServiceTests {
         assertThatThrownBy(() -> userService.updatePrivacy(new Username("inexistentUsername"), true))
                 .isInstanceOf(UsernameNotFoundException.class).hasMessage(NO_SUCH_USER);
     }
-
 
     @Test
     public void testFollowUser() {
@@ -584,6 +603,25 @@ public class UserServiceTests {
         assertThat(retrievedUser2.getFollowedBy().isEmpty()).isTrue();
     }
 
+    @Test
+    public void testFollowException() {
+        Username username1 = new Username("User1");
+        Username username2 = new Username("User2");
+        assertThatThrownBy(() -> userService.followUser(username1, username2))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+
+        AppUser user1 = new AppUser(username1, "email@mail.com", new HashedPassword("hash"));
+        userRepository.saveAndFlush(user1);
+
+        assertThatThrownBy(() -> userService.followUser(username1, username2))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+
+        assertThatThrownBy(() -> userService.followUser(username2, username1))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+    }
 
     @AfterAll
     public static void stop() {

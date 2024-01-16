@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import java.io.ByteArrayOutputStream;
@@ -28,6 +29,8 @@ import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
+import nl.tudelft.sem.template.authentication.domain.user.Password;
+import nl.tudelft.sem.template.authentication.domain.user.PasswordHashingService;
 import nl.tudelft.sem.template.authentication.domain.user.UserRepository;
 import nl.tudelft.sem.template.authentication.domain.user.Username;
 import nl.tudelft.sem.template.authentication.integration.utils.JsonUtil;
@@ -55,6 +58,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -68,6 +72,8 @@ public class JwtIntegrationTests {
     private transient MockMvc mockMvc;
     @Autowired
     private transient UserRepository userRepository;
+    @Autowired
+    private transient PasswordHashingService passwordHashingService;
     @Value("${jwt.secret}")
     private transient String secret;
     private TimeProvider timeProvider;
@@ -117,7 +123,7 @@ public class JwtIntegrationTests {
 
         user = new User("username", "someHash", List.of(Authority.REGULAR_USER));
         Username username = new Username("username");
-        HashedPassword hashedPassword = new HashedPassword("someHash");
+        HashedPassword hashedPassword = passwordHashingService.hash(new Password("Pass123!"));
         appUser = new AppUser(username, "email@email.com", hashedPassword);
 
         jwtToken = jwtTokenGenerator.generateToken(user);
@@ -311,6 +317,22 @@ public class JwtIntegrationTests {
 
         register2.andExpect(status().isBadRequest())
                 .andExpect(content().string("Username or email already in use!"));
+    }
+
+    @Test
+    public void test2faEnabledAuthentication() throws Exception {
+        appUser.set2faEnabled(true);
+        userRepository.saveAndFlush(appUser);
+        AuthenticationRequestModel authenticationRequest = new AuthenticationRequestModel();
+        authenticationRequest.setUsername(appUser.getUsername().toString());
+        authenticationRequest.setPassword("Pass123!");
+
+        ResultActions authenticate = mockMvc.perform(post("/c/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.serialize(authenticationRequest)));
+
+        authenticate.andExpect(status().isFound())
+                .andExpect(MockMvcResultMatchers.header().string("Location", "http://localhost/c/authenticate/2fa"));
     }
 
     private void injectSecret(String secret) throws NoSuchFieldException, IllegalAccessException {

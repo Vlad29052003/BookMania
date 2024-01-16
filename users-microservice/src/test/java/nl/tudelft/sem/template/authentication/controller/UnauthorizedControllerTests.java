@@ -14,7 +14,9 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 public class UnauthorizedControllerTests {
     private transient UserService userService;
     private transient UnauthenticatedController unauthorizedController;

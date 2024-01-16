@@ -9,8 +9,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 class BookEventsTest {
@@ -91,6 +93,12 @@ class BookEventsTest {
         assertThat(bookEvent).isNotEqualTo(null);
 
         assertThat(bookEvent).isEqualTo(bookEvent);
+
+        BookWasDeletedEvent bookEvent3 = new BookWasDeletedEvent(book, id);
+        BookWasDeletedEvent bookEvent4 = new BookWasDeletedEvent(new Book(), id);
+
+        assertThat(bookEvent).isEqualTo(bookEvent3);
+        assertThat(bookEvent).isNotEqualTo(bookEvent4);
 
         assertEquals(Objects.hash(book, id), bookEvent.hashCode());
     }

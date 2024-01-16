@@ -18,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -72,6 +74,25 @@ public class RoleChangeServiceTest {
 
     @Test
     public void addReportBadRequestTest() {
+        userRepository.save(user);
+        roleChange.setNewRole(null);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> roleChangeService.addRequest(user.getUsername(), roleChange));
+        assertEquals(e.getStatus(), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void addReportBadRequestTest2() {
+        userRepository.save(user);
+        roleChange.setSsn(null);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> roleChangeService.addRequest(user.getUsername(), roleChange));
+        assertEquals(e.getStatus(), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void addReportBadRequestTest3() {
+
         userRepository.save(user);
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                 () -> roleChangeService.addRequest(user.getUsername(), null));

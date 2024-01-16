@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.authentication.controller;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -25,8 +27,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 public class AuthenticationControllerTests {
     private final transient AuthenticationService authenticationService = mock(AuthenticationService.class);
     private final transient AuthenticationController authenticationController =
@@ -80,6 +86,31 @@ public class AuthenticationControllerTests {
                 .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, ""));
 
         assertEquals(authenticationController.authenticate(request).getStatusCodeValue(), 401);
+    }
+
+    @Test
+    public void authenticationRequestWith2fa() {
+        AuthenticationRequestModel request = new AuthenticationRequestModel();
+        request.setUsername("username");
+        request.setPassword("Password123!");
+        AuthenticationResponseModel response = new AuthenticationResponseModel();
+        response.setToken("token");
+
+        when(authenticationService.authenticateWith2fa(request)).thenReturn(response);
+
+        assertEquals(authenticationController.authenticateWith2fa(request), ResponseEntity.ok(response));
+    }
+
+    @Test
+    public void authenticationRequestWith2faThrowsError() {
+        AuthenticationRequestModel request = new AuthenticationRequestModel();
+        request.setUsername("usernameS");
+        request.setPassword("Password123!");
+
+        when(authenticationService.authenticateWith2fa(request))
+                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "EXPIRED_CODE"));
+
+        assertEquals(authenticationController.authenticateWith2fa(request).getStatusCodeValue(), 401);
     }
 
     @Test

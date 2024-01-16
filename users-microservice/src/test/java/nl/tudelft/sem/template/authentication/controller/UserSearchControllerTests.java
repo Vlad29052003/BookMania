@@ -18,10 +18,10 @@ import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
+@ActiveProfiles("test")
 public class UserSearchControllerTests {
     private final transient UserLookupService userLookupService = mock(UserLookupService.class);
     private final transient UserSearchController userSearchController =

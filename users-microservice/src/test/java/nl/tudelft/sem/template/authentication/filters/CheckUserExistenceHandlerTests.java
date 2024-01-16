@@ -22,8 +22,10 @@ import nl.tudelft.sem.template.authentication.strategies.Strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 public class CheckUserExistenceHandlerTests {
     private transient UserRepository userRepository;
     private transient CheckUserExistenceHandler checkUserExistenceHandler;

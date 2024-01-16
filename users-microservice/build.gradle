@@ -23,7 +23,7 @@ plugins {
 	id 'pmd'
 
 	// PITest
-	id 'info.solidsoft.pitest' version '1.5.2'
+	id 'info.solidsoft.pitest' version '1.15.0'
 }
 
 group = 'nl.tudelft.cse.sem.template'
@@ -47,6 +47,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'org.wiremock:wiremock-standalone:3.2.0'
 
 	// Local test database (in-memory)
 	implementation 'com.h2database:h2'
@@ -61,6 +62,8 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/org.wiremock/wiremock-standalone
 	testImplementation 'org.wiremock:wiremock-standalone:3.2.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 test {
@@ -116,7 +119,7 @@ pitest {
 	junit5PluginVersion = '0.12'
 
 	targetClasses = ['nl.tudelft.sem.template.*']  //by default "${project.group}.*"
-	pitestVersion = '1.5.1' //not needed when a default PIT version should be used
+	pitestVersion = '1.8.1' //not needed when a default PIT version should be used
 	threads = 4
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
