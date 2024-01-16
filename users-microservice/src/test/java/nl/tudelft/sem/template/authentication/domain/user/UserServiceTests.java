@@ -37,10 +37,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -625,6 +627,26 @@ public class UserServiceTests {
         List<UserModel> followingUser1 = userService.getFollowing("user1");
         assertThat(followingUser1.size()).isEqualTo(1);
         assertThat(followingUser1.get(0).getUsername()).isEqualTo("user2");
+    }
+
+    @Test
+    public void testFollowException() {
+        Username username1 = new Username("User1");
+        Username username2 = new Username("User2");
+        assertThatThrownBy(() -> userService.followUser(username1, username2))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+
+        AppUser user1 = new AppUser(username1, "email@mail.com", new HashedPassword("hash"));
+        userRepository.saveAndFlush(user1);
+
+        assertThatThrownBy(() -> userService.followUser(username1, username2))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+
+        assertThatThrownBy(() -> userService.followUser(username2, username1))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("404 NOT_FOUND \"User does not exist!\"");
     }
 
     @AfterAll
