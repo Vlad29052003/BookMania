@@ -26,13 +26,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
@@ -90,6 +89,7 @@ public class AuthenticationServiceTests {
     private transient UserRepository userRepository;
     private final transient JavaMailSender emailSender = mock(JavaMailSender.class);
     private final transient TimeProvider timeProvider = mock(TimeProvider.class);
+    private transient StatsRepository statsRepository;
     private final transient String token = "Bearer token";
     private static final String BOOKSHELF_PATH = "/a/user";
     private static ByteArrayOutputStream outputStreamCaptor;
@@ -127,10 +127,11 @@ public class AuthenticationServiceTests {
         jwtService = mock(JwtService.class);
         userRepository = mock(UserRepository.class);
         passwordHashingService = mock(PasswordHashingService.class);
+        statsRepository = mock(StatsRepository.class);
 
         authenticationService = new AuthenticationService(authenticationManager,
-                jwtTokenGenerator, jwtUserDetailsService, userRepository, passwordHashingService,
-                emailSender, timeProvider);
+                jwtTokenGenerator, jwtUserDetailsService, userRepository, statsRepository,
+                passwordHashingService, emailSender, timeProvider);
 
         String email = "email@gmail.com";
         String username = "user";
@@ -141,7 +142,6 @@ public class AuthenticationServiceTests {
         userDetails = new User(username, password, List.of(authority));
         appUser = new AppUser(new Username(username), email, new HashedPassword(password));
         appUser.setId(id);
-
         registrationRequest = new RegistrationRequestModel();
         registrationRequest.setUsername(username);
         registrationRequest.setEmail(email);
@@ -156,13 +156,16 @@ public class AuthenticationServiceTests {
 
         validationTokenResponse = new ValidationTokenResponse();
         validationTokenResponse.setId(id);
+
+        when(userRepository.findByUsername(new Username(username))).thenReturn(Optional.of(appUser));
+
     }
 
     @Test
     public void registerUser() {
         authenticationService.registerUser(registrationRequest);
         verify(userRepository, times(1)).save(any());
-
+        verify(statsRepository, times(1)).save(any());
         outputStreamCaptor.reset();
 
         authenticationService2.registerUser(registrationRequest);
@@ -308,7 +311,7 @@ public class AuthenticationServiceTests {
 
     @Test
     public void validateTokenFails() {
-        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getAuthority(new Username("user")));
+        assertThrows(UsernameNotFoundException.class, () -> authenticationService.getAuthority(new Username("user2")));
     }
 
     @Test

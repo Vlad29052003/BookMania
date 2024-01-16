@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +90,7 @@ public class BookService {
         currentBook.setNumPages(updatedBook.getNumPages());
 
         currentBook.recordBookWasEdited();
+
         bookRepository.saveAndFlush(currentBook);
     }
 

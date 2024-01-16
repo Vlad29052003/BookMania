@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
+import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
+import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
+import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
 import nl.tudelft.sem.template.authentication.models.UserModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +39,8 @@ public class UserLookupServiceTests {
     private transient UserLookupService userLookupService;
     @Autowired
     private transient UserRepository userRepository;
+
+
     @Autowired
     private transient BookRepository bookRepository;
     private transient AppUser user1;

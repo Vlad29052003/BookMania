@@ -16,8 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
+import nl.tudelft.sem.template.authentication.domain.stats.Stats;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
 import nl.tudelft.sem.template.authentication.domain.user.Password;
@@ -69,6 +72,9 @@ public class UsersTests {
 
     @Autowired
     private transient UserRepository userRepository;
+
+    @Autowired
+    private transient StatsRepository statsRepository;
 
     private static WireMockServer wireMockServer;
 
@@ -168,6 +174,10 @@ public class UsersTests {
         AppUser appUser = new AppUser(testUser, email, testHashedPassword);
         userRepository.save(appUser);
 
+        UUID userId = userRepository.findAll().get(0).getId();
+
+        statsRepository.save(new Stats(userId, 0));
+
         AuthenticationRequestModel model = new AuthenticationRequestModel();
         model.setUsername(testUser.toString());
         model.setPassword(testPassword.toString());
@@ -187,6 +197,8 @@ public class UsersTests {
                 AuthenticationResponseModel.class);
 
         assertThat(responseModel.getToken()).isEqualTo(testToken);
+
+        assertThat(statsRepository.findAll().get(0).getNumberOfLogins()).isEqualTo(1);
 
         verify(mockAuthenticationManager).authenticate(argThat(authentication ->
                 testUser.toString().equals(authentication.getPrincipal())

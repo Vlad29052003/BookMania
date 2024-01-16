@@ -3,15 +3,19 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
+import nl.tudelft.sem.template.authentication.domain.stats.Stats;
+import nl.tudelft.sem.template.authentication.domain.stats.StatsRepository;
 import nl.tudelft.sem.template.authentication.models.AuthenticationRequestModel;
 import nl.tudelft.sem.template.authentication.models.AuthenticationResponseModel;
 import nl.tudelft.sem.template.authentication.models.RegistrationRequestModel;
@@ -36,6 +40,8 @@ public class AuthenticationService {
     private final transient JwtTokenGenerator jwtTokenGenerator;
     private final transient JwtUserDetailsService jwtUserDetailsService;
     private final transient UserRepository userRepository;
+
+    private final transient StatsRepository statsRepository;
     private final transient PasswordHashingService passwordHashingService;
     private final transient JavaMailSender emailSender;
     private final transient TimeProvider timeProvider;
@@ -56,6 +62,7 @@ public class AuthenticationService {
                                  JwtTokenGenerator jwtTokenGenerator,
                                  JwtUserDetailsService jwtUserDetailsService,
                                  UserRepository userRepository,
+                                 StatsRepository statsRepository,
                                  PasswordHashingService passwordHashingService,
                                  JavaMailSender emailSender,
                                  TimeProvider timeProvider) {
@@ -64,6 +71,7 @@ public class AuthenticationService {
         this.jwtUserDetailsService = jwtUserDetailsService;
         this.userRepository = userRepository;
         this.passwordHashingService = passwordHashingService;
+        this.statsRepository = statsRepository;
         this.emailSender = emailSender;
         this.timeProvider = timeProvider;
     }
@@ -105,6 +113,7 @@ public class AuthenticationService {
      * @return a jwt token
      * @throws ResponseStatusException if the authentication fails
      */
+    @Transactional
     public AuthenticationResponseModel authenticateUser(
             AuthenticationRequestModel authenticationRequest) throws ResponseStatusException {
 
@@ -121,6 +130,8 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
         }
 
+        final String jwtToken = jwtTokenGenerator.generateToken(userDetails);
+        AppUser user2 = userRepository.findByUsername(new Username(userDetails.getUsername())).get();
         String token = null;
         AppUser user = userRepository.findByUsername(new Username(authenticationRequest.getUsername())).get();
         if (user.is2faEnabled()) {
@@ -134,6 +145,7 @@ public class AuthenticationService {
             emailSender.send(email);
         } else {
             token = jwtTokenGenerator.generateToken(userDetails);
+            statsRepository.increaseStatsOnLogin(user2.getId());
         }
         return new AuthenticationResponseModel(token);
     }
@@ -162,6 +174,8 @@ public class AuthenticationService {
         if (token.get() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
         }
+        statsRepository.increaseStatsOnLogin(userRepository.findByUsername(new Username(username))
+                .get().getId());
         return token.get();
     }
 
@@ -197,6 +211,10 @@ public class AuthenticationService {
             user.recordUserWasCreated();
 
             userRepository.save(user);
+
+            AppUser user2 = userRepository.findByUsername(username).get();
+
+            statsRepository.save(new Stats(user2.getId(), 0));
 
             return user;
         }

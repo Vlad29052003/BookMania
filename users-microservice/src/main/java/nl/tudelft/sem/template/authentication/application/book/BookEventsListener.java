@@ -58,12 +58,10 @@ public class BookEventsListener {
         } catch (ResponseStatusException rse) {
             // Since we do not have the other microservices locally yet, the http client will always throw an
             // unauthorized exception. Thus, we will filter it out for now.
-
             if (!rse.getStatus().equals(HttpStatus.UNAUTHORIZED)) {
                 throw new ResponseStatusException(rse.getStatus());
             }
         }
-
         System.out.println("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
     }

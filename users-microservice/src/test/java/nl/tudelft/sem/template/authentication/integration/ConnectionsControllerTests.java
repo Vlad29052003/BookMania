@@ -98,7 +98,6 @@ public class ConnectionsControllerTests {
 
 
         String response = resultActions.andReturn().getResponse().getContentAsString();
-        System.out.println(response);
 
         // neither UserModel nor UserProfile contain the follows field, so I cannot check if the user is followed
         // however, the followUser returns a 200, so I assume it works
@@ -154,7 +153,6 @@ public class ConnectionsControllerTests {
 
 
         String response = resultActions.andReturn().getResponse().getContentAsString();
-        System.out.println(response);
 
         // neither UserModel nor UserProfile contain the following field, so I cannot check if the user is followed
         // however, the followUser and unfollowUser returns a 200, so I assume it works
