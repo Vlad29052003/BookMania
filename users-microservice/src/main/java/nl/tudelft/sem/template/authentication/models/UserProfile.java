@@ -5,16 +5,22 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.Authority;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class UserProfile extends UserModel {
     @Getter
+    @Setter
     private Authority authority;
+    @Setter
     private boolean isDeactivated;
+    @Setter
     private boolean isPrivate;
+    @Setter
     private boolean is2faEnabled;
 
     /**
