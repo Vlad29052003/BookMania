@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.UserController;
@@ -212,6 +213,14 @@ public class UserControllerTests {
         assertThat(userController.updateEmail(newEmail))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1)).updateEmail(username, newEmail);
+    }
+
+    @Test
+    public void testUserProfile() throws JsonProcessingException {
+        assertThat(userProfile.getIs2faEnabled()).isFalse();
+        assertThat(userProfile.getIsPrivate()).isFalse();
+        assertThat(userProfile.getIsDeactivated()).isFalse();
+        assertThat(userProfile.getAuthority()).isEqualTo(Authority.REGULAR_USER);
     }
 
 }
