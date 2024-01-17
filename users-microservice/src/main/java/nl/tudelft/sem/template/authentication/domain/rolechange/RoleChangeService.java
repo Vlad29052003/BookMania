@@ -60,6 +60,9 @@ public class RoleChangeService {
         if (request == null || request.getNewRole() == null || request.getSsn() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Illegal parameters!");
         }
+        if (!optionalUser.get().getId().equals(request.getId())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You cannot submit requests for other users!");
+        }
 
         roleChangeRepository.saveAndFlush(request);
     }

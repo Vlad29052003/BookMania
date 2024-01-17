@@ -74,9 +74,6 @@ public class ConnectionsController {
      */
     @GetMapping("/followers/{username}")
     public ResponseEntity<List<UserModel>> getFollowers(@PathVariable String username) {
-        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return ResponseEntity.status(401).build();
-        }
         List<UserModel> followers = userService.getFollowers(username);
         return ResponseEntity.ok(followers);
     }
@@ -89,9 +86,6 @@ public class ConnectionsController {
      */
     @GetMapping("/follows/{username}")
     public ResponseEntity<List<UserModel>> getFollowing(@PathVariable String username) {
-        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return ResponseEntity.status(401).build();
-        }
         List<UserModel> follows = userService.getFollowing(username);
         return ResponseEntity.ok(follows);
     }

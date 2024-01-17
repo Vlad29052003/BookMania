@@ -24,7 +24,7 @@ public class RoleChange {
     @Id
     @Column(name = "user_id", nullable = false)
     @Type(type = "uuid-char")
-    private UUID userId;
+    private UUID id;
 
     @Column(name = "newRole", nullable = false)
     private Authority newRole;
@@ -35,12 +35,12 @@ public class RoleChange {
     /**
      * Create a new RequestRoleChange.
      *
-     * @param userId the id of the user.
+     * @param id the id of the user.
      * @param newRole role the user wishes to change to.
      * @param ssn ssn of the user, as proof of identity.
      */
-    public RoleChange(UUID userId, Authority newRole, String ssn) {
-        this.userId = userId;
+    public RoleChange(UUID id, Authority newRole, String ssn) {
+        this.id = id;
         this.newRole = newRole;
         this.ssn = ssn;
     }
@@ -54,11 +54,11 @@ public class RoleChange {
             return false;
         }
         RoleChange that = (RoleChange) o;
-        return this.userId.equals(that.userId);
+        return this.id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId);
+        return Objects.hash(id);
     }
 }

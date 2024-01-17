@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.rolechange;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,6 +22,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @ActiveProfiles("test")
@@ -92,17 +94,27 @@ public class RoleChangeServiceTest {
     }
 
     @Test
+    @Transactional
     public void addReportBadRequestTest3() {
-
         userRepository.save(user);
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                 () -> roleChangeService.addRequest(user.getUsername(), null));
         assertEquals(e.getStatus(), HttpStatus.BAD_REQUEST);
+
+        AppUser user2 = new AppUser(new Username("user2"), "email@mail2.com", new HashedPassword("hash"));
+        userRepository.saveAndFlush(user2);
+        user2 = userRepository.findByUsername(new Username("user2")).get();
+        RoleChange roleChange1 = new RoleChange(user2.getId(), Authority.AUTHOR, "12345+6");
+
+        assertThatThrownBy(() -> roleChangeService.addRequest(user.getUsername(), roleChange1))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("401 UNAUTHORIZED \"You cannot submit requests for other users!\"");
     }
 
     @Test
     public void addReportGoodTest() {
         userRepository.save(user);
+        roleChange.setId(userRepository.findAll().get(0).getId());
         assertDoesNotThrow(() -> roleChangeService.addRequest(user.getUsername(), roleChange));
         assertEquals(roleChangeRepository.findAll().size(), 1);
     }

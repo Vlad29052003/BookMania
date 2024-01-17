@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import nl.tudelft.sem.template.authentication.models.ReviewBookModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -49,10 +50,21 @@ public class BookEntityTests {
         assertThat(book1).isNotEqualTo(null);
         assertThat(book1.getTitle()).isEqualTo("title1");
         assertThat(book1.getAuthors()).isEqualTo(List.of("Author1"));
-        assertThat(book1.getGenres()).isEqualTo(List.of(Genre.DRAMA));
+        assertThat(book1.getGenre()).isEqualTo(List.of(Genre.DRAMA));
         assertThat(book1.getDescription()).isEqualTo("description");
         assertThat(book1.getNumPages()).isEqualTo(155);
         assertThat(book1.getUsersWithBookAsFavorite()).isEqualTo(new ArrayList<>());
+    }
+
+    @Test
+    public void testReviewBookModel() {
+        ReviewBookModel reviewBookModel = new ReviewBookModel(book1);
+        assertThat(reviewBookModel.getBookId()).isEqualTo(book1.getId());
+        assertThat(reviewBookModel.getTitle()).isEqualTo(book1.getTitle());
+        assertThat(reviewBookModel.getAuthors()).isEqualTo(book1.getAuthors());
+        assertThat(reviewBookModel.getGenres()).isEqualTo(book1.getGenre());
+        assertThat(reviewBookModel.getDescription()).isEqualTo(book1.getDescription());
+        assertThat(reviewBookModel.getNumPages()).isEqualTo(book1.getNumPages());
     }
 
     @Test
@@ -61,7 +73,7 @@ public class BookEntityTests {
         assertThat(test).isNotEqualTo(null);
         assertThat(test.getTitle()).isEqualTo("title");
         assertThat(test.getAuthors()).isEqualTo(new ArrayList<>());
-        assertThat(test.getGenres()).isEqualTo(new ArrayList<>());
+        assertThat(test.getGenre()).isEqualTo(new ArrayList<>());
         assertThat(test.getDescription()).isEqualTo("desc");
         assertThat(test.getNumPages()).isEqualTo(255);
         assertThat(test.getUsersWithBookAsFavorite()).isEqualTo(new ArrayList<>());

@@ -172,7 +172,7 @@ public class UserController {
                 .get(0).getAuthority();
         try {
             userService.updateBannedStatus(new Username(banUserRequestModel.getUsername()),
-                    banUserRequestModel.isBanned(),
+                    banUserRequestModel.getIsBanned(),
                     authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
@@ -191,7 +191,7 @@ public class UserController {
         String authority = new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                 .get(0).getAuthority();
         try {
-            userService.updateAuthority(roleChange.getUserId(), roleChange.getNewRole(), authority);
+            userService.updateAuthority(roleChange.getId(), roleChange.getNewRole(), authority);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }

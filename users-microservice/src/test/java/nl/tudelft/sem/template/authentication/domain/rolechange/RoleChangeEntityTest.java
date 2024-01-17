@@ -42,7 +42,7 @@ public class RoleChangeEntityTest {
     @Test
     public void constructorTest() {
         assertThat(change1).isNotEqualTo(null);
-        assertThat(change1.getUserId()).isEqualTo(change3.getUserId());
+        assertThat(change1.getId()).isEqualTo(change3.getId());
         assertThat(change1.getNewRole()).isEqualTo(Authority.AUTHOR);
         assertThat(change1.getSsn()).isEqualTo("123-456");
     }
@@ -60,7 +60,7 @@ public class RoleChangeEntityTest {
     public void hashCodeTest() {
         assertThat(change1.hashCode()).isEqualTo(change3.hashCode());
         assertThat(change1.hashCode()).isNotEqualTo(change2.hashCode());
-        assertThat(change1.hashCode()).isEqualTo(Objects.hash(change1.getUserId()));
+        assertThat(change1.hashCode()).isEqualTo(Objects.hash(change1.getId()));
     }
 
     @Test

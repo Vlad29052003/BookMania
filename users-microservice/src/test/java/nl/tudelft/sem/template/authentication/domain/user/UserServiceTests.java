@@ -317,7 +317,7 @@ public class UserServiceTests {
         retrievedUser = userService.getUserByUsername(username);
         assertThat(retrievedUser.getFavouriteBook().getTitle()).isEqualTo(newBook.getTitle());
         assertThat(retrievedUser.getFavouriteBook().getAuthors().toArray()).isEqualTo(newBook.getAuthors().toArray());
-        assertThat(retrievedUser.getFavouriteBook().getGenres().toArray()).isEqualTo(newBook.getGenres().toArray());
+        assertThat(retrievedUser.getFavouriteBook().getGenre().toArray()).isEqualTo(newBook.getGenre().toArray());
         assertThat(retrievedUser.getFavouriteBook().getDescription()).isEqualTo(newBook.getDescription());
     }
 
@@ -649,6 +649,10 @@ public class UserServiceTests {
         assertThatThrownBy(() -> userService.followUser(username2, username1))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessage("404 NOT_FOUND \"User does not exist!\"");
+
+        assertThatThrownBy(() -> userService.followUser(username1, username1))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessage("400 BAD_REQUEST \"You cannot follow yourself!\"");
     }
 
     @AfterAll

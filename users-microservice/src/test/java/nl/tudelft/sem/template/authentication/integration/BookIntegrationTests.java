@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
-import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookRepository;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
@@ -292,7 +291,7 @@ public class BookIntegrationTests {
         assertThat(bookResponse.getId()).isEqualTo(id1);
         assertThat(bookResponse.getTitle()).isEqualTo(book1.getTitle());
         assertThat(bookResponse.getAuthors()).isEqualTo(book1.getAuthors());
-        assertThat(bookResponse.getGenres()).isEqualTo(book1.getGenres());
+        assertThat(bookResponse.getGenre()).isEqualTo(book1.getGenre());
         assertThat(bookResponse.getDescription()).isEqualTo(book1.getDescription());
         assertThat(bookResponse.getNumPages()).isEqualTo(book1.getNumPages());
     }
@@ -329,7 +328,7 @@ public class BookIntegrationTests {
         assertThat(updated.getId()).isEqualTo(book2.getId());
         assertThat(updated.getTitle()).isEqualTo(book2.getTitle());
         assertThat(new ArrayList<>(updated.getAuthors())).isEqualTo(book2.getAuthors());
-        assertThat(new ArrayList<>(updated.getGenres())).isEqualTo(book2.getGenres());
+        assertThat(new ArrayList<>(updated.getGenre())).isEqualTo(book2.getGenre());
         assertThat(updated.getDescription()).isEqualTo(book2.getDescription());
         assertThat(updated.getNumPages()).isEqualTo(book2.getNumPages());
 
@@ -346,7 +345,7 @@ public class BookIntegrationTests {
         assertThat(updated.getId()).isEqualTo(book1.getId());
         assertThat(updated.getTitle()).isEqualTo(book1.getTitle());
         assertThat(new ArrayList<>(updated.getAuthors())).isEqualTo(book1.getAuthors());
-        assertThat(new ArrayList<>(updated.getGenres())).isEqualTo(book1.getGenres());
+        assertThat(new ArrayList<>(updated.getGenre())).isEqualTo(book1.getGenre());
         assertThat(updated.getDescription()).isEqualTo(book1.getDescription());
         assertThat(updated.getNumPages()).isEqualTo(book1.getNumPages());
 

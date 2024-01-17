@@ -158,7 +158,7 @@ public class UserControllerTests {
     public void testUpdateBannedStatus() {
         BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
         banUserRequestModel.setUsername(username.toString());
-        banUserRequestModel.setBanned(true);
+        banUserRequestModel.setIsBanned(true);
         assertThat(userController.updateBannedStatus(banUserRequestModel))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1))

@@ -457,7 +457,7 @@ public class UserControllerTests {
         assertThat(userModel).isPresent();
         assertThat(userModel.get().getFavouriteBook().getTitle()).isEqualTo(newFavouriteBook.getTitle());
         assertThat(userModel.get().getFavouriteBook().getAuthors()).isEqualTo(newFavouriteBook.getAuthors());
-        assertThat(userModel.get().getFavouriteBook().getGenres()).isEqualTo(newFavouriteBook.getGenres());
+        assertThat(userModel.get().getFavouriteBook().getGenre()).isEqualTo(newFavouriteBook.getGenre());
         assertThat(userModel.get().getFavouriteBook().getDescription()).isEqualTo(newFavouriteBook.getDescription());
     }
 
@@ -480,13 +480,14 @@ public class UserControllerTests {
         final HashedPassword hashedPasswordUser = new HashedPassword("userPass");
         final AppUser user = new AppUser(testUser, emailUser, hashedPasswordUser);
         user.setAuthority(Authority.REGULAR_USER);
+        user.setDeactivated(false);
         Collection<SimpleGrantedAuthority> rolesUser = new ArrayList<>();
         rolesUser.add(new SimpleGrantedAuthority(Authority.REGULAR_USER.toString()));
         final String tokenUser = jwtTokenGenerator.generateToken(new User(testUser.toString(),
                 hashedPasswordUser.toString(), rolesUser));
 
         BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
-        banUserRequestModel.setBanned(true);
+        banUserRequestModel.setIsBanned(true);
         banUserRequestModel.setUsername(testUser.toString());
 
         mockMvc.perform(patch("/c/users/isDeactivated")
@@ -502,6 +503,7 @@ public class UserControllerTests {
                         .andExpect(status().isNotFound());
 
         userRepository.save(user);
+
         mockMvc.perform(patch("/c/users/isDeactivated")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(banUserRequestModel))
@@ -514,7 +516,7 @@ public class UserControllerTests {
                         .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isBadRequest());
 
-        banUserRequestModel.setBanned(false);
+        banUserRequestModel.setIsBanned(false);
         mockMvc.perform(patch("/c/users/isDeactivated")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtil.serialize(banUserRequestModel))

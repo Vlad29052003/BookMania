@@ -394,6 +394,9 @@ public class UserService {
      */
     @Transactional
     public void followUser(Username username, Username toFollow) {
+        if (username.equals(toFollow)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot follow yourself!");
+        }
         Pair<AppUser, AppUser> users = extractUsersFromUsernames(username, toFollow);
         users.getFirst().follow(users.getSecond());
         userRepository.saveAndFlush(users.getFirst());

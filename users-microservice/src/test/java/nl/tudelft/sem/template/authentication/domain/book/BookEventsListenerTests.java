@@ -97,10 +97,10 @@ public class BookEventsListenerTests {
                 .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
         verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"bookId\":\"" + book.getId().toString() + "\""))
                 .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
                 .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
-                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenre().toString()))
                 .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
                 .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
     }
@@ -122,10 +122,10 @@ public class BookEventsListenerTests {
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was created.");
 
         verify(postRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"bookId\":\"" + book.getId().toString() + "\""))
                 .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
                 .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
-                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenre().toString()))
                 .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
                 .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
     }
@@ -146,10 +146,10 @@ public class BookEventsListenerTests {
                 .isEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
 
         verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"bookId\":\"" + book.getId().toString() + "\""))
                 .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
                 .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
-                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenre().toString()))
                 .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
                 .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
     }
@@ -171,10 +171,10 @@ public class BookEventsListenerTests {
                 .isNotEqualTo("Book (id: " + book.getId() + ", title: " + book.getTitle() + ") was edited.");
 
         verify(putRequestedFor(urlPathEqualTo(bookshelfPath))
-                .withRequestBody(containing("\"id\":\"" + book.getId().toString() + "\""))
+                .withRequestBody(containing("\"bookId\":\"" + book.getId().toString() + "\""))
                 .withRequestBody(containing("\"title\":\"" + book.getTitle() + "\""))
                 .withRequestBody(containing("\"authors\":" + book.getAuthors().toString()))
-                .withRequestBody(containing("\"genres\":" + book.getGenres().toString()))
+                .withRequestBody(containing("\"genres\":" + book.getGenre().toString()))
                 .withRequestBody(containing("\"description\":\"" + book.getDescription() + "\""))
                 .withRequestBody(containing("\"numPages\":" + book.getNumPages())));
     }
