@@ -13,7 +13,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -66,7 +65,7 @@ public class Book extends HasEvents {
     @CollectionTable(name = "book_genres", joinColumns = @JoinColumn(name = "book_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "genre", nullable = false)
-    private List<Genre> genres;
+    private List<Genre> genre;
 
 
     @Getter
@@ -89,12 +88,12 @@ public class Book extends HasEvents {
      *
      * @param title   The title of the new book.
      * @param authors The list of authors of the new book.
-     * @param genres  The list of genres of the new book.
+     * @param genre  The list of genres of the new book.
      */
-    public Book(String title, List<String> authors, List<Genre> genres, String description, int numPages) {
+    public Book(String title, List<String> authors, List<Genre> genre, String description, int numPages) {
         this.title = title;
         this.authors = authors == null ? new ArrayList<>() : authors;
-        this.genres = genres == null ? new ArrayList<>() : genres;
+        this.genre = genre == null ? new ArrayList<>() : genre;
         this.description = description;
         this.numPages = numPages;
         this.usersWithBookAsFavorite = new ArrayList<>();
@@ -108,7 +107,7 @@ public class Book extends HasEvents {
     public Book(CreateBookRequestModel createBookRequestModel) {
         this.title = createBookRequestModel.getTitle();
         this.authors = new ArrayList<>(createBookRequestModel.getAuthors());
-        this.genres = new ArrayList<>(createBookRequestModel.getGenres());
+        this.genre = new ArrayList<>(createBookRequestModel.getGenres());
         this.description = createBookRequestModel.getDescription();
         this.numPages = createBookRequestModel.getNumPages();
     }

@@ -17,7 +17,6 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.application.book.BookEventsListener;
-import nl.tudelft.sem.template.authentication.application.user.UserEventsListener;
 import nl.tudelft.sem.template.authentication.domain.user.AppUser;
 import nl.tudelft.sem.template.authentication.domain.user.AuthenticationService;
 import nl.tudelft.sem.template.authentication.domain.user.HashedPassword;
@@ -145,7 +144,7 @@ public class BookServiceTests {
 
         assertThat(newBook.getTitle()).isEqualTo(addedBook.getTitle());
         assertThat(newBook.getAuthors()).isEqualTo(addedBook.getAuthors());
-        assertThat(newBook.getGenres()).isEqualTo(addedBook.getGenres());
+        assertThat(newBook.getGenre()).isEqualTo(addedBook.getGenre());
         assertThat(newBook.getDescription()).isEqualTo(addedBook.getDescription());
         assertThat(newBook.getNumPages()).isEqualTo(addedBook.getNumPages());
 
@@ -166,7 +165,7 @@ public class BookServiceTests {
         updatedBook.setId(finalRandomUuid);
         updatedBook.setTitle("title");
         updatedBook.setAuthors(List.of("Author1"));
-        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setGenre(List.of(Genre.SCIENCE));
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
@@ -182,7 +181,7 @@ public class BookServiceTests {
         updatedBook.setId(bookId);
         updatedBook.setTitle("title new");
         updatedBook.setAuthors(List.of("Author1"));
-        updatedBook.setGenres(List.of(Genre.SCIENCE));
+        updatedBook.setGenre(List.of(Genre.SCIENCE));
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
@@ -196,7 +195,7 @@ public class BookServiceTests {
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
         assertThat(updatedBookTest.getTitle()).isEqualTo(updatedBook.getTitle());
         assertThat(updatedBookTest.getAuthors().containsAll(updatedBook.getAuthors())).isTrue();
-        assertThat(updatedBookTest.getGenres().containsAll(updatedBook.getGenres())).isTrue();
+        assertThat(updatedBookTest.getGenre().containsAll(updatedBook.getGenre())).isTrue();
         assertThat(updatedBookTest.getDescription()).isEqualTo(updatedBook.getDescription());
         assertThat(updatedBookTest.getNumPages()).isEqualTo(updatedBook.getNumPages());
     }
@@ -208,7 +207,7 @@ public class BookServiceTests {
         updatedBook.setId(bookId);
         updatedBook.setTitle("title new");
         updatedBook.setAuthors(null);
-        updatedBook.setGenres(List.of(Genre.CRIME));
+        updatedBook.setGenre(List.of(Genre.CRIME));
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
@@ -224,7 +223,7 @@ public class BookServiceTests {
         updatedBook.setId(bookId);
         updatedBook.setTitle("title new");
         updatedBook.setAuthors(List.of("Author1"));
-        updatedBook.setGenres(null);
+        updatedBook.setGenre(null);
         updatedBook.setDescription("desc");
         updatedBook.setNumPages(876);
 
@@ -240,7 +239,7 @@ public class BookServiceTests {
         updatedBook.setId(bookId);
         updatedBook.setTitle("new title");
         updatedBook.setAuthors(List.of("Author1", "authorName"));
-        updatedBook.setGenres(List.of(Genre.SCIENCE, Genre.ROMANCE, Genre.HORROR));
+        updatedBook.setGenre(List.of(Genre.SCIENCE, Genre.ROMANCE, Genre.HORROR));
         updatedBook.setDescription("desc desc");
         updatedBook.setNumPages(5501);
         bookService.updateBook(updatedBook);
@@ -249,7 +248,7 @@ public class BookServiceTests {
         assertThat(updatedBookTest.getId()).isEqualTo(updatedBook.getId());
         assertThat(updatedBookTest.getTitle()).isEqualTo(updatedBook.getTitle());
         assertThat(updatedBookTest.getAuthors().containsAll(updatedBook.getAuthors())).isTrue();
-        assertThat(updatedBookTest.getGenres().containsAll(updatedBook.getGenres())).isTrue();
+        assertThat(updatedBookTest.getGenre().containsAll(updatedBook.getGenre())).isTrue();
         assertThat(updatedBookTest.getDescription()).isEqualTo(updatedBook.getDescription());
         assertThat(updatedBookTest.getNumPages()).isEqualTo(updatedBook.getNumPages());
     }

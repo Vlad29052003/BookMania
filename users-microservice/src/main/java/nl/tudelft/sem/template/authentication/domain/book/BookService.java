@@ -1,7 +1,6 @@
 package nl.tudelft.sem.template.authentication.domain.book;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +71,8 @@ public class BookService {
      * @param updatedBook contains the new information for the book
      */
     public void updateBook(Book updatedBook) {
-        if (updatedBook.getAuthors() == null || updatedBook.getGenres() == null) {
+        if (updatedBook.getAuthors() == null || updatedBook.getGenre() == null) {
+            System.out.println(updatedBook);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The authors and genres cannot be null!");
         }
         Optional<Book> optBook = bookRepository.findById(updatedBook.getId());
@@ -85,7 +85,7 @@ public class BookService {
 
         currentBook.setTitle(updatedBook.getTitle());
         currentBook.setAuthors(new ArrayList<>(updatedBook.getAuthors()));
-        currentBook.setGenres(new ArrayList<>(updatedBook.getGenres()));
+        currentBook.setGenre(new ArrayList<>(updatedBook.getGenre()));
         currentBook.setDescription(updatedBook.getDescription());
         currentBook.setNumPages(updatedBook.getNumPages());
 

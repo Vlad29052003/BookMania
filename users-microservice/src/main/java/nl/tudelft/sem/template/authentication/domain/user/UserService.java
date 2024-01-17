@@ -222,22 +222,22 @@ public class UserService {
     /**
      * Update the authority of a user.
      *
-     * @param username user to be updated.
+     * @param userId id of the user to be updated.
      * @param newAuthority new authority of the user.
      * @param authority authority of user making the request (needs to be admin).
      */
     @Transactional
-    public void updateAuthority(Username username, Authority newAuthority, String authority) {
+    public void updateAuthority(UUID userId, Authority newAuthority, String authority) {
         if (!authority.equals(Authority.ADMIN.toString())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only admins can change the authority of a user!");
         }
 
-        Optional<AppUser> optionalAppUser = userRepository.findByUsername(username);
+        Optional<AppUser> optionalAppUser = userRepository.findById(userId);
         if (optionalAppUser.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist!");
         }
 
-        if (roleChangeRepository.findByUsername(username.getUsernameValue()).isEmpty()) {
+        if (roleChangeRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User did not request a role change!");
         }
 
@@ -245,7 +245,7 @@ public class UserService {
         user.setAuthority(newAuthority);
         userRepository.saveAndFlush(user);
 
-        roleChangeRepository.deleteByUsername(user.getUsername().getUsernameValue());
+        roleChangeRepository.deleteById(userId);
     }
 
     /**
@@ -394,6 +394,9 @@ public class UserService {
      */
     @Transactional
     public void followUser(Username username, Username toFollow) {
+        if (username.equals(toFollow)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot follow yourself!");
+        }
         Pair<AppUser, AppUser> users = extractUsersFromUsernames(username, toFollow);
         users.getFirst().follow(users.getSecond());
         userRepository.saveAndFlush(users.getFirst());

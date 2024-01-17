@@ -3,14 +3,12 @@ package nl.tudelft.sem.template.authentication.domain.user;
 import static nl.tudelft.sem.template.authentication.application.Constants.NO_SUCH_USER;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.transaction.Transactional;
 import nl.tudelft.sem.template.authentication.authentication.JwtTokenGenerator;
 import nl.tudelft.sem.template.authentication.authentication.JwtUserDetailsService;
 import nl.tudelft.sem.template.authentication.domain.providers.TimeProvider;
@@ -31,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -157,6 +156,7 @@ public class AuthenticationService {
      * @return the JWT token
      * @throws ResponseStatusException if the authentication fails
      */
+    @Transactional
     public AuthenticationResponseModel authenticateWith2fa(AuthenticationRequestModel authenticationRequestModel) {
         String username = authenticationRequestModel.getUsername();
         AtomicReference<AuthenticationResponseModel> token = new AtomicReference<>(null);

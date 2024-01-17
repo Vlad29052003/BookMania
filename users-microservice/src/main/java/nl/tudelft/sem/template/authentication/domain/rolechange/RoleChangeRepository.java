@@ -12,10 +12,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoleChangeRepository extends JpaRepository<RoleChange, UUID> {
 
-    @Query("SELECT r FROM RoleChange r WHERE r.username = :username")
-    Optional<List<RoleChange>> findByUsername(@Param("username") String username);
-
-    @Modifying
-    @Query("DELETE FROM RoleChange r WHERE r.username = :username")
-    void deleteByUsername(@Param("username") String username);
 }

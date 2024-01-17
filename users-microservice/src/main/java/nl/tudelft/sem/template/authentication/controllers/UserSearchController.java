@@ -55,15 +55,15 @@ public class UserSearchController {
     /**
      * Endpoint for user searching by favourite book.
      *
-     * @param bookId - The bookId query parameter.
-     * @return - the users containing the given favourite book
+     * @param favouriteBookId The bookId query parameter.
+     * @return the users containing the given favourite book
      * @throws ResponseStatusException - If there is no user found
      */
     @GetMapping("/users/favBook")
-    public ResponseEntity<?> getUsersByFavouriteBook(@RequestParam UUID bookId)
+    public ResponseEntity<?> getUsersByFavouriteBook(@RequestParam UUID favouriteBookId)
             throws ResponseStatusException {
         try {
-            Iterable<UserModel> x = userLookupService.getUsersByFavouriteBook(bookId);
+            Iterable<UserModel> x = userLookupService.getUsersByFavouriteBook(favouriteBookId);
             return ResponseEntity.ok(x);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());

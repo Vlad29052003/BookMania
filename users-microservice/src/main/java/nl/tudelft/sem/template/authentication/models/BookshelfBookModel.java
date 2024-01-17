@@ -1,14 +1,19 @@
 package nl.tudelft.sem.template.authentication.models;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.Genre;
 
+/**
+ * A DDD object to be used in the communication with
+ * Review microservice as they have the id of a book named bookId instead of id as us.
+ */
 @Data
-@NoArgsConstructor
-public class CreateBookRequestModel {
+public class BookshelfBookModel {
+    private UUID bookId;
     private String title;
     private List<String> authors;
     private List<Genre> genres;
@@ -16,14 +21,15 @@ public class CreateBookRequestModel {
     private int numPages;
 
     /**
-     * Creates a new instance of this object.
+     * Creates a new BookshelfBookModel object given a book.
      *
-     * @param book is a book.
+     * @param book is the book.
      */
-    public CreateBookRequestModel(Book book) {
+    public BookshelfBookModel(Book book) {
+        this.bookId = book.getId();
         this.title = book.getTitle();
-        this.authors = book.getAuthors();
-        this.genres = book.getGenre();
+        this.authors = new ArrayList<>(book.getAuthors());
+        this.genres = new ArrayList<>(book.getGenre());
         this.description = book.getDescription();
         this.numPages = book.getNumPages();
     }

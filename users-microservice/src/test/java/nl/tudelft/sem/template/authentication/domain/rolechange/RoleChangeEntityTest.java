@@ -22,19 +22,15 @@ public class RoleChangeEntityTest {
      */
     @BeforeEach
     public void setUp() {
-        change1 = new RoleChange("simona", Authority.AUTHOR, "123-456");
-        change2 = new RoleChange("johndoe", Authority.ADMIN, "123-546-3460");
-        change3 = new RoleChange("simona", Authority.AUTHOR, "123-456");
-
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
         while (id1.equals(id2)) {
             id2 = UUID.randomUUID();
         }
 
-        change1.setId(id1);
-        change2.setId(id2);
-        change3.setId(id1);
+        change1 = new RoleChange(id1, Authority.AUTHOR, "123-456");
+        change2 = new RoleChange(id2, Authority.ADMIN, "123-546-3460");
+        change3 = new RoleChange(id1, Authority.AUTHOR, "123-456");
     }
 
     @Test
@@ -46,7 +42,7 @@ public class RoleChangeEntityTest {
     @Test
     public void constructorTest() {
         assertThat(change1).isNotEqualTo(null);
-        assertThat(change1.getUsername()).isEqualTo("simona");
+        assertThat(change1.getId()).isEqualTo(change3.getId());
         assertThat(change1.getNewRole()).isEqualTo(Authority.AUTHOR);
         assertThat(change1.getSsn()).isEqualTo("123-456");
     }

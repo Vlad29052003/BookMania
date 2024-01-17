@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.sem.template.authentication.controllers.UserController;
@@ -42,7 +43,8 @@ public class UserControllerTests {
     private transient PasswordHashingService passwordHashingService;
     private transient AppUser user;
     private transient UserProfile userProfile;
-    private Username username;
+    private transient Username username;
+    private transient UUID userId;
 
     /**
      * Sets up the testing environment.
@@ -61,6 +63,7 @@ public class UserControllerTests {
         SecurityContextHolder.setContext(securityContextMock);
 
         this.user = new AppUser(new Username("user"), "email@mail.com", new HashedPassword("hash"));
+        this.userId = UUID.randomUUID();
         when(userService.getUserByUsername(new Username("user"))).thenReturn(user);
 
         this.userProfile = new UserProfile(user);
@@ -156,7 +159,7 @@ public class UserControllerTests {
     public void testUpdateBannedStatus() {
         BanUserRequestModel banUserRequestModel = new BanUserRequestModel();
         banUserRequestModel.setUsername(username.toString());
-        banUserRequestModel.setBanned(true);
+        banUserRequestModel.setIsBanned(true);
         assertThat(userController.updateBannedStatus(banUserRequestModel))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1))
@@ -165,11 +168,11 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateAuthority() {
-        RoleChange roleChange = new RoleChange(username.toString(), Authority.AUTHOR, "123-456");
+        RoleChange roleChange = new RoleChange(userId, Authority.AUTHOR, "123-456");
         assertThat(userController.updateAuthority(roleChange))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1))
-                .updateAuthority(username, Authority.AUTHOR, Authority.REGULAR_USER.toString());
+                .updateAuthority(userId, Authority.AUTHOR, Authority.REGULAR_USER.toString());
 
         String error = "error";
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
@@ -210,6 +213,14 @@ public class UserControllerTests {
         assertThat(userController.updateEmail(newEmail))
                 .isEqualTo(ResponseEntity.ok().build());
         verify(userService, times(1)).updateEmail(username, newEmail);
+    }
+
+    @Test
+    public void testUserProfile() throws JsonProcessingException {
+        assertThat(userProfile.getIs2faEnabled()).isFalse();
+        assertThat(userProfile.getIsPrivate()).isFalse();
+        assertThat(userProfile.getIsDeactivated()).isFalse();
+        assertThat(userProfile.getAuthority()).isEqualTo(Authority.REGULAR_USER);
     }
 
 }

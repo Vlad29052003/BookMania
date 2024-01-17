@@ -4,7 +4,7 @@ info:
   version: 1.1.0
   description: API for managing Users, Books, Reports, Connections and Statistics.
 servers:
-  - url: 'http://localhost:8081/c/'
+  - url: 'http://localhost:8081/c'
 
 tags:
   - name: Authentication
@@ -53,7 +53,49 @@ paths:
       tags:
         - Authentication
       summary: Authenticate a user
-      description: Authenticate a user with username and password. The JWT token will be returned if the authentication is successful.
+      description: Authenticate a user with username and password. The JWT token will be returned if the authentication is successful. If two-factor authentication is enabled, return a null token and redirect the user to the second endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequestModel'
+      responses:
+        '200':
+          description: OK if the authentication succeeds. It will return the JWT token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTToken'
+        '302':
+          description: Redirect the client to the location of the second authentication endpoint.
+          headers:
+            Location:
+              required: true
+              description: The path to the endpoint where the client is redirected.
+              schema:
+                type: string
+        '400':
+          description: Bad Request if the required parameters are not present.
+        '401':
+          description: Unauthorized if the credentials are invalid
+          content:
+            text/plain:
+              examples:
+                UserDisabled:
+                  value:
+                    USER_DISABLED
+                InvalidCredentials:
+                  value:
+                    INVALID_CREDENTIALS
+        '500':
+          description: Internal Server Error if an unexpected error occurs.
+  
+  /authenticate/2fa:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate a user with two-factor authentication
+      description: Authenticate a user with the code received via email. The JWT token will be returned if the credentials are valid.
       requestBody:
         content:
           application/json:
@@ -73,9 +115,6 @@ paths:
           content:
             text/plain:
               examples:
-                UserDisabled:
-                  value:
-                    USER_DISABLED
                 InvalidCredentials:
                   value:
                     INVALID_CREDENTIALS

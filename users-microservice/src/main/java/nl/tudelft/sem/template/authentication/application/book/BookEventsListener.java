@@ -13,6 +13,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Book;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasCreatedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasDeletedEvent;
 import nl.tudelft.sem.template.authentication.domain.book.BookWasEditedEvent;
+import nl.tudelft.sem.template.authentication.models.BookshelfBookModel;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,8 @@ public class BookEventsListener {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BOOKSHELF_URI))
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(new BookshelfBookModel(book))))
                     .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -123,7 +125,8 @@ public class BookEventsListener {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BOOKSHELF_URI))
-                    .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(book)))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(new BookshelfBookModel(book))))
                     .build();
 
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
