@@ -12,7 +12,7 @@ import nl.tudelft.sem.template.authentication.domain.book.Genre;
  * Review microservice as they have the id of a book named bookId instead of id as us.
  */
 @Data
-public class ReviewBookModel {
+public class BookshelfBookModel {
     private UUID bookId;
     private String title;
     private List<String> authors;
@@ -21,11 +21,11 @@ public class ReviewBookModel {
     private int numPages;
 
     /**
-     * Creates a new ReviewBookModel object given a book.
+     * Creates a new BookshelfBookModel object given a book.
      *
      * @param book is the book.
      */
-    public ReviewBookModel(Book book) {
+    public BookshelfBookModel(Book book) {
         this.bookId = book.getId();
         this.title = book.getTitle();
         this.authors = new ArrayList<>(book.getAuthors());

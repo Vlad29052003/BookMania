@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import nl.tudelft.sem.template.authentication.models.ReviewBookModel;
+import nl.tudelft.sem.template.authentication.models.BookshelfBookModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -58,13 +58,13 @@ public class BookEntityTests {
 
     @Test
     public void testReviewBookModel() {
-        ReviewBookModel reviewBookModel = new ReviewBookModel(book1);
-        assertThat(reviewBookModel.getBookId()).isEqualTo(book1.getId());
-        assertThat(reviewBookModel.getTitle()).isEqualTo(book1.getTitle());
-        assertThat(reviewBookModel.getAuthors()).isEqualTo(book1.getAuthors());
-        assertThat(reviewBookModel.getGenres()).isEqualTo(book1.getGenre());
-        assertThat(reviewBookModel.getDescription()).isEqualTo(book1.getDescription());
-        assertThat(reviewBookModel.getNumPages()).isEqualTo(book1.getNumPages());
+        BookshelfBookModel bookshelfBookModel = new BookshelfBookModel(book1);
+        assertThat(bookshelfBookModel.getBookId()).isEqualTo(book1.getId());
+        assertThat(bookshelfBookModel.getTitle()).isEqualTo(book1.getTitle());
+        assertThat(bookshelfBookModel.getAuthors()).isEqualTo(book1.getAuthors());
+        assertThat(bookshelfBookModel.getGenres()).isEqualTo(book1.getGenre());
+        assertThat(bookshelfBookModel.getDescription()).isEqualTo(book1.getDescription());
+        assertThat(bookshelfBookModel.getNumPages()).isEqualTo(book1.getNumPages());
     }
 
     @Test
