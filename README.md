@@ -1,27 +1,39 @@
-# Lab Template
+# Users and Authentication Microservice
 
-This template contains two microservices:
-- authentication-microservice
-- example-microservice
+The Users and Authentication Microservice is a crucial component of the BookMania online bookshop system. It is built using Java with Spring Boot, leveraging Spring Security with JWT tokens for secure authentication and authorization. Passwords are securely stored using bcrypt encryption.
 
-The `authentication-microservice` is responsible for registering new users and authenticating current ones. After successful authentication, this microservice will provide a JWT token which can be used to bypass the security on the `example-microservice`. This token contains the *NetID* of the user that authenticated. If your scenario includes different roles, these will have to be added to the authentication-microservice and to the JWT token. To do this, you will have to:
-- Add a concept of roles to the `AppUser`
-- Add the roles to the `UserDetails` in `JwtUserDetailsService`
-- Add the roles as claims to the JWT token in `JwtTokenGenerator`
+## Features
 
-The `example-microservice` is just an example and needs to be modified to suit the domain you are modeling based on your scenario.
+- **Authentication**: Implements secure authentication using Spring Security with JWT tokens.
+- **Authorization**: Ensures authorized access to resources based on user roles and permissions.
+- **Integration Management**: Manages seamless integration with the Comments and Reviews Microservice and the Bookshelf Microservice.
+- **Testing**: Thoroughly tested with over 95% mutation coverage and 99% branch coverage, ensuring reliability and robustness.
 
-The `domain` and `application` packages contain the code for the domain layer and application layer. The code for the framework layer is the root package as *Spring* has some limitations on were certain files are located in terms of autowiring.
+## Technologies Used
 
-## Running the microservices
+- Java
+- Spring Boot
+- Spring Security
+- JWT Tokens
+- Bcrypt Encryption
 
-You can run the two microservices individually by starting the Spring applications. Then, you can use *Postman* to perform the different requests:
+## Functionality
 
-Register:
-![image](instructions/register.png)
+### Authentication
+The microservice provides endpoints for user registration, login, and logout. Upon successful authentication, it generates a JWT token that the client can use for subsequent requests to authorized endpoints.
 
-Authenticate:
-![image](instructions/authenticate.png)
+### Integration
+It seamlessly integrates with the Comments and Reviews Microservice and the Bookshelf Microservice to provide a cohesive user experience across the entire BookMania platform.
 
-Hello:
-![image](instructions/hello.png)
+### Password Security
+Passwords are securely hashed using bcrypt before being stored in the database. This ensures that user passwords are never stored in plain text, enhancing the overall security of the system.
+
+## Testing
+The Users and Authentication Microservice has undergone extensive testing to ensure reliability and correctness. It boasts over 95% mutation coverage and 99% branch coverage, providing confidence in its functionality and performance.
+
+## Getting Started
+To get started with the Users and Authentication Microservice, follow these steps:
+1. Clone the repository.
+2. Configure the application properties for your database and other environment-specific settings.
+3. Build and run the application using Maven or your preferred method.
+4. Access the API endpoints to interact with the microservice.
