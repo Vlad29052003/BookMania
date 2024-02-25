@@ -20,7 +20,7 @@ The Users and Authentication Microservice is a crucial component of the BookMani
 ## Functionality
 
 ### Authentication
-The microservice provides endpoints for user registration, login, and logout. Upon successful authentication, it generates a JWT token that the client can use for subsequent requests to authorized endpoints.
+The microservice provides endpoints for user registration, login (which also supports two-factor authentication). Upon successful authentication, it generates a JWT token that the client can use for subsequent requests to authorized endpoints.
 
 ### Integration
 It seamlessly integrates with the Comments and Reviews Microservice and the Bookshelf Microservice to provide a cohesive user experience across the entire BookMania platform.
